@@ -1,0 +1,94 @@
+/* src/styles/global.css */
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f6f9;
+}
+
+.App {
+  display: flex;
+  flex-direction: column;
+}
+
+.App-header {
+  background-color: #3f51b5;
+  padding: 20px;
+}
+
+.App-title {
+  color: white;
+}
+
+a {
+  text-decoration: none;
+}
+
+h1 {
+  font-size: 2rem;
+}
+
+.login-container,
+.otp-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 85dvh; /* Uses dynamic viewport height */
+  background-color: #f4f4f4;
+}
+
+.login-card,
+.otp-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.login-header,
+.otp-header {
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+button {
+  margin-top: 20px;
+}
+
+span {
+  display: block;
+  text-align: center;
+  margin-top: 10px;
+  font-weight: 600;
+}
+
+.otp-container .otp-card {
+  background-color: #ffffff;
+}
+
+.otp-container .otp-card .MuiButton-root {
+  background-color: #3f51b5;
+  color: white;
+}
+
+/* Styles for OTP inputs */
+.otp-input {
+  width: 40px;
+  height: 40px;
+  margin: 0 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 1.2rem;
+}
+
+.otp-input:focus {
+  border-color: #3f51b5;
+  outline: none;
+}
+
+.otp-container .otp-input--focus {
+  border-color: #3f51b5;
+}
+

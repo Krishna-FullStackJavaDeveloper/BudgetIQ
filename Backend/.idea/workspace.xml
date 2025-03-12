@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="9ef1f0a6-0768-4427-ac2f-d3321830eed0" name="Changes" comment="create get user by userId for all roles.">
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Enum" />
+        <option value="Interface" />
+        <option value="Exception" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="PUSH_TAGS">
+      <GitPushTagMode>
+        <option name="argument" value="--tags" />
+        <option name="title" value="All" />
+      </GitPushTagMode>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Krishna-FullStackJavaDeveloper&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Krishna-FullStackJavaDeveloper/budget-management-system.git&quot;,
+    &quot;accountId&quot;: &quot;9e22392e-26a5-4cd9-9393-6c40b263e5af&quot;
+  }
+}</component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="mavenHomeTypeForPersistence" value="WRAPPER" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 2
+}</component>
+  <component name="ProjectId" id="2mWoWDbu2iWblOZgRkQlDrXLbib" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.RoleBaseAuthenticationApplication.executor": "Debug",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "last_directory_selection": "D:/Krishna/Workspace/IntelliJ/springboot-role-base-authentication/src/test/java",
+    "last_opened_file_path": "D:/Krishna/My Project/BudgetIQ/backend",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "reference.settings.project.maven.repository.indices"
+  }
+}]]></component>
+  <component name="RunManager">
+    <configuration name="RoleBaseAuthenticationApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <envs>
+        <env name="JAVA_OPTS" value="-Xms512m -Xmx4g -XX:+UseG1GC -XX:MaxGCPauseMillis=200" />
+      </envs>
+      <option name="MAIN_CLASS_NAME" value="com.auth.RoleBaseAuthenticationApplication" />
+      <module name="authentication" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.auth.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.RoleBaseAuthenticationApplication" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="9ef1f0a6-0768-4427-ac2f-d3321830eed0" name="Changes" comment="" />
+      <created>1727201725333</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1727201725333</updated>
+    </task>
+    <task id="LOCAL-00001" summary="spring-boot role base authentication with validations">
+      <option name="closed" value="true" />
+      <created>1728055141039</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1728055141039</updated>
+    </task>
+    <task id="LOCAL-00002" summary="spring-boot role base authentication with validations">
+      <option name="closed" value="true" />
+      <created>1728055277867</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1728055277867</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Implement token refreshing feature.">
+      <option name="closed" value="true" />
+      <created>1740090280509</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1740090280509</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Implement token refreshing feature.">
+      <option name="closed" value="true" />
+      <created>1740090667200</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1740090667200</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Configure Email notification (Globally).">
+      <option name="closed" value="true" />
+      <created>1740161444048</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1740161444048</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Update code: Multithreading, Optimized Time &amp; Space Complexity, Improved Exception Handling, Improved Logging/ Console Log, Garbage Collection Efficiency, add lazy loading and Code Cleanliness.">
+      <option name="closed" value="true" />
+      <created>1740175574775</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1740175574775</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Update Refresh token API.">
+      <option name="closed" value="true" />
+      <created>1740180408339</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1740180408339</updated>
+    </task>
+    <task id="LOCAL-00008" summary="-Configure Global Exception Handling in all Controller.&#10;-Update API Response JSON structure.">
+      <option name="closed" value="true" />
+      <created>1740191224413</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1740191224413</updated>
+    </task>
+    <task id="LOCAL-00009" summary="update properties file">
+      <option name="closed" value="true" />
+      <created>1740192243167</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1740192243167</updated>
+    </task>
+    <task id="LOCAL-00010" summary="update email notifications dynamic.">
+      <option name="closed" value="true" />
+      <created>1740753402776</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1740753402776</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Config: App Scheduler,&#10;send weekly summary report to admin.">
+      <option name="closed" value="true" />
+      <created>1740760035789</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1740760035789</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Config: App Scheduler,&#10;send weekly summary report to admin.">
+      <option name="closed" value="true" />
+      <created>1740760045494</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1740760045494</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Update user entity and /signup api.">
+      <option name="closed" value="true" />
+      <created>1740801365254</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1740801365254</updated>
+    </task>
+    <task id="LOCAL-00014" summary="Configure Two-Factor Authentication into JWT authentication system.">
+      <option name="closed" value="true" />
+      <created>1741146327655</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1741146327655</updated>
+    </task>
+    <task id="LOCAL-00015" summary="Configure Two-Factor Authentication into JWT authentication system.">
+      <option name="closed" value="true" />
+      <created>1741146361159</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1741146361159</updated>
+    </task>
+    <task id="LOCAL-00016" summary="Add Scheduler for Two-Factor Authentication.">
+      <option name="closed" value="true" />
+      <created>1741212883763</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1741212883764</updated>
+    </task>
+    <task id="LOCAL-00017" summary="- Add Cross environment configuration. &#10;- Update RoleBase with hierarchical structure.">
+      <option name="closed" value="true" />
+      <created>1741723247441</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1741723247441</updated>
+    </task>
+    <task id="LOCAL-00018" summary="Update RoleBase hierarchical structure to add passkey per family.">
+      <option name="closed" value="true" />
+      <created>1741727523414</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1741727523414</updated>
+    </task>
+    <task id="LOCAL-00019" summary="create get user by userId for all roles.">
+      <option name="closed" value="true" />
+      <created>1741814966183</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1741814966183</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="sprinboot role base authentication with required validations apply." />
+    <MESSAGE value="spring-boot role base authentication with validations" />
+    <MESSAGE value="Implement token refreshing feature." />
+    <MESSAGE value="Configure Email notification (Globally)." />
+    <MESSAGE value="Update code: Multithreading, Optimized Time &amp; Space Complexity, Improved Exception Handling, Improved Logging/ Console Log, Garbage Collection Efficiency, add lazy loading and Code Cleanliness." />
+    <MESSAGE value="Update Refresh token API." />
+    <MESSAGE value="-Configure Global Exception Handling in all Controller.&#10;-Update API Response JSON structure." />
+    <MESSAGE value="update properties file" />
+    <MESSAGE value="update email notifications dynamic." />
+    <MESSAGE value="Config: App Scheduler,&#10;send weekly summary report to admin." />
+    <MESSAGE value="Update user entity and /signup api." />
+    <MESSAGE value="Configure Two-Factor Authentication into JWT authentication system." />
+    <MESSAGE value="Add Scheduler for Two-Factor Authentication." />
+    <MESSAGE value="- Add Cross environment configuration. &#10;- Update RoleBase with hierarchical structure." />
+    <MESSAGE value="Update RoleBase hierarchical structure to add passkey per family." />
+    <MESSAGE value="create get user by userId for all roles." />
+    <option name="LAST_COMMIT_MESSAGE" value="create get user by userId for all roles." />
+  </component>
+  <component name="XDebuggerManager">
+    <watches-manager>
+      <configuration name="Application">
+        <watch expression="ResponseEntity.ok(new JwtResponse(" />
+        <watch expression="package com.auth.globalUtils;&#10;import java.time.LocalDateTime;&#10;import java.time.format.DateTimeFormatter;&#10;import java.time.ZoneId;&#10;import java.util.Date;&#10;&#10;public class DateFormatUtil {&#10;    public static String formatDate(LocalDateTime dateTime) {&#10;        // Define the custom date-time pattern&#10;        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(&quot;dd-MM-yyyy, EEEE | h:mm a&quot;);&#10;&#10;        // Convert LocalDateTime to desired format string&#10;        return dateTime.format(formatter);&#10;    }&#10;&#10;    public static void main(String[] args) {&#10;        // Example date&#10;        LocalDateTime createdAt = LocalDateTime.of(2025, 3, 12, 14, 56, 5, 642487000); // Example datetime&#10;&#10;        // Format the date using the method&#10;        String formattedDate = formatDate(createdAt);&#10;&#10;        System.out.println(formattedDate); // Output: 12-03-2025, Wednesday | 2:56 PM&#10;    }&#10;}&#10;" />
+      </configuration>
+    </watches-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/springboot_role_base_authentication$RoleBaseAuthenticationApplication.ic" NAME="RoleBaseAuthenticationApplication Coverage Results" MODIFIED="1727202303599" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>com.auth.*</FILTER>
+    </SUITE>
+  </component>
+</project>

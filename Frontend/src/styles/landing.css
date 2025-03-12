@@ -1,0 +1,182 @@
+/* Global Styles */
+body {
+    font-family: 'Roboto', sans-serif;
+    /* background: #f5f5f5; */
+    margin: 0;
+    padding: 0;
+    
+  }
+  
+  .watermark-icon {
+    position: fixed;
+    bottom: -1px;
+    left: 1px;
+    width: 20%; /* Adjust size as needed */
+    opacity: 0.2; /* Keeps it visible but subtle */
+    z-index: -1; /* Ensures it doesn't interfere with other elements */
+    pointer-events: none; /* Prevents interaction */
+}
+
+  /* Header Section */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #0066cc; /* Blue background */
+    padding: 20px;
+    border-top-left-radius: 40px; /* Upper border radius */
+    border-top-right-radius: 40px;
+    height: 150px; /* Adjust height to give enough space */
+    position: relative;
+  border-top-left-radius: 40px;  /* Apply to top-left corner */
+  border-top-right-radius: 40px;
+  }
+
+  .icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px; /* Space between icon and text */
+  }
+  
+  .app-icon {
+    width: 100px; /* Keep the base size of the icon */
+    height: auto;
+    transform: scale(1.5); /* Increase the size without affecting layout */
+    transition: transform 0.3s ease-in-out; /* Optional: smooth transition effect */
+    /* border-radius: 20%;  */
+    margin-top: 50px;
+    margin-right: 50px;
+  }
+  .text-container {
+    text-align: center;
+    color: white;
+    /* margin-top: 10px; */
+  }
+  
+  .app-name {
+    font-size: 50px;
+    font-weight: 600;
+    margin-top: 20px;
+  }
+  
+  .tagline {
+    font-size: 17px;
+    margin-top: 10px;
+    text-align: center;
+  }
+
+  /* Divider - Short white thin line */
+.divider {
+    border: none;  /* Remove default borders */
+    height: 1px;   /* Set height to 1px for a thin line */
+    background-color: white;  /* Set the color of the divider */
+    margin: 20px auto;  /* Add space around it */
+    width: 80%;  /* Adjust width to make it look like a short line */
+    opacity: 1; /* Make sure it's fully visible */
+  }
+  
+  /* Call-to-Action Section */
+  .cta-section {
+    background-color: #0066cc; /* Blue color for cta-section */
+    color: white;
+    text-align: center;
+    padding: 30px 20px;
+    border-bottom-left-radius: 40px;  /* No bottom-left radius */
+    border-bottom-right-radius: 40px; /* No bottom-right radius */
+  }
+  
+  .cta-text {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .cta-button {
+    text-transform: none;
+    font-weight: 600;
+    margin: 10px;
+    padding: 12px 50px;
+    border-radius: 40px; 
+    transition: all 0.3s ease-in-out;
+    color: #004080;
+  }
+  
+  .cta-button:hover {
+    background-color: #004080; /* Darker blue for hover effect */
+    color: #fff;
+    border-color: #fff;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Specific Button Colors */
+.login-btn {
+    background-color: #fff; /* Blue shade for login button */
+    border: none;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  
+  .features {
+    padding: 50px 20px;
+}
+
+.feature-item {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex; /* Align items horizontally */
+    align-items: center;
+    gap: 20px; /* Space between icon and text */
+    transition: transform 0.3s ease-in-out;
+}
+
+.feature-item:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.feature-icon {
+    width: 100px; /* Increased icon size */
+    height: auto;
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+.feature-text {
+    text-align: left;
+}
+
+.feature-title {
+    font-size: 18px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.feature-description {
+    font-size: 16px;
+    color: #777;
+}
+  
+  @media (max-width: 600px) {
+    .header {
+      padding: 30px 20px;
+    }
+  
+    .app-name {
+      font-size: 40px;
+    }
+  
+    .tagline {
+      font-size: 18px;
+    }
+  
+    .cta-text {
+      font-size: 18px;
+    }
+  
+    .cta-button {
+      width: 100%;
+    }
+  }
+  

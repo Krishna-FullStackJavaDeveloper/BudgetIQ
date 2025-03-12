@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9ef1f0a6-0768-4427-ac2f-d3321830eed0" name="Changes" comment="create get user by userId for all roles.">
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
-    </list>
+    <list default="true" id="9ef1f0a6-0768-4427-ac2f-d3321830eed0" name="Changes" comment="create get user by userId for all roles." />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -29,7 +27,7 @@
         <option name="title" value="All" />
       </GitPushTagMode>
     </option>
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -37,12 +35,12 @@
     &quot;assignee&quot;: &quot;Krishna-FullStackJavaDeveloper&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/Krishna-FullStackJavaDeveloper/budget-management-system.git&quot;,
-    &quot;accountId&quot;: &quot;9e22392e-26a5-4cd9-9393-6c40b263e5af&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/Krishna-FullStackJavaDeveloper/BudgetIQ.git",
+    "accountId": "9e22392e-26a5-4cd9-9393-6c40b263e5af"
   }
-}</component>
+}]]></component>
   <component name="MavenImportPreferences">
     <option name="generalSettings">
       <MavenGeneralSettings>
@@ -69,11 +67,11 @@
   "keyToString": {
     "Application.RoleBaseAuthenticationApplication.executor": "Debug",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "Frontend__UserOrg",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
     "last_directory_selection": "D:/Krishna/Workspace/IntelliJ/springboot-role-base-authentication/src/test/java",
-    "last_opened_file_path": "D:/Krishna/My Project/BudgetIQ/backend",
+    "last_opened_file_path": "D:/Krishna/My Project/BudgetIQ",
     "run.code.analysis.last.selected.profile": "pProject Default",
     "settings.editor.selected.configurable": "reference.settings.project.maven.repository.indices"
   }
@@ -84,7 +82,7 @@
         <env name="JAVA_OPTS" value="-Xms512m -Xmx4g -XX:+UseG1GC -XX:MaxGCPauseMillis=200" />
       </envs>
       <option name="MAIN_CLASS_NAME" value="com.auth.RoleBaseAuthenticationApplication" />
-      <module name="authentication" />
+      <module name="refreshToken" />
       <extension name="coverage">
         <pattern>
           <option name="PATTERN" value="com.auth.*" />

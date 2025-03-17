@@ -25,6 +25,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u JOIN u.roles r WHERE u.family.id = ?1 AND r.id = 2")
     Optional<User> findModeratorByFamilyId(@Param("familyId") Long familyId);
 
+    @Query("SELECT u FROM User u JOIN FETCH u.roles WHERE u.id = :id")
+    Optional<User> findByIdWithRoles(Long id);
+
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE u.id = :id")
     User getUserByIdWithRoles(Long id);
+
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.family f")
+    List<User> findAllUsers();
+
+    @Query("SELECT u FROM User u WHERE u.family.id = :familyId")
+    List<User> findAllByFamilyId(Long familyId);
 }

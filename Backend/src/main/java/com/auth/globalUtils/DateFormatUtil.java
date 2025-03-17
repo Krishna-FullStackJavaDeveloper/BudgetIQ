@@ -6,6 +6,9 @@ import java.util.Date;
 
 public class DateFormatUtil {
     public static String formatDate(LocalDateTime dateTime) {
+        if (dateTime == null) {
+            return "N/A"; // Return a default value or empty string
+        }
         // Define the custom date-time pattern
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy, EEEE | h:mm a");
 

@@ -277,8 +277,8 @@ const Signup = () => {
                     <MenuItem value="" disabled>
                       Select Role
                     </MenuItem>
-                    <MenuItem value="MODERATOR">Family Admin</MenuItem>
-                    <MenuItem value="USER">User</MenuItem>
+                    <MenuItem value="mod">Family Admin</MenuItem>
+                    <MenuItem value="user">User</MenuItem>
                   </Select>
                   {errors.role && <Typography color="error">{errors.role}</Typography>}
                 </FormControl>

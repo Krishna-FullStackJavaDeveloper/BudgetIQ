@@ -29,6 +29,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, toggleSidebar, isAuthenticated,
     ],
     moderator: [
       { label: 'Dashboard', path: '/dashboard' },
+      { label: 'Manage Users', path: '/manage-users' },
       { label: 'Moderation Panel', path: '/moderation' },
       { label: 'Reports', path: '/reports' },
       { label: 'My Profile', path: '/my-profile' }

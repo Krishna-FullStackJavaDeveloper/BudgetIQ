@@ -8,6 +8,7 @@ import LandingPage from "../components/layout/LandingPage";
 import Signup from "../pages/Authentications/Signup";
 import ModeratorDashboard from "../pages/Dashboards/ModeratorDashboar";
 import Profile from "../pages/UserProfile/Profile";
+import UserOrg from "../pages/UserProfile/ManageUser";
 
 const AppRoutes = () => {
   return (
@@ -27,6 +28,7 @@ const AppRoutes = () => {
 
       {/* User Profilepage */}
       <Route path="/my-profile" element={<Profile />} />
+      <Route path="/manage-users" element={<UserOrg />} />
       </Routes>
   );
 };

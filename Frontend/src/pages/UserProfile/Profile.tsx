@@ -20,7 +20,7 @@ const Profile = () => {
 
   useEffect(() => {
     if (!userId || !token) {
-      console.error("Please login to access your profile");
+      // console.error("Please login to access your profile");
       showNotification("Please login to access your profile", "error");
       navigate("/login");
       return;

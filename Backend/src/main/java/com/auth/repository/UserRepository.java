@@ -17,10 +17,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Boolean existsByEmail(String email);
 
+    Optional<User> findByEmail(String email);
+
     @Query("SELECT u FROM User u JOIN u.roles r WHERE r.name = 'ROLE_ADMIN'")
     List<User> findAdmins();
-
-    Optional<User> findById(Long id);
 
     @Query("SELECT u FROM User u JOIN u.roles r WHERE u.family.id = ?1 AND r.id = 2")
     Optional<User> findModeratorByFamilyId(@Param("familyId") Long familyId);
@@ -36,4 +36,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u FROM User u WHERE u.family.id = :familyId")
     List<User> findAllByFamilyId(Long familyId);
+
+
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.roles LEFT JOIN FETCH u.family WHERE u.id = :id")
+    Optional<User> findByIdWithRolesAndFamily(@Param("id") Long id);
+
+
 }

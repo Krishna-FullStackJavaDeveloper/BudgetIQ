@@ -15,8 +15,8 @@
       <list>
         <option value="Enum" />
         <option value="Interface" />
-        <option value="Exception" />
         <option value="Class" />
+        <option value="Exception" />
       </list>
     </option>
   </component>
@@ -63,19 +63,19 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.RoleBaseAuthenticationApplication.executor": "Debug",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true",
-    "last_directory_selection": "D:/Krishna/Workspace/IntelliJ/springboot-role-base-authentication/src/test/java",
-    "last_opened_file_path": "D:/Krishna/My Project/BQ/BudgetIQ/Backend",
-    "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.RoleBaseAuthenticationApplication.executor&quot;: &quot;Debug&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_directory_selection&quot;: &quot;D:/Krishna/Workspace/IntelliJ/springboot-role-base-authentication/src/test/java&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/Krishna/My Project/BudgetIQ/Backend&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;project.propVCSSupport.DirectoryMappings&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="RoleBaseAuthenticationApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <envs>
@@ -294,10 +294,91 @@
     <option name="LAST_COMMIT_MESSAGE" value="create get user by userId for all roles." />
   </component>
   <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/auth/serviceImpl/UserService.java</url>
+          <line>90</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/auth/serviceImpl/UserService.java</url>
+          <line>96</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/auth/serviceImpl/UserService.java</url>
+          <line>92</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/auth/serviceImpl/UserService.java</url>
+          <line>113</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/auth/serviceImpl/UserService.java</url>
+          <line>116</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/auth/serviceImpl/UserService.java</url>
+          <line>121</line>
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
+        <line-breakpoint type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/auth/serviceImpl/UserService.java</url>
+          <line>129</line>
+          <option name="timeStamp" value="8" />
+        </line-breakpoint>
+        <line-breakpoint type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/auth/serviceImpl/UserService.java</url>
+          <line>223</line>
+          <option name="timeStamp" value="20" />
+        </line-breakpoint>
+        <line-breakpoint type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/auth/serviceImpl/UserService.java</url>
+          <line>229</line>
+          <option name="timeStamp" value="22" />
+        </line-breakpoint>
+        <line-breakpoint type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/auth/serviceImpl/UserService.java</url>
+          <line>235</line>
+          <option name="timeStamp" value="35" />
+        </line-breakpoint>
+        <line-breakpoint type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/auth/serviceImpl/UserService.java</url>
+          <line>236</line>
+          <option name="timeStamp" value="36" />
+        </line-breakpoint>
+        <line-breakpoint type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/auth/serviceImpl/UserService.java</url>
+          <line>237</line>
+          <option name="timeStamp" value="37" />
+        </line-breakpoint>
+        <line-breakpoint type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/auth/serviceImpl/UserService.java</url>
+          <line>240</line>
+          <option name="timeStamp" value="44" />
+        </line-breakpoint>
+        <line-breakpoint type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/auth/serviceImpl/UserService.java</url>
+          <line>244</line>
+          <option name="timeStamp" value="45" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+    <pin-to-top-manager>
+      <pinned-members>
+        <PinnedItemInfo parentTag="com.auth.entity.User" memberName="roles" />
+      </pinned-members>
+    </pin-to-top-manager>
     <watches-manager>
       <configuration name="Application">
         <watch expression="ResponseEntity.ok(new JwtResponse(" />
         <watch expression="package com.auth.globalUtils;&#10;import java.time.LocalDateTime;&#10;import java.time.format.DateTimeFormatter;&#10;import java.time.ZoneId;&#10;import java.util.Date;&#10;&#10;public class DateFormatUtil {&#10;    public static String formatDate(LocalDateTime dateTime) {&#10;        // Define the custom date-time pattern&#10;        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(&quot;dd-MM-yyyy, EEEE | h:mm a&quot;);&#10;&#10;        // Convert LocalDateTime to desired format string&#10;        return dateTime.format(formatter);&#10;    }&#10;&#10;    public static void main(String[] args) {&#10;        // Example date&#10;        LocalDateTime createdAt = LocalDateTime.of(2025, 3, 12, 14, 56, 5, 642487000); // Example datetime&#10;&#10;        // Format the date using the method&#10;        String formattedDate = formatDate(createdAt);&#10;&#10;        System.out.println(formattedDate); // Output: 12-03-2025, Wednesday | 2:56 PM&#10;    }&#10;}&#10;" />
+        <watch expression="loggedInUser.family" />
+        <watch expression="((Role)loggedInUser.roles.toArray()[0]).name" custom="com.auth.entity.Role" />
       </configuration>
     </watches-manager>
   </component>

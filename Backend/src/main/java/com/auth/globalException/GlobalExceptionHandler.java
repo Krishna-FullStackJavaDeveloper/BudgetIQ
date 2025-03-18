@@ -4,6 +4,7 @@ import com.auth.payload.response.ApiResponse;
 import io.jsonwebtoken.JwtException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -11,6 +12,7 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -24,6 +26,7 @@ import java.util.Map;
 
 @RestController
 @ControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -42,6 +45,35 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(UnauthorizedAccessException.class)
+    public ResponseEntity<ApiResponse<Object>> handleUnauthorizedAccessException(UnauthorizedAccessException ex) {
+        ApiResponse<Object> apiResponse = new ApiResponse<>(
+                "Access Denied",  // The message to show
+                ex.getMessage(),  // Additional details or message from the exception
+                HttpStatus.FORBIDDEN.value() // Set HTTP Status Code (403)
+        );
+        return new ResponseEntity<>(apiResponse, HttpStatus.FORBIDDEN);
+    }
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ApiResponse<Object>> handleRuntimeException(RuntimeException ex) {
+        ApiResponse<Object> apiResponse = new ApiResponse<>(
+                "Error updating user",  // Custom message
+                ex.getMessage(),  // Details from the exception
+                HttpStatus.INTERNAL_SERVER_ERROR.value()  // Set HTTP Status Code (500)
+        );
+        return new ResponseEntity<>(apiResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponse<Object>> handleResourceNotFoundException(ResourceNotFoundException ex) {
+        ApiResponse<Object> apiResponse = new ApiResponse<>(
+                "Resource Not Found",  // Custom message for the exception
+                ex.getMessage(),  // Detailed message from the exception
+                HttpStatus.NOT_FOUND.value()  // Set HTTP Status Code (404)
+        );
+        return new ResponseEntity<>(apiResponse, HttpStatus.NOT_FOUND);
+    }
+
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationExceptions(ConstraintViolationException ex) {
         Map<String, String> errors = new HashMap<>();
@@ -58,13 +90,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<String>> handleBadCredentials(BadCredentialsException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(new ApiResponse<>("Invalid username or password", null, HttpStatus.UNAUTHORIZED.value()));
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<String>> handleGeneralExceptions(Exception ex) {
-        String errorMessage = "An unexpected error occurred: " + ex.getMessage();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ApiResponse<>(errorMessage, null, HttpStatus.INTERNAL_SERVER_ERROR.value()));
     }
 
     @ExceptionHandler(DisabledException.class)
@@ -103,14 +128,12 @@ public class GlobalExceptionHandler {
                 .body(new ApiResponse<>("Unsupported content type: " + ex.getMessage(), null, HttpStatus.UNSUPPORTED_MEDIA_TYPE.value()));
     }
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiResponse<String>> handleResourceNotFoundException(ResourceNotFoundException ex) {
-        ApiResponse<String> response = new ApiResponse<>(
-                ex.getMessage(),
-                null,
-                HttpStatus.NOT_FOUND.value()
-        );
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<String>> handleGeneralExceptions(Exception ex) {
+        String errorMessage = "An unexpected error occurred: " + ex.getMessage();
+        log.error(errorMessage, ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ApiResponse<>(errorMessage, null, HttpStatus.INTERNAL_SERVER_ERROR.value()));
     }
 
 }

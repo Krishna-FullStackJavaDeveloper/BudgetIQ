@@ -72,7 +72,9 @@ public class User {
     @Column(columnDefinition = "TINYINT(1)")
     private boolean twoFactorEnabled = false; // 2FA flag
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    private Long updatedBy;
+
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -83,7 +85,7 @@ public class User {
     @OrderBy("expiryTime DESC") // Fetch the latest OTP first
     private List<OTP> otps = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "family_id")
     private Family family;  // New field to track the family to which this user belongs
 
@@ -101,4 +103,5 @@ public class User {
         this.fullName = fullName;
         this.phoneNumber = phoneNumber;
     }
+
 }

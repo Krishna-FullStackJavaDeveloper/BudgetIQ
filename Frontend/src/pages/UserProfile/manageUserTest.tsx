@@ -200,7 +200,7 @@ const FamilyRow: React.FC<{ familyName: string; members: User[] }> = ({ familyNa
   );
 };
 
-const ManageUser: React.FC = () => {
+const ManageUserTest: React.FC = () => {
   const [usersWithoutFamily, setUsersWithoutFamily] = useState<User[]>([]);
   const [families, setFamilies] = useState<{ [key: string]: { familyId: number, familyName: string, passkey: string, moderatorId: number, users: User[] } }>({});
   const { showNotification } = useNotification();
@@ -561,4 +561,4 @@ const [graphData, setGraphData] = useState<{
   );
 };
 
-export default ManageUser;
+export default ManageUserTest;

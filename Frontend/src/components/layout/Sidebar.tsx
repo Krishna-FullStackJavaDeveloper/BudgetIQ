@@ -1,8 +1,13 @@
 import React from 'react';
-import { Drawer, IconButton, List, ListItem, ListItemText } from '@mui/material';
+import { Box, Divider, Drawer, IconButton, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import DashboardIcon from '@mui/icons-material/Dashboard'; // Example icon
+import SettingsIcon from '@mui/icons-material/Settings'; // Example icon
+import PeopleIcon from '@mui/icons-material/People'; // Example icon
+import ReportIcon from '@mui/icons-material/Report'; // Example icon
+import PersonIcon from '@mui/icons-material/Person'; // Example icon  
 
 interface SidebarProps {
   open: boolean;
@@ -13,6 +18,7 @@ interface SidebarProps {
 interface MenuItem {
   label: string;
   path: string;
+  icon: React.ReactNode;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ open, toggleSidebar, isAuthenticated, roles }) => {
@@ -21,24 +27,24 @@ const Sidebar: React.FC<SidebarProps> = ({ open, toggleSidebar, isAuthenticated,
   // Define different menus based on roles
   const menuItems: Record<string, MenuItem[]> = {
     admin: [
-      { label: 'Dashboard', path: '/dashboard' },
-      { label: 'Manage Users', path: '/manage-users' },
-      { label: 'Reports', path: '/reports' },
-      { label: 'Settings', path: '/settings' },
-      { label: 'My Profile', path: '/my-profile' }
+      { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
+      { label: 'Manage Users', path: '/manage-users', icon: <PeopleIcon /> },
+      { label: 'Reports', path: '/manage-users-test', icon: <ReportIcon /> },
+      { label: 'Settings', path: '/settings', icon: <SettingsIcon /> },
+      { label: 'My Profile', path: '/my-profile', icon: <PersonIcon /> }
     ],
     moderator: [
-      { label: 'Dashboard', path: '/dashboard' },
-      { label: 'Manage Users', path: '/manage-users' },
-      { label: 'Moderation Panel', path: '/moderation' },
-      { label: 'Reports', path: '/reports' },
-      { label: 'My Profile', path: '/my-profile' }
+      { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
+      { label: 'Manage Users', path: '/manage-users', icon: <PeopleIcon /> },
+      { label: 'Moderation Panel', path: '/moderation', icon: <ReportIcon /> },
+      { label: 'Reports', path: '/reports', icon: <ReportIcon /> },
+      { label: 'My Profile', path: '/my-profile', icon: <PersonIcon /> }
     ],
     user: [
-      { label: 'Dashboard', path: '/dashboard' },
-      { label: 'Profile', path: '/profile' },
-      { label: 'Settings', path: '/settings' },
-      { label: 'My Profile', path: '/my-profile' }
+      { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
+      { label: 'Profile', path: '/profile', icon: <PersonIcon /> },
+      { label: 'Settings', path: '/settings', icon: <SettingsIcon /> },
+      { label: 'My Profile', path: '/my-profile', icon: <PersonIcon /> }
     ]
   };
 
@@ -70,37 +76,70 @@ const Sidebar: React.FC<SidebarProps> = ({ open, toggleSidebar, isAuthenticated,
           '& .MuiDrawer-paper': { width: 240, boxSizing: 'border-box' }
         }}
       >
-        {/* Close Button */}
-        <IconButton
-          sx={{ position: 'absolute', top: 20, left: 20, zIndex: 1201 }}
-          onClick={toggleSidebar}
-        >
-          <ChevronLeftIcon />
-        </IconButton>
-
+       {/* Close Button */}
+      <IconButton
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 5,
+          zIndex: 1201,
+          '&:hover': {
+            backgroundColor: 'rgba(255, 255, 255, 0.1)', // Adjust the hover background color
+          },
+        }}
+        onClick={toggleSidebar}
+      >
+        <ChevronLeftIcon />
+        <h4>BudgetIQ</h4> 
+      </IconButton>
+      
+        {/* Divider between icon and menu list */}
+        <Box sx={{ marginTop: '90px' }}> {/* Adjust spacing */}
+          <Divider />
+        </Box>
+        
        {/* Sidebar List */}
-        <List sx={{ marginTop: '80px' }}>
+       <List sx={{ marginTop: '10px' }}>
           {selectedMenu.map((item, index) => (
             <ListItem
               key={index}
               component={RouterLink}
               to={item.path}
-              sx={{ cursor: 'pointer' }}
+              sx={{
+                cursor: 'pointer',
+                color: '#333', // Set the text color
+                '&:hover': {
+                  backgroundColor: '#f5f5f5', // Hover color for the list item
+                  color: '#0077b6', // Hover text color
+                },
+                padding: '12px 16px', // Adjust padding for better spacing
+              }}
               onClick={handleMenuItemClick} // Close sidebar when a menu item is clicked
             >
-              <ListItemText primary={item.label} />
+              <ListItemIcon sx={{ color: '#333' }}>
+                {item.icon} {/* Display icon */}
+              </ListItemIcon>
+              <ListItemText primary={item.label} 
+              sx={{ textAlign: 'left', fontWeight: 500 }} // Ensure text is aligned to the left
+             />
             </ListItem>
           ))}
         </List>
       </Drawer>
 
-      {/* Sidebar Toggle Button */}
+      {/* Sidebar Toggle burger Button */}
       <IconButton
-        sx={{ position: 'absolute', top: 20, left: 20, zIndex: 1200 }}
-        onClick={toggleSidebar}
-      >
-        <MenuIcon />
-      </IconButton>
+      sx={{
+        position: 'fixed', // Make it fixed relative to the viewport
+        top: '10px', // Adjust the top distance from the viewport
+        left: '10px', // Adjust the left distance from the viewport (to prevent any gap)
+        zIndex: 1200, // Ensure it's above other content
+        color: 'white', // Keep the icon color white or adjust accordingly
+      }}
+      onClick={toggleSidebar}
+    >
+      <MenuIcon />
+    </IconButton>
     </>
   );
 };

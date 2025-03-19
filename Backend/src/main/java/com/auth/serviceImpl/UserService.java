@@ -37,7 +37,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final FamilyRepository familyRepository;
-    private final ExecutorService executorService = Executors.newFixedThreadPool(5); // Thread pool for optimization
 
     @Transactional
     public User getUserById(Long id) {
@@ -51,6 +50,7 @@ public class UserService {
 
         return user;
     }
+
 
     @Async
     @Transactional(readOnly = true)
@@ -129,8 +129,6 @@ public class UserService {
             // Handle account status with a default value if null
             if (request.getAccountStatus() != null) {
                 userToUpdate.setAccountStatus(request.getAccountStatus());
-            } else {
-                userToUpdate.setAccountStatus(AccountStatus.ACTIVE);  // Default value when not provided
             }
             // Update roles if provided
             if (request.getRoleIds() != null && !request.getRoleIds().isEmpty()) {

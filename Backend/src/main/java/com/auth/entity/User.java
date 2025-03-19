@@ -74,7 +74,7 @@ public class User {
 
     private Long updatedBy;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -85,7 +85,7 @@ public class User {
     @OrderBy("expiryTime DESC") // Fetch the latest OTP first
     private List<OTP> otps = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "family_id")
     private Family family;  // New field to track the family to which this user belongs
 

@@ -1,10 +1,32 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Box, Card, CardContent, Typography, TextField, Grid, Button, CircularProgress, Checkbox, FormControlLabel, MenuItem, Select, InputLabel, FormControl } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  TextField,
+  Grid,
+  Button,
+  CircularProgress,
+  FormControlLabel,
+  MenuItem,
+  Select,
+  FormControl,
+  Stack,
+  Avatar,
+  Switch,
+  Checkbox,
+  InputLabel,
+  RadioGroup,
+  Radio,
+  FormLabel,
+} from "@mui/material";
+import { useNavigate, useParams } from "react-router-dom";
 import { useNotification } from "../../components/common/useNotification";
 import { getUserDetails } from "../../api/user";
-import EditIcon from '@mui/icons-material/Edit'; // To show edit button
-import SaveIcon from '@mui/icons-material/Save'; // For save button
+import EditIcon from "@mui/icons-material/Edit"; // To show edit button
+import SaveIcon from "@mui/icons-material/Save"; // For save button
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
 const Profile = () => {
   const [userDetails, setUserDetails] = useState<any | null>(null);
@@ -13,10 +35,14 @@ const Profile = () => {
   const [editedDetails, setEditedDetails] = useState<any | null>(null); // For edited values
   const navigate = useNavigate();
   const { showNotification } = useNotification();
-
-  const isFirstLoad = useRef(true);
-  const userId = localStorage.getItem("user");
+  const prevUserIdRef = useRef<string | null>(null);
+  const [accountStatus, setAccountStatus] = useState(
+    userDetails?.accountStatus || ""
+  );
+  // const loginUserId = localStorage.getItem("user");
   const token = localStorage.getItem("token");
+  const { userId } = useParams();
+  const userRoles = JSON.parse(localStorage.getItem("roles") || "[]");
 
   useEffect(() => {
     if (!userId || !token) {
@@ -26,12 +52,14 @@ const Profile = () => {
       return;
     }
 
-    if (isFirstLoad.current) {
+    if (prevUserIdRef.current !== userId) {
       const fetchUserDetails = async () => {
+        setLoading(true);
         try {
           const data = await getUserDetails(userId);
           setUserDetails(data?.data); // Make sure to use the right path for your response data
           setEditedDetails(data?.data); // Initialize the edited details with fetched data
+          console.log(localStorage.getItem("roles"));
         } catch (error) {
           showNotification("Error fetching user data", "error");
         } finally {
@@ -40,7 +68,7 @@ const Profile = () => {
       };
 
       fetchUserDetails();
-      isFirstLoad.current = false;
+      prevUserIdRef.current = userId;
     }
   }, [userId, token, navigate, showNotification]);
 
@@ -70,235 +98,228 @@ const Profile = () => {
       [name]: checked,
     }));
   };
-  
+
+  const handleAccountStatusChange = (event: { target: { value: any } }) => {
+    const { value } = event.target;
+    setEditedDetails((prev: any) => ({
+      ...prev,
+      accountStatus: value,
+    }));
+  };
 
   if (loading) {
-    return <CircularProgress />;
+    return <CircularProgress sx={{ display: "block", margin: "auto" }} />;
+  }
+
+  if (!userDetails) {
+    return <Typography>No user data found</Typography>; // Display this message if no user data is found
   }
 
   return (
-    <Box sx={{ padding: 3, display: "flex", justifyContent: "center" }}>
-      <Card sx={{ width: "100%", maxWidth: 800 }}>
-        <CardContent>
-          <Typography variant="h4" gutterBottom align="center">
-          {isEditing ? editedDetails.username : userDetails.username} profile
-          </Typography>
-          {userDetails ? (
-            <form>
-              <Grid container spacing={2} alignItems="center"  sx={{ mb: 2 }}>
-                <Grid item xs={4}>
-                  <Typography> Full Name</Typography>
-                </Grid>
-                <Grid item xs={8}>
-                  <TextField
-                    fullWidth
-                    name="fullName"
-                    value={isEditing ? editedDetails.fullName : userDetails.fullName}
-                    onChange={handleChange}
-                    disabled={!isEditing}
-                    variant="outlined"
-                    placeholder="Enter full name"
-                  />
-                </Grid>
-              </Grid>
-              <Grid container spacing={2} alignItems="center"  sx={{ mb: 2 }}>
-                <Grid item xs={4}>
-                  <Typography>Username</Typography>
-                </Grid>
-                <Grid item xs={8}>
-                  <TextField
-                    fullWidth
-                    name="username"
-                    value={isEditing ? editedDetails.username : userDetails.username}
-                    onChange={handleChange}
-                    disabled={!isEditing}
-                    variant="outlined"
-                    placeholder="Enter username"
-                  />
-                </Grid>
-              </Grid>
-
-              <Grid container spacing={2} alignItems="center" sx={{ mb: 2 }}>
-                <Grid item xs={4}>
-                  <Typography>Email</Typography>
-                </Grid>
-                <Grid item xs={8}>
-                  <TextField
-                    fullWidth
-                    name="email"
-                    value={isEditing ? editedDetails.email : userDetails.email}
-                    onChange={handleChange}
-                    disabled={!isEditing}
-                    variant="outlined"
-                    placeholder="Enter email"
-                  />
-                </Grid>
-              </Grid>
-              <Grid container spacing={2} alignItems="center" sx={{ mb: 2 }}>
-                <Grid item xs={4}>
-                  <Typography>Phone Number</Typography>
-                </Grid>
-                <Grid item xs={8}>
-                  <TextField
-                    fullWidth
-                    name="phoneNumber"
-                    value={isEditing ? editedDetails.phoneNumber : userDetails.phoneNumber}
-                    onChange={handleChange}
-                    disabled={!isEditing}
-                    variant="outlined"
-                    placeholder="Enter phone number"
-                  />
-                </Grid>
-              </Grid>
-              <Grid container spacing={2} alignItems="center"  sx={{ mb: 2 }}>
-                <Grid item xs={4}>
-                  <Typography>Account Status</Typography>
-                </Grid>
-                <Grid item xs={8}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={isEditing ? editedDetails.accountStatus : userDetails.accountStatus === "ACTIVE"}
-                        onChange={handleCheckboxChange}
-                        name="accountStatus"
-                        // disabled={!isEditing} -- only when update user status.
-                        disabled
-                      />
-                    }
-                    label="Active"
-                  />
-                </Grid>
-              </Grid>
-              <Grid container spacing={2} alignItems="center"  sx={{ mb: 2 }}>
-                <Grid item xs={4}>
-                  <Typography>Created At</Typography>
-                </Grid>
-                <Grid item xs={8}>
-                  <TextField
-                    fullWidth
-                    value={userDetails.createdAt}
-                    disabled
-                    variant="outlined"
-                    InputProps={{
-                      readOnly: true,
-                    }}
-                  />
-                </Grid>
-              </Grid>
-
-              <Grid container spacing={2} alignItems="center"  sx={{ mb: 2 }}>
-                <Grid item xs={4}>
-                  <Typography>Updated At</Typography>
-                </Grid>
-                <Grid item xs={8}>
-                  <TextField
-                    fullWidth
-                    value={userDetails.updatedAt}
-                    disabled
-                    variant="outlined"
-                    InputProps={{
-                      readOnly: true,
-                    }}
-                  />
-                </Grid>
-              </Grid>
-
-              <Grid container spacing={2} alignItems="center"  sx={{ mb: 2 }}>
-                <Grid item xs={4}>
-                  <Typography>Last Login</Typography>
-                </Grid>
-                <Grid item xs={8}>
-                  <TextField
-                    fullWidth
-                    value={userDetails.lastLogin}
-                    disabled
-                    variant="outlined"
-                    InputProps={{
-                      readOnly: true,
-                    }}
-                  />
-                </Grid>
-              </Grid>
-                
-              <Grid container spacing={2} alignItems="center"  sx={{ mb: 2 }}>
-                <Grid item xs={4}>
-                  <Typography>Profile Picture</Typography>
-                </Grid>
-                <Grid item xs={8}>
-                  <img
-                    src={userDetails.profilePic || "default.jpg"}
-                    alt="Profile"
-                    style={{ width: 100, height: 100, borderRadius: "50%", marginBottom: "20px" }}
-                  />
-                </Grid>
-              </Grid>
-
-              <Grid container spacing={2} alignItems="center"  sx={{ mb: 2 }}>
-                <Grid item xs={4}>
-                  <Typography>Two-Factor Authentication</Typography>
-                </Grid>
-                <Grid item xs={8}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={isEditing ? editedDetails.twoFactorEnabled : userDetails.twoFactorEnabled}
-                        onChange={handleCheckboxChange}
-                        name="twoFactorEnabled"
-                        disabled={!isEditing}
-                      />
-                    }
-                    label="Enabled"
-                  />
-                </Grid>
-              </Grid>
-              <Grid container spacing={2} alignItems="center"  sx={{ mb: 2 }}>
-                <Grid item xs={4}>
-                  <Typography>Roles</Typography>
-                </Grid>
-                <Grid item xs={8}>
-                  <FormControl fullWidth disabled>
-                    {/* <InputLabel>Roles</InputLabel> */}
-                    <Select value={userDetails.roles[0]}>
-                      <MenuItem value="ROLE_USER">ROLE_USER</MenuItem>
-                      <MenuItem value="ROLE_ADMIN">ROLE_ADMIN</MenuItem>
-                      <MenuItem value="ROLE_MODERATOR">ROLE_MODERATOR</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-              </Grid>
-              
-              <Grid container spacing={2} justifyContent="center"  sx={{ mb: 2 }}>
-                <Grid item>
-                  {isEditing ? (
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={handleSave}
-                      sx={{ display: "flex", alignItems: "center" }}
-                    >
-                      <SaveIcon sx={{ marginRight: "8px" }} />
-                      Save Changes
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outlined"
-                      color="secondary"
-                      onClick={handleEdit}
-                      sx={{ display: "flex", alignItems: "center" }}
-                    >
-                      <EditIcon sx={{ marginRight: "8px" }} />
-                      Edit Profile
-                    </Button>
-                  )}
-                </Grid>
-              </Grid>
-            </form>
+    <>
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 4, mb: 6 }}>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 4, mt: 4 }}>
+          {isEditing ? (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSave}
+              startIcon={<SaveIcon sx={{ mb: 1.4 }} />}
+              sx={{ padding: "1px 12px", borderRadius: "10px" }}
+            >
+              Save
+            </Button>
           ) : (
-            <Typography>No user data found</Typography>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={handleEdit}
+              startIcon={<EditIcon sx={{ mb: 1.4 }} />}
+              sx={{ padding: "1px 12px", borderRadius: "10px" }}
+            >
+              Edit
+            </Button>
           )}
-        </CardContent>
-      </Card>
-    </Box>
+        </Box>
+        <Card
+          sx={{ width: "100%", maxWidth: 600, boxShadow: 5, borderRadius: 3 }}
+        >
+          <CardContent>
+            <Stack alignItems="center" spacing={2}>
+              <Avatar
+                src={userDetails?.profilePic || "default.jpg"}
+                sx={{ width: 100, height: 100 }}
+              >
+                <AccountCircleIcon fontSize="large" />
+              </Avatar>
+              <Typography variant="h5" fontWeight={600}>
+                {userDetails?.username}
+              </Typography>
+            </Stack>
+
+            <Grid container spacing={2} mt={2}>
+              {["fullName", "username", "email", "phoneNumber"].map((field) => (
+                <Grid item xs={12} key={field}>
+                  <TextField
+                    fullWidth
+                    name={field}
+                    label={field
+                      .replace(/([A-Z])/g, " $1")
+                      .replace(/^./, (str) => str.toUpperCase())}
+                    value={
+                      isEditing ? editedDetails?.[field] : userDetails?.[field]
+                    }
+                    onChange={handleChange}
+                    disabled={!isEditing}
+                    variant="outlined"
+                  />
+                </Grid>
+              ))}
+              <Grid item container xs={6}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={
+                        isEditing
+                          ? editedDetails.twoFactorEnabled
+                          : userDetails.twoFactorEnabled
+                      }
+                      onChange={handleCheckboxChange}
+                      name="twoFactorEnabled"
+                      disabled={!isEditing}
+                    />
+                  }
+                  label="Two-Factor Authentication"
+                  sx={{
+                    "& .MuiFormControlLabel-label": {
+                      whiteSpace: "nowrap", // Prevent label text from wrapping
+                      fontSize: "16px", // Adjust label font size
+                      color: "#333", // Label text color
+                    },
+                    marginBottom: 0, // Ensure no extra margin at the bottom
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <FormControl
+                  fullWidth
+                  disabled={
+                    !(
+                      userRoles.includes("ROLE_ADMIN") ||
+                      userRoles.includes("ROLE_MODERATOR")
+                    ) || !isEditing
+                  }
+                >
+                  <Select
+                    value={editedDetails?.roles?.[0] || userDetails?.roles?.[0]} // Ensure the selected role is updated during editing
+                    onChange={(e) => {
+                      const newRole = e.target.value;
+                      setEditedDetails((prevDetails: any) => ({
+                        ...prevDetails,
+                        roles: [newRole], // Update the role when the user selects a new one
+                      }));
+                    }}
+                  >
+                    {/* Show available roles in the menu */}
+                    <MenuItem value="ROLE_USER">ROLE_USER</MenuItem>
+                    <MenuItem value="ROLE_ADMIN">ROLE_ADMIN</MenuItem>
+                    <MenuItem value="ROLE_MODERATOR">ROLE_MODERATOR</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              {["createdAt", "updatedAt", "lastLogin"].map((field) => (
+                <Grid item xs={12} key={field}>
+                  <TextField
+                    fullWidth
+                    name={field}
+                    label={field
+                      .replace(/([A-Z])/g, " $1")
+                      .replace(/^./, (str) => str.toUpperCase())}
+                    value={userDetails?.[field]}
+                    disabled
+                    variant="outlined"
+                  />
+                </Grid>
+              ))}
+
+              <Grid item xs={12} sx={{ display: "flex", alignItems: "center" }}>
+                {userRoles.includes("ROLE_ADMIN") ||
+                userRoles.includes("ROLE_MODERATOR") ? (
+                  <FormControl component="fieldset">
+                    <FormLabel id="demo-radio-buttons-group-label">
+                      Account Status
+                    </FormLabel>
+                    <RadioGroup
+                      row
+                      value={
+                        isEditing
+                          ? editedDetails.accountStatus
+                          : userDetails.accountStatus
+                      } // Dynamically set
+                      onChange={handleAccountStatusChange}
+                    >
+                      {["ACTIVE", "INACTIVE", "SUSPENDED", "DEACTIVATED"].map(
+                        (status) => (
+                          <FormControlLabel
+                            key={status}
+                            value={status}
+                            control={<Radio sx={{ mb: 1.4 }} />}
+                            label={
+                              status.charAt(0) + status.slice(1).toLowerCase()
+                            } // Capitalize first letter
+                            disabled={!isEditing} // Disable unless editing
+                            sx={{ padding: "1px 12px" }}
+                          />
+                        )
+                      )}
+                    </RadioGroup>
+                  </FormControl>
+                ) : (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={userDetails?.accountStatus === "ACTIVE"}
+                        disabled // Users cannot modify
+                        onChange={handleAccountStatusChange}
+                      />
+                    }
+                    label={
+                      userDetails?.accountStatus?.trim().toUpperCase() === "ACTIVE"
+                        ? "Account Active"
+                        : "Account Inactive"
+                    }
+                  />
+                )}
+              </Grid>
+            </Grid>
+            {/* <Stack direction="row" spacing={2} justifyContent="center" mt={3}>
+              {isEditing ? (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleSave}
+                  startIcon={<SaveIcon sx={{ mb: 1.4 }} />}
+                  sx={{ padding: "1px 12px", borderRadius: "10px" }}
+                >
+                  Save
+                </Button>
+              ) : (
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={handleEdit}
+                  startIcon={<EditIcon sx={{ mb: 1.4 }} />}
+                  sx={{ padding: "1px 12px", borderRadius: "10px" }}
+                >
+                  Edit
+                </Button>
+              )}
+            </Stack> */}
+          </CardContent>
+        </Card>
+      </Box>
+    </>
   );
 };
 

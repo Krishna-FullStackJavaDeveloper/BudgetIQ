@@ -24,6 +24,7 @@ interface MenuItem {
 const Sidebar: React.FC<SidebarProps> = ({ open, toggleSidebar, isAuthenticated, roles }) => {
   if (!isAuthenticated) return null; // Hide sidebar if not authenticated
   if (!roles) return null;
+  const userId = localStorage.getItem('user') || ''; 
   // Define different menus based on roles
   const menuItems: Record<string, MenuItem[]> = {
     admin: [
@@ -31,20 +32,20 @@ const Sidebar: React.FC<SidebarProps> = ({ open, toggleSidebar, isAuthenticated,
       { label: 'Manage Users', path: '/manage-users', icon: <PeopleIcon /> },
       { label: 'Reports', path: '/manage-users-test', icon: <ReportIcon /> },
       { label: 'Settings', path: '/settings', icon: <SettingsIcon /> },
-      { label: 'My Profile', path: '/my-profile', icon: <PersonIcon /> }
+      { label: 'My Profile', path: `/edit-user/${userId}`, icon: <PersonIcon /> }
     ],
     moderator: [
       { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
       { label: 'Manage Users', path: '/manage-users', icon: <PeopleIcon /> },
       { label: 'Moderation Panel', path: '/moderation', icon: <ReportIcon /> },
       { label: 'Reports', path: '/reports', icon: <ReportIcon /> },
-      { label: 'My Profile', path: '/my-profile', icon: <PersonIcon /> }
+      { label: 'My Profile', path: `/edit-user/${userId}`, icon: <PersonIcon /> }
     ],
     user: [
       { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
       { label: 'Profile', path: '/profile', icon: <PersonIcon /> },
       { label: 'Settings', path: '/settings', icon: <SettingsIcon /> },
-      { label: 'My Profile', path: '/my-profile', icon: <PersonIcon /> }
+      { label: 'My Profile', path: `/edit-user/${userId}`, icon: <PersonIcon /> }
     ]
   };
 

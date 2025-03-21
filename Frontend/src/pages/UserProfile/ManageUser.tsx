@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {TableContainer, Box, IconButton, Paper, Table, TableBody, TableRow, TableCell, TableFooter, TablePagination, TableHead, Typography, Card, CardContent, Grid } from "@mui/material";
 import { useNotification } from "../../components/common/useNotification";
 import { useNavigate } from "react-router-dom";
-import { getUsersForAdmin, getUsersForFamilyAdmin } from "../../api/user";
+import { getUserDetails, getUsersForAdmin, getUsersForFamilyAdmin } from "../../api/user";
 import { KeyboardArrowDown, KeyboardArrowUp, Visibility } from "@mui/icons-material";
 import { Edit } from "@mui/icons-material";
 import { Line } from "react-chartjs-2"; // Import Chart.js for graph
@@ -16,8 +16,6 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { blue, cyan, deepPurple, green, grey, lightBlue, lightGreen, orange, pink, purple, red, teal, yellow } from "@mui/material/colors";
-
 // Register required components
 ChartJS.register(
   CategoryScale,
@@ -53,16 +51,11 @@ interface ApiResponse {
       // navigate(`/edit-user/${row.id}`);
       console.log("edit user details");
     };
-
-    const handleViewClick = () => {
-      // Logic to display user details in a modal or separate page
-      console.log("View user details");
-    };
-
-const Row: React.FC<{ row: User }> = ({ row }) => {
-  const [open, setOpen] = React.useState(false);
   
-
+   
+const Row: React.FC<{ row: User; handleViewClick: (id: string) => void}> = ({ row, handleViewClick }) => {
+  const [open, setOpen] = React.useState(false);
+ 
   return (
     <>
       <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
@@ -84,7 +77,7 @@ const Row: React.FC<{ row: User }> = ({ row }) => {
             <Edit sx={{ fontSize: '1.2rem' }}/>
           </IconButton>
           {/* Add View Icon here */}
-          <IconButton onClick={handleViewClick} sx={{ color: 'black' }}>
+          <IconButton onClick={() => handleViewClick(String(row.id))}  sx={{ color: 'black' }}>
             <Visibility sx={{ fontSize: '1.2rem' }} />
           </IconButton>
         </TableCell>
@@ -124,7 +117,7 @@ const Row: React.FC<{ row: User }> = ({ row }) => {
   );
 };
 
-const FamilyRow: React.FC<{ familyName: string; members: User[] }> = ({ familyName, members }) => {
+const FamilyRow: React.FC<{ familyName: string; members: User[]; handleViewClick: (id: string) => void}> = ({ familyName, members,  handleViewClick }) => {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -143,7 +136,7 @@ const FamilyRow: React.FC<{ familyName: string; members: User[] }> = ({ familyNa
                         <Edit sx={{ fontSize: '1.2rem' }}/>
                       </IconButton>
                       {/* Add View Icon here */}
-                      <IconButton onClick={handleViewClick} sx={{ color: 'black' }}>
+                      <IconButton onClick={handleEditClick}  sx={{ color: 'black' }}>
                         <Visibility sx={{ fontSize: '1.2rem' }} />
                       </IconButton>
         </TableCell>
@@ -176,14 +169,16 @@ const FamilyRow: React.FC<{ familyName: string; members: User[] }> = ({ familyNa
                         <TableCell>{member.email}</TableCell>
                         <TableCell>{member.accountStatus}</TableCell>
                         <TableCell align="center">{member.twoFactorEnabled ? "✓" : "✘"}</TableCell>
-                        <TableCell>{member.roles.join(", ")}</TableCell>
+                        <TableCell>
+                        {member.roles.map(role => role.replace("ROLE_", "").toLowerCase().replace(/\b\w/g, c => c.toUpperCase())).join(", ")}
+                        </TableCell>
                         <TableCell>
                         {/* Add Edit Icon here */}
                         <IconButton onClick={handleEditClick}  sx={{ color: 'black' }}>
                           <Edit sx={{ fontSize: '1.2rem' }}/>
                         </IconButton>
                         {/* Add View Icon here */}
-                        <IconButton onClick={handleViewClick} sx={{ color: 'black' }}>
+                        <IconButton onClick={() => handleViewClick(String(member.id))}  sx={{ color: 'black' }}>
                           <Visibility sx={{ fontSize: '1.2rem' }} />
                         </IconButton>
                       </TableCell>
@@ -237,6 +232,16 @@ const [graphData, setGraphData] = useState<{
       },
     ],
   });
+
+  const handleViewClick = async (userId: string) => {
+    try {
+      navigate(`/edit-user/${userId}`);
+      // Here, you can update the state or open a modal with user details
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+    }
+  };
+
 
 
   useEffect(() => {
@@ -325,9 +330,6 @@ const [graphData, setGraphData] = useState<{
       familyNames.push("No Family");
       usersCount.push(usersWithoutFamily.length);
     }
-  
-    // Log the data for debugging
-    console.log(familyNames, usersCount);
   
     setGraphData({
       labels: familyNames,
@@ -486,7 +488,7 @@ const [graphData, setGraphData] = useState<{
                       </TableHead>
                       <TableBody>
                           {usersWithoutFamily.slice(userPage * userRowsPerPage, userPage * userRowsPerPage + userRowsPerPage).map((user) => (
-                              <Row key={user.id} row={user} />
+                              <Row key={user.id} row={user}  handleViewClick={handleViewClick} />
                           ))}
                       </TableBody>
                       <TableFooter>
@@ -534,7 +536,7 @@ const [graphData, setGraphData] = useState<{
           {Object.keys(families)
               .slice(familyPage * familyRowsPerPage, familyPage * familyRowsPerPage + familyRowsPerPage)
               .map((familyName) => (
-                <FamilyRow key={familyName} familyName={familyName} members={families[familyName].users} />
+                <FamilyRow key={familyName} familyName={familyName} members={families[familyName].users}  handleViewClick={handleViewClick} />
               ))}
           </TableBody>
           <TableFooter 

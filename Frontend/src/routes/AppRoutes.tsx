@@ -28,9 +28,9 @@ const AppRoutes = () => {
         <Route path="/" element={<LandingPage />} />
 
       {/* User Profilepage */}
-      <Route path="/my-profile" element={<Profile />} />
+      <Route path="/edit-user/:userId" element={<Profile />} />
       <Route path="/manage-users" element={<UserOrg />} />
-      <Route path="/manage-users-test" element={<ManageUserTest />} />
+      <Route path="/manage-users-test/:userId" element={<ManageUserTest />} />
       </Routes>
   );
 };

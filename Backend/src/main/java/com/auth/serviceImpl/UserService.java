@@ -131,17 +131,20 @@ public class UserService {
                 userToUpdate.setAccountStatus(request.getAccountStatus());
             }
             // Update roles if provided
-            if (request.getRoleIds() != null && !request.getRoleIds().isEmpty()) {
-                List<Role> updatedRoles = roleRepository.findAllById(request.getRoleIds());
-                if (updatedRoles.size() != request.getRoleIds().size()) {
-                    throw new InvalidRoleException("Some roles are invalid or do not exist.");
+            if (request.getRole() != null && !request.getRole().isEmpty()) {
+                Set<Role> updatedRoles = new HashSet<>();
+
+                for (String roleName : request.getRole()) {
+                    Role role = roleRepository.findByName(ERole.valueOf(roleName))
+                            .orElseThrow(() -> new InvalidRoleException("Role " + roleName + " does not exist."));
+                    updatedRoles.add(role);
                 }
 
                 // Check if the updater is an ADMIN
                 if (loggedInUser.getRoles().stream()
                         .anyMatch(role -> role.getName().equals(ERole.ROLE_ADMIN))) {
                     // Admin can change any family member's role
-                    userToUpdate.setRoles(new HashSet<>(updatedRoles));
+                    userToUpdate.setRoles(updatedRoles);
 
                     // Check if the new role being assigned is MODERATOR
                     if (updatedRoles.stream().anyMatch(role -> role.getName().equals(ERole.ROLE_MODERATOR))) {
@@ -173,7 +176,7 @@ public class UserService {
                     }
 
                     // Moderator can only update roles within their own family
-                    userToUpdate.setRoles(new HashSet<>(updatedRoles));
+                    userToUpdate.setRoles(updatedRoles);
 
                     // Check if the new role being assigned is MODERATOR
                     if (updatedRoles.stream().anyMatch(role -> role.getName().equals(ERole.ROLE_MODERATOR))) {

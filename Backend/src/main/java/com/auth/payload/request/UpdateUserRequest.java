@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -30,7 +31,9 @@ public class UpdateUserRequest {
 
     private Boolean twoFactorEnabled; // Boolean can be null, making it optional
 
-    private List<Long> roleIds; // Optional list of role IDs
+    private Set<String> role; // Updated to Set<String> for roles
 
     private AccountStatus accountStatus;
+
+
 }

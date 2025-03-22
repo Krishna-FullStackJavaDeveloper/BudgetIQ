@@ -17,6 +17,7 @@ import com.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +38,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final FamilyRepository familyRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public User getUserById(Long id) {
@@ -105,31 +107,64 @@ public class UserService {
             }
 
             // Prevent the user from updating their own role
-            if (loggedInUser.getId().equals(userToUpdate.getId())) {
-                log.warn("User with ID: {} attempted to change their own role.", loginUser);
-                throw new UnauthorizedAccessException("You are not allowed to change your own role.");
+            if (loggedInUser.getRoles().stream().anyMatch(role -> role.getName() == ERole.ROLE_USER)) {
+                // Only check this condition if roles are different
+                Set<String> userRoles = userToUpdate.getRoles().stream()
+                        .map(role -> role.getName().name()) // Assuming getName() returns an ERole enum
+                        .collect(Collectors.toSet());
+
+                // Only check this condition if roles are different
+                if (request.getRole() != null && !request.getRole().equals(userRoles)) {
+                    if (loggedInUser.getId().equals(userToUpdate.getId())) {
+                        log.warn("User with ID: {} attempted to change their own role.", loginUser);
+                        throw new UnauthorizedAccessException("You are not allowed to change your own role.");
+                    }
+                }
             }
 
             // Check if username or email already exists
-            if (request.getUsername() != null && userRepository.findByUsername(request.getUsername()).isPresent()) {
-                throw new DuplicateResourceException("Username is already taken");
+            if (request.getUsername() != null && !request.getUsername().equals(userToUpdate.getUsername())) {
+                // Check if the new username already exists in the database
+                if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+                    throw new DuplicateResourceException("Username is already taken");
+                }
             }
-            if (request.getEmail() != null && userRepository.findByEmail(request.getEmail()).isPresent()) {
-                throw new DuplicateResourceException("Email is already in use");
+            if (request.getEmail() != null && !request.getEmail().equals(userToUpdate.getEmail())) {
+                // Check if the new email already exists in the database
+                if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+                    throw new DuplicateResourceException("Email is already in use");
+                }
             }
 
             // Update fields if present
-            if (request.getUsername() != null) userToUpdate.setUsername(request.getUsername());
-            if (request.getEmail() != null) userToUpdate.setEmail(request.getEmail());
-            if (request.getFullName() != null) userToUpdate.setFullName(request.getFullName());
-            if (request.getPhoneNumber() != null) userToUpdate.setPhoneNumber(request.getPhoneNumber());
-            if (request.getPassword() != null) userToUpdate.setPassword(request.getPassword());
-            if (request.getTwoFactorEnabled() != null) userToUpdate.setTwoFactorEnabled(request.getTwoFactorEnabled());
+            if (request.getUsername() != null && !request.getUsername().equals(userToUpdate.getUsername()) &&
+                    userRepository.findByUsername(request.getUsername()).isEmpty()) {
+                userToUpdate.setUsername(request.getUsername());
+            }
 
-            // Handle account status with a default value if null
-            if (request.getAccountStatus() != null) {
+            if (request.getEmail() != null && !request.getEmail().equals(userToUpdate.getEmail()) &&
+                    userRepository.findByEmail(request.getEmail()).isEmpty()) {
+                userToUpdate.setEmail(request.getEmail());
+            }
+            if (request.getFullName() != null && !request.getFullName().equals(userToUpdate.getFullName())) {
+                userToUpdate.setFullName(request.getFullName());
+            }
+            if (request.getPassword() != null && !passwordEncoder.matches(request.getPassword(), userToUpdate.getPassword())) {
+                userToUpdate.setPassword(passwordEncoder.encode(request.getPassword()));
+            }
+
+            if (request.getPhoneNumber() != null && !request.getPhoneNumber().equals(userToUpdate.getPhoneNumber())) {
+                userToUpdate.setPhoneNumber(request.getPhoneNumber());
+            }
+
+            if (request.getTwoFactorEnabled() != null && !request.getTwoFactorEnabled().equals(userToUpdate.isTwoFactorEnabled())) {
+                userToUpdate.setTwoFactorEnabled(request.getTwoFactorEnabled());
+            }
+
+            if (request.getAccountStatus() != null && !request.getAccountStatus().equals(userToUpdate.getAccountStatus())) {
                 userToUpdate.setAccountStatus(request.getAccountStatus());
             }
+
             // Update roles if provided
             if (request.getRole() != null && !request.getRole().isEmpty()) {
                 Set<Role> updatedRoles = new HashSet<>();

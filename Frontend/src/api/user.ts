@@ -65,3 +65,27 @@ export const getUsersForFamilyAdmin = async (userId: string) => {
     throw new Error("Failed to fetch user details");
   }
   };
+
+// Update user profile
+export const updateUser = async (userId: string, logginUser: string, updatedDetails: any) => {
+  try {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      throw new Error("User is not authenticated");
+    }
+
+    const response = await axios.put(
+      `${API_URL}/update/${userId}?updatedById=${logginUser}`, // Fixed closing parenthesis here
+      updatedDetails,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error("Error updating profile");
+  }
+};

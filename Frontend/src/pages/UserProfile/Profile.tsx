@@ -14,16 +14,14 @@ import {
   FormControl,
   Stack,
   Avatar,
-  Switch,
   Checkbox,
-  InputLabel,
   RadioGroup,
   Radio,
   FormLabel,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import { useNotification } from "../../components/common/useNotification";
-import { getUserDetails } from "../../api/user";
+import { getUserDetails, updateUser } from "../../api/user";
 import EditIcon from "@mui/icons-material/Edit"; // To show edit button
 import SaveIcon from "@mui/icons-material/Save"; // For save button
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
@@ -36,16 +34,14 @@ const Profile = () => {
   const navigate = useNavigate();
   const { showNotification } = useNotification();
   const prevUserIdRef = useRef<string | null>(null);
-  const [accountStatus, setAccountStatus] = useState(
-    userDetails?.accountStatus || ""
-  );
+  const LoginUserID = localStorage.getItem("user");
   // const loginUserId = localStorage.getItem("user");
   const token = localStorage.getItem("token");
   const { userId } = useParams();
   const userRoles = JSON.parse(localStorage.getItem("roles") || "[]");
 
   useEffect(() => {
-    if (!userId || !token) {
+    if (!userId || !token || !LoginUserID) {
       // console.error("Please login to access your profile");
       showNotification("Please login to access your profile", "error");
       navigate("/login");
@@ -59,7 +55,7 @@ const Profile = () => {
           const data = await getUserDetails(userId);
           setUserDetails(data?.data); // Make sure to use the right path for your response data
           setEditedDetails(data?.data); // Initialize the edited details with fetched data
-          console.log(localStorage.getItem("roles"));
+     
         } catch (error) {
           showNotification("Error fetching user data", "error");
         } finally {
@@ -70,17 +66,32 @@ const Profile = () => {
       fetchUserDetails();
       prevUserIdRef.current = userId;
     }
-  }, [userId, token, navigate, showNotification]);
+  }, [userId, token, navigate, showNotification, LoginUserID]);
 
   const handleEdit = () => {
     setIsEditing(true);
   };
 
-  const handleSave = () => {
-    // Logic to save updated details (e.g., API call to update user data)
-    setUserDetails(editedDetails); // Update the userDetails with the editedDetails
-    showNotification("Profile updated successfully", "success");
-    setIsEditing(false); // Exit edit mode after saving
+  const handleSave = async () => {
+    if (!token || !editedDetails || !LoginUserID || !userId) {
+      showNotification("Error: Missing details or authentication", "error");
+      return;
+    }
+
+    try {
+      const updatedUser = await updateUser(userId, LoginUserID, editedDetails); 
+      setUserDetails(updatedUser);
+      showNotification("Profile updated successfully", "success");
+      setIsEditing(false); // Exit edit mode
+      
+       // Re-fetch user details to show the latest data after update
+    const data = await getUserDetails(userId);
+    setUserDetails(data?.data); // Update with the latest data
+    setEditedDetails(data?.data); // Sync the edited details with the latest data
+      
+    } catch (error) {
+      showNotification("Error updating profile", "error")
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,7 +119,14 @@ const Profile = () => {
   };
 
   if (loading) {
-    return <CircularProgress sx={{ display: "block", margin: "auto" }} />;
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+        <CircularProgress sx={{ display: "block", margin: "auto" }} />
+        <Typography variant="body2" color="textSecondary" sx={{ textAlign: "center", mt: 2 }}>
+          Fetching user details...
+        </Typography>
+      </Box>
+    );
   }
 
   if (!userDetails) {
@@ -158,7 +176,7 @@ const Profile = () => {
             </Stack>
 
             <Grid container spacing={2} mt={2}>
-              {["fullName", "username", "email", "phoneNumber"].map((field) => (
+              {["fullName", "username", "email", "password", "phoneNumber"].map((field) => (
                 <Grid item xs={12} key={field}>
                   <TextField
                     fullWidth
@@ -293,29 +311,6 @@ const Profile = () => {
                 )}
               </Grid>
             </Grid>
-            {/* <Stack direction="row" spacing={2} justifyContent="center" mt={3}>
-              {isEditing ? (
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleSave}
-                  startIcon={<SaveIcon sx={{ mb: 1.4 }} />}
-                  sx={{ padding: "1px 12px", borderRadius: "10px" }}
-                >
-                  Save
-                </Button>
-              ) : (
-                <Button
-                  variant="outlined"
-                  color="secondary"
-                  onClick={handleEdit}
-                  startIcon={<EditIcon sx={{ mb: 1.4 }} />}
-                  sx={{ padding: "1px 12px", borderRadius: "10px" }}
-                >
-                  Edit
-                </Button>
-              )}
-            </Stack> */}
           </CardContent>
         </Card>
       </Box>

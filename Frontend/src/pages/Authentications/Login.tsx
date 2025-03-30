@@ -62,21 +62,50 @@ const Login = () => {
 
   return (
     <>
-    <Box className="login-container">
-    <Card className="login-card">
+     {/* <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(135deg, #ece9e6, #ffffff)",
+      }}
+    > */}
+    <Card
+        sx={{
+          width: 350,
+          padding: 3,
+          borderRadius: "12px",
+          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+          background: "#fff",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "40vh", // This makes sure the card is centered vertically
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)", // Centers the card in the middle of the page
+        }}
+      >
       <CardContent>
-        <Typography variant="h5" gutterBottom className="login-header">
-          Login
-        </Typography>
+        <Typography variant="h5" gutterBottom align="center" sx={{ fontWeight: "bold", color: "#333" }}>
+            Welcome Back!
+          </Typography>
+          <Typography variant="body2" align="center" sx={{ color: "#666", mb: 3 }}>
+            Sign in to your account
+          </Typography>
         
         <form onSubmit={handleSubmit}>
           <TextField
-            label="Username"
+            label="Username or Email Address"
             variant="outlined"
             fullWidth
             margin="normal"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            // helperText="You can use either your username or email to log in."
+            // sx={{mb:0}}
           />
            <TextField
               label="Password"
@@ -100,12 +129,21 @@ const Login = () => {
             Login
           </Button>
         </form>
-        <Typography variant="body2" sx={{ textAlign: 'center', marginTop: 2 }}>
-            Don&apos;t have an account? <Link to="/sign-up">Sign up</Link>
+        <Typography variant="body2" align="center" sx={{ mt: 2, color: "#555" }}>
+            Don't have an account?{" "}
+            <Link to="/signup" style={{ color: "#1976d2", fontWeight: "bold", textDecoration: "none" }}>
+              Sign up
+            </Link>
+          </Typography>
+
+          <Typography variant="body2" align="center" sx={{ mt: 1, color: "#1976d2" }}>
+            <Link to="/forgot-password" style={{ color: "#1976d2" , textDecoration: "none", fontWeight: "bold" }}>
+              Forgot your password?
+            </Link>
           </Typography>
       </CardContent>
     </Card>
-  </Box>
+  {/* </Box> */}
   <NotificationComponent />
     </>
   );

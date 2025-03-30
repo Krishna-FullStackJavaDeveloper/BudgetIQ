@@ -10,6 +10,8 @@ import ModeratorDashboard from "../pages/Dashboards/ModeratorDashboar";
 import Profile from "../pages/UserProfile/Profile";
 import UserOrg from "../pages/UserProfile/ManageUser";
 import ManageUserTest from "../pages/UserProfile/manageUserTest";
+import ForgotPassword from "../pages/Authentications/ForgotPassword";
+import ResetPassword from "../pages/Authentications/ResetPassword";
 
 const AppRoutes = () => {
   return (
@@ -19,6 +21,8 @@ const AppRoutes = () => {
         <Route path="/login" element={<Login />} /> {/* Update path to "/login" */}
         <Route path="/signup" element={<Signup />} />
         <Route path="/verify-otp" element={<VerifyOtp />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
       {/* Dashboard */}
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
@@ -31,6 +35,7 @@ const AppRoutes = () => {
       <Route path="/edit-user/:userId" element={<Profile />} />
       <Route path="/manage-users" element={<UserOrg />} />
       <Route path="/manage-users-test/:userId" element={<ManageUserTest />} />
+      <Route path="/create_user" element={<Signup />} />
       </Routes>
   );
 };

@@ -7,7 +7,8 @@ import DashboardIcon from '@mui/icons-material/Dashboard'; // Example icon
 import SettingsIcon from '@mui/icons-material/Settings'; // Example icon
 import PeopleIcon from '@mui/icons-material/People'; // Example icon
 import ReportIcon from '@mui/icons-material/Report'; // Example icon
-import PersonIcon from '@mui/icons-material/Person'; // Example icon  
+import PersonIcon from '@mui/icons-material/Person'; 
+import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 
 interface SidebarProps {
   open: boolean;
@@ -28,21 +29,22 @@ const Sidebar: React.FC<SidebarProps> = ({ open, toggleSidebar, isAuthenticated,
   // Define different menus based on roles
   const menuItems: Record<string, MenuItem[]> = {
     admin: [
-      { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
+      { label: 'Dashboard', path: '/admin-dashboard', icon: <DashboardIcon /> },
+      { label: 'Create User', path: '/create_user', icon: <PersonAddAltIcon /> },
       { label: 'Manage Users', path: '/manage-users', icon: <PeopleIcon /> },
       { label: 'Reports', path: '/manage-users-test', icon: <ReportIcon /> },
       { label: 'Settings', path: '/settings', icon: <SettingsIcon /> },
       { label: 'My Profile', path: `/edit-user/${userId}`, icon: <PersonIcon /> }
     ],
     moderator: [
-      { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
+      { label: 'Dashboard', path: '/moderator-dashboard', icon: <DashboardIcon /> },
+      { label: 'Create User', path: '/create_user', icon: <PersonAddAltIcon /> },
       { label: 'Manage Users', path: '/manage-users', icon: <PeopleIcon /> },
-      { label: 'Moderation Panel', path: '/moderation', icon: <ReportIcon /> },
       { label: 'Reports', path: '/reports', icon: <ReportIcon /> },
       { label: 'My Profile', path: `/edit-user/${userId}`, icon: <PersonIcon /> }
     ],
     user: [
-      { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
+      { label: 'Dashboard', path: '/user-dashboard', icon: <DashboardIcon /> },
       { label: 'Profile', path: '/profile', icon: <PersonIcon /> },
       { label: 'Settings', path: '/settings', icon: <SettingsIcon /> },
       { label: 'My Profile', path: `/edit-user/${userId}`, icon: <PersonIcon /> }

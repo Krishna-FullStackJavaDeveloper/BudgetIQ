@@ -46,14 +46,8 @@ interface ApiResponse {
     families: { [key: string]: { familyId: number, familyName: string, passkey: string, moderatorId: number, users: User[] } };
   };
 }
-    const handleEditClick = () => {
-      // Redirect to the edit page with the row ID
-      // navigate(`/edit-user/${row.id}`);
-      console.log("edit user details");
-    };
-  
    
-const Row: React.FC<{ row: User; handleViewClick: (id: string) => void}> = ({ row, handleViewClick }) => {
+const Row: React.FC<{ row: User; handleViewClick: (id: string) => void; handleEditClick: (id: string) => void}> = ({ row, handleViewClick, handleEditClick }) => {
   const [open, setOpen] = React.useState(false);
  
   return (
@@ -73,7 +67,7 @@ const Row: React.FC<{ row: User; handleViewClick: (id: string) => void}> = ({ ro
         <TableCell align="right">{row.accountStatus}</TableCell>
         <TableCell align="right">
           {/* Add Edit Icon here */}
-          <IconButton onClick={handleEditClick}  sx={{ color: 'black' }}>
+          <IconButton  onClick={() => handleEditClick(String(row.id))}   sx={{ color: 'black' }}>
             <Edit sx={{ fontSize: '1.2rem' }}/>
           </IconButton>
           {/* Add View Icon here */}
@@ -117,7 +111,7 @@ const Row: React.FC<{ row: User; handleViewClick: (id: string) => void}> = ({ ro
   );
 };
 
-const FamilyRow: React.FC<{ familyName: string; members: User[]; handleViewClick: (id: string) => void}> = ({ familyName, members,  handleViewClick }) => {
+const FamilyRow: React.FC<{ familyName: string; members: User[]; handleViewClick: (id: string) => void; handleEditClick: (id: string) => void}> = ({ familyName, members,  handleViewClick, handleEditClick }) => {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -132,11 +126,11 @@ const FamilyRow: React.FC<{ familyName: string; members: User[]; handleViewClick
         <TableCell>{members.length}</TableCell>
         <TableCell align="left">
                       {/* Add Edit Icon here */}
-                      <IconButton onClick={handleEditClick}  sx={{ color: 'black' }}>
+                      <IconButton onClick={() => console.log("Edit clicked for:", members[0]?.id)}   sx={{ color: 'black' }}>
                         <Edit sx={{ fontSize: '1.2rem' }}/>
                       </IconButton>
                       {/* Add View Icon here */}
-                      <IconButton onClick={handleEditClick}  sx={{ color: 'black' }}>
+                      <IconButton  onClick={() => console.log("View clicked for:", members[0]?.id)}  sx={{ color: 'black' }}>
                         <Visibility sx={{ fontSize: '1.2rem' }} />
                       </IconButton>
         </TableCell>
@@ -174,7 +168,7 @@ const FamilyRow: React.FC<{ familyName: string; members: User[]; handleViewClick
                         </TableCell>
                         <TableCell>
                         {/* Add Edit Icon here */}
-                        <IconButton onClick={handleEditClick}  sx={{ color: 'black' }}>
+                        <IconButton onClick={() => handleEditClick(String(member.id))}  sx={{ color: 'black' }}>
                           <Edit sx={{ fontSize: '1.2rem' }}/>
                         </IconButton>
                         {/* Add View Icon here */}
@@ -235,13 +229,21 @@ const [graphData, setGraphData] = useState<{
 
   const handleViewClick = async (userId: string) => {
     try {
-      navigate(`/edit-user/${userId}`);
+      navigate(`/edit-user/${userId}`, { state: { editMode: false } }); // View Mode
       // Here, you can update the state or open a modal with user details
     } catch (error) {
       console.error("Error fetching user details:", error);
     }
   };
 
+  const handleEditClick = async (userId: string) => {
+    try {
+      navigate(`/edit-user/${userId}`, { state: { editMode: true } }); // Edit Mode
+      // Here, you can update the state or open a modal with user details
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+    }
+  };
 
 
   useEffect(() => {
@@ -488,7 +490,7 @@ const [graphData, setGraphData] = useState<{
                       </TableHead>
                       <TableBody>
                           {usersWithoutFamily.slice(userPage * userRowsPerPage, userPage * userRowsPerPage + userRowsPerPage).map((user) => (
-                              <Row key={user.id} row={user}  handleViewClick={handleViewClick} />
+                              <Row key={user.id} row={user}  handleViewClick={handleViewClick} handleEditClick={handleEditClick} />
                           ))}
                       </TableBody>
                       <TableFooter>
@@ -536,7 +538,7 @@ const [graphData, setGraphData] = useState<{
           {Object.keys(families)
               .slice(familyPage * familyRowsPerPage, familyPage * familyRowsPerPage + familyRowsPerPage)
               .map((familyName) => (
-                <FamilyRow key={familyName} familyName={familyName} members={families[familyName].users}  handleViewClick={handleViewClick} />
+                <FamilyRow key={familyName} familyName={familyName} members={families[familyName].users}  handleViewClick={handleViewClick} handleEditClick={handleEditClick}/>
               ))}
           </TableBody>
           <TableFooter 

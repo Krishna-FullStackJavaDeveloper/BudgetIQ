@@ -21,3 +21,36 @@ export const verifyOtp = async (username: string, otp: string) => {
 export const signup = async (userData: any) => {
   return axios.post(`${API_URL}/signup`, userData);
 };
+
+export const forgotPassword = async (email: string) => {
+  return axios.post(`${API_URL}/forgot-password`, { email }); // Use correct API_URL
+};
+
+// API call for resetting the password
+export const resetPassword = async (token: string, newPassword: string) => {
+  try {
+    const response = await fetch(`${API_URL}/reset-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        token: token,
+        newPassword: newPassword,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Password reset failed');
+    }
+
+    return await response.json();
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new Error('Password reset failed: ' + error.message);
+    } else {
+      throw new Error('Password reset failed due to an unknown error');
+    }
+  }
+};

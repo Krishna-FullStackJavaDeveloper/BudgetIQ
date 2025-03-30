@@ -25,11 +25,11 @@ import { getUserDetails, updateUser } from "../../api/user";
 import EditIcon from "@mui/icons-material/Edit"; // To show edit button
 import SaveIcon from "@mui/icons-material/Save"; // For save button
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import { useLocation } from "react-router-dom";
 
 const Profile = () => {
   const [userDetails, setUserDetails] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false); // Track whether the user is in edit mode
   const [editedDetails, setEditedDetails] = useState<any | null>(null); // For edited values
   const navigate = useNavigate();
   const { showNotification } = useNotification();
@@ -39,6 +39,9 @@ const Profile = () => {
   const token = localStorage.getItem("token");
   const { userId } = useParams();
   const userRoles = JSON.parse(localStorage.getItem("roles") || "[]");
+
+  const location = useLocation();
+  const [isEditing, setIsEditing] = useState(location.state?.editMode || false);
 
   useEffect(() => {
     if (!userId || !token || !LoginUserID) {
@@ -193,6 +196,17 @@ const Profile = () => {
                   />
                 </Grid>
               ))}
+              {/* Family Name Field (Non-Editable) */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                name="familyName"
+                label="Family Name"
+                value={userDetails?.familyName || ''}
+                disabled
+                variant="outlined"
+              />
+            </Grid>
               <Grid item container xs={6}>
                 <FormControlLabel
                   control={

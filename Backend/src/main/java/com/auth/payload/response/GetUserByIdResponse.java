@@ -26,7 +26,8 @@ public class GetUserByIdResponse {
     private String lastLogin;
     private boolean twoFactorEnabled;
     private Set<String> roles;
-//    private String familyName;
+    private String familyName;
+
 
     public GetUserByIdResponse(User user) {
         this.id = user.getId();
@@ -43,6 +44,11 @@ public class GetUserByIdResponse {
 
         this.twoFactorEnabled = user.isTwoFactorEnabled();
         this.roles = user.getRoles().stream().map(role -> role.getName().name()).collect(Collectors.toSet());
-//        this.familyName = user.getFamily() != null ? user.getFamily().getFamilyName() : null;
+    // Include family information if available
+        if (user.getFamily() != null) {
+            this.familyName = user.getFamily().getFamilyName();
+        } else {
+            this.familyName = null; // Or handle differently if you prefer
+        }
     }
 }

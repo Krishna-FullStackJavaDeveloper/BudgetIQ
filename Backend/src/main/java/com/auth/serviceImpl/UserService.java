@@ -1,7 +1,7 @@
 package com.auth.serviceImpl;
 
-import com.auth.eNum.AccountStatus;
 import com.auth.eNum.ERole;
+import com.auth.email.EmailService;
 import com.auth.entity.Family;
 import com.auth.entity.Role;
 import com.auth.entity.User;
@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -39,18 +37,19 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final FamilyRepository familyRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     @Transactional
     public User getUserById(Long id) {
         // Fetching the user using the repository method
-        User user = userRepository.getUserByIdWithRoles(id);
+        Optional<User> userOpt = userRepository.findByIdWithRolesAndFamily(id);
 
         // Handling case if user is not found
-        if (user == null) {
+        if (userOpt.isEmpty()) {
             throw new ResourceNotFoundException("User", "id", id);
         }
 
-        return user;
+        return userOpt.get();
     }
 
 
@@ -242,6 +241,7 @@ public class UserService {
             log.info("Updating user with ID: {}", id);
             userRepository.save(userToUpdate);
 
+            CompletableFuture.runAsync(() -> emailService.sendLoginNotification(userToUpdate.getEmail(), userToUpdate.getUsername(),"update_user"));
             log.info("User with ID: {} updated successfully", id);
             return Optional.of(userToUpdate);
         } catch (UnauthorizedAccessException ex) {

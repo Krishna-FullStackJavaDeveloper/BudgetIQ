@@ -1,11 +1,14 @@
 package com.auth.email;
 
 import jakarta.annotation.PreDestroy;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -108,6 +111,44 @@ public class EmailService {
                 log.info("OTP email sent to {}", recipientEmail);
             } catch (Exception e) {
                 log.error("Failed to send OTP email to {}: {}", recipientEmail, e.getMessage());
+            }
+        });
+    }
+
+    public void sendPasswordResetEmail(String recipientEmail, String userName, String token) {
+        executorService.submit(() -> {
+            try {
+                MimeMessage message = emailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+                // Email subject
+                String subject = "Reset Your Password";
+
+                // Password Reset Link
+                String resetLink = "http://localhost:3000/reset-password?token=" + token;
+
+                // HTML email body
+                String body = "<p>Hello <strong>" + userName + "</strong>,</p>"
+                        + "<p>We received a request to reset your password.</p>"
+                        + "<p>Click the link below to set a new password:</p>"
+                        + "<p><a href='" + resetLink + "' style='color: blue; font-weight: bold;'>Reset Password</a></p>"
+                        + "<p>Or use this token to reset your password: <strong style='font-size: 12px; color: black;'>"
+                        + token + "</strong></p>"
+                        + "<p>If you didn't request this, ignore this email.</p>"
+                        + "<p>Best Regards,<br>Krishna & Team</p>";
+
+                // Set email details
+                helper.setFrom("Art Asylum <" + senderEmail + ">");
+                helper.setReplyTo("no-reply@gmail.com");
+                helper.setTo(recipientEmail);
+                helper.setSubject(subject);
+                helper.setText(body, true); // Enable HTML
+
+                // Send email
+                emailSender.send(message);
+                log.info("Password reset email sent to {}", recipientEmail);
+            } catch (MessagingException e) {
+                log.error("Failed to send password reset email to {}: {}", recipientEmail, e.getMessage());
             }
         });
     }

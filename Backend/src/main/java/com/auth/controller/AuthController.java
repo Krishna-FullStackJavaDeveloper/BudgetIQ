@@ -31,11 +31,14 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import com.auth.globalException.FamilyNotFoundException;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
@@ -49,8 +52,6 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
-    private final PasswordEncoder encoder;
     private final JwtUtils jwtUtils;
     private final RefreshTokenService refreshTokenService;
     private final EmailService emailService;
@@ -58,21 +59,36 @@ public class AuthController {
     private final OTPService otpService;
     private final UserDetailsServiceImpl userDetailsService;
     private final FamilyService familyService;
-    private final FamilyRepository familyRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<JwtResponse>> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
-        log.debug("User login attempt for username: {}", loginRequest.getUsername());
+        log.debug("User login attempt for username or email: {}", loginRequest.getUsername());
+
+        // Determine if the loginRequest contains an email or a username, and fetch the user accordingly.
+        User user;
+        if (loginRequest.getUsername().contains("@")) {
+            user = userRepository.findByEmail(loginRequest.getUsername())
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        } else {
+            user = userRepository.findByUsername(loginRequest.getUsername())
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        }
 
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+                    new UsernamePasswordAuthenticationToken(user.getUsername(), loginRequest.getPassword()));
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-            User user = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        // Check if the account status is ACTIVE
+        if (user.getAccountStatus() != AccountStatus.ACTIVE) {
+            // Return an error response if the account is not ACTIVE
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>("Account is not active. Please contact support.", null, HttpStatus.FORBIDDEN.value()));
+        }
 
         if (user.isTwoFactorEnabled()) {
             // If 2FA is enabled, generate and send OTP
@@ -234,5 +250,57 @@ public class AuthController {
                     );
                 });
 
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        if (email == null || email.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Email is required"));
+        }
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        String token = UUID.randomUUID().toString(); // Generate token
+        user.setResetToken(token);
+        user.setTokenExpiry(Instant.now().plus(30, ChronoUnit.MINUTES)); // 30 mins expiry
+        userRepository.save(user);
+
+        // Send reset password email asynchronously
+        CompletableFuture.runAsync(() -> emailService.sendPasswordResetEmail(user.getEmail(), user.getUsername(), token));
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Use this token to reset password",
+                "resetToken", token
+        ));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+        String token = request.get("token");
+        String newPassword = request.get("newPassword");
+
+        if (token == null || newPassword == null || token.isEmpty() || newPassword.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Token and new password are required"));
+        }
+
+        User user = userRepository.findByResetToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid or expired token"));
+
+        if (user.getTokenExpiry().isBefore(Instant.now())) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Token expired"));
+        }
+
+        String hashedPassword = passwordEncoder.encode(newPassword);
+        user.setPassword(hashedPassword);
+        user.setResetToken(null);  // Clear token after reset
+        user.setTokenExpiry(null);
+        userRepository.save(user);
+
+        // Send reset password email asynchronously
+        CompletableFuture.runAsync(() -> emailService.sendLoginNotification(user.getEmail(), user.getUsername(), "resetPassword"));
+
+        return ResponseEntity.ok(Map.of("message", "Password reset successful"));
     }
 }

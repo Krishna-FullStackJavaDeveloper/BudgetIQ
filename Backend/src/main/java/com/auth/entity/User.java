@@ -12,6 +12,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -88,6 +89,9 @@ public class User {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "family_id")
     private Family family;  // New field to track the family to which this user belongs
+
+    private String resetToken; // Store the token
+    private Instant tokenExpiry; // Store expiry time
 
     public void setFamily(Family family) {
         this.family = family;

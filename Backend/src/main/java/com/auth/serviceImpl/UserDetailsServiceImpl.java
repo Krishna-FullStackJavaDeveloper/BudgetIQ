@@ -11,6 +11,7 @@ import com.auth.repository.RoleRepository;
 import com.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -32,19 +33,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private final PasswordEncoder encoder;
     private final FamilyRepository familyRepository;
 
-    // Cache to hold UserDetails
-    private final Map<String, UserDetails> userDetailsCache = new ConcurrentHashMap<>();
-
     @Override
     @Transactional
+    @Cacheable(value = "userDetailsCache", key = "#username")
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        // Check the cache first
-        if (userDetailsCache.containsKey(username)) {
-            log.info("User found in cache: {}", username);
-            return userDetailsCache.get(username);
-        }
-
+        log.info("Trying to load user with username: {}", username);
         // Fetch user from the database
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> {
@@ -54,7 +48,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         // Build UserDetails and cache it
         UserDetails userDetails = UserDetailsImpl.build(user);
-        userDetailsCache.put(username, userDetails);
         log.info("User loaded from database: {}", username);
 
         return userDetails;

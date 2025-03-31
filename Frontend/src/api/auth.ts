@@ -18,6 +18,7 @@ export const verifyOtp = async (username: string, otp: string) => {
     throw error;
   }
 };
+
 export const signup = async (userData: any) => {
   return axios.post(`${API_URL}/signup`, userData);
 };

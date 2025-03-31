@@ -26,6 +26,7 @@ import EditIcon from "@mui/icons-material/Edit"; // To show edit button
 import SaveIcon from "@mui/icons-material/Save"; // For save button
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { useLocation } from "react-router-dom";
+import RestoreIcon from '@mui/icons-material/Restore';
 
 const Profile = () => {
   const [userDetails, setUserDetails] = useState<any | null>(null);
@@ -58,7 +59,6 @@ const Profile = () => {
           const data = await getUserDetails(userId);
           setUserDetails(data?.data); // Make sure to use the right path for your response data
           setEditedDetails(data?.data); // Initialize the edited details with fetched data
-     
         } catch (error) {
           showNotification("Error fetching user data", "error");
         } finally {
@@ -82,18 +82,17 @@ const Profile = () => {
     }
 
     try {
-      const updatedUser = await updateUser(userId, LoginUserID, editedDetails); 
+      const updatedUser = await updateUser(userId, LoginUserID, editedDetails);
       setUserDetails(updatedUser);
       showNotification("Profile updated successfully", "success");
       setIsEditing(false); // Exit edit mode
-      
-       // Re-fetch user details to show the latest data after update
-    const data = await getUserDetails(userId);
-    setUserDetails(data?.data); // Update with the latest data
-    setEditedDetails(data?.data); // Sync the edited details with the latest data
-      
+
+      // Re-fetch user details to show the latest data after update
+      const data = await getUserDetails(userId);
+      setUserDetails(data?.data); // Update with the latest data
+      setEditedDetails(data?.data); // Sync the edited details with the latest data
     } catch (error) {
-      showNotification("Error updating profile", "error")
+      showNotification("Error updating profile", "error");
     }
   };
 
@@ -121,11 +120,20 @@ const Profile = () => {
     }));
   };
 
+  const handleCancel = () => {
+    setEditedDetails(userDetails); // Reset editedDetails to the original data
+    setIsEditing(false); // Exit edit mode
+  };
+
   if (loading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
         <CircularProgress sx={{ display: "block", margin: "auto" }} />
-        <Typography variant="body2" color="textSecondary" sx={{ textAlign: "center", mt: 2 }}>
+        <Typography
+          variant="body2"
+          color="textSecondary"
+          sx={{ textAlign: "center", mt: 2 }}
+        >
           Fetching user details...
         </Typography>
       </Box>
@@ -162,6 +170,7 @@ const Profile = () => {
             </Button>
           )}
         </Box>
+
         <Card
           sx={{ width: "100%", maxWidth: 600, boxShadow: 5, borderRadius: 3 }}
         >
@@ -179,34 +188,38 @@ const Profile = () => {
             </Stack>
 
             <Grid container spacing={2} mt={2}>
-              {["fullName", "username", "email", "password", "phoneNumber"].map((field) => (
-                <Grid item xs={12} key={field}>
-                  <TextField
-                    fullWidth
-                    name={field}
-                    label={field
-                      .replace(/([A-Z])/g, " $1")
-                      .replace(/^./, (str) => str.toUpperCase())}
-                    value={
-                      isEditing ? editedDetails?.[field] : userDetails?.[field]
-                    }
-                    onChange={handleChange}
-                    disabled={!isEditing}
-                    variant="outlined"
-                  />
-                </Grid>
-              ))}
+              {["fullName", "username", "email", "password", "phoneNumber"].map(
+                (field) => (
+                  <Grid item xs={12} key={field}>
+                    <TextField
+                      fullWidth
+                      name={field}
+                      label={field
+                        .replace(/([A-Z])/g, " $1")
+                        .replace(/^./, (str) => str.toUpperCase())}
+                      value={
+                        isEditing
+                          ? editedDetails?.[field]
+                          : userDetails?.[field]
+                      }
+                      onChange={handleChange}
+                      disabled={!isEditing}
+                      variant="outlined"
+                    />
+                  </Grid>
+                )
+              )}
               {/* Family Name Field (Non-Editable) */}
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                name="familyName"
-                label="Family Name"
-                value={userDetails?.familyName || ''}
-                disabled
-                variant="outlined"
-              />
-            </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  name="familyName"
+                  label="Family Name"
+                  value={userDetails?.familyName || ""}
+                  disabled
+                  variant="outlined"
+                />
+              </Grid>
               <Grid item container xs={6}>
                 <FormControlLabel
                   control={
@@ -317,7 +330,8 @@ const Profile = () => {
                       />
                     }
                     label={
-                      userDetails?.accountStatus?.trim().toUpperCase() === "ACTIVE"
+                      userDetails?.accountStatus?.trim().toUpperCase() ===
+                      "ACTIVE"
                         ? "Account Active"
                         : "Account Inactive"
                     }
@@ -327,6 +341,20 @@ const Profile = () => {
             </Grid>
           </CardContent>
         </Card>
+        <Box
+          sx={{ display: "flex", justifyContent: "flex-start", mb: 4, mt: 4 }}
+        >
+          {isEditing && (
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={handleCancel}
+              sx={{ padding: "1px 12px", borderRadius: "10px" }}
+            >
+              Cancel
+            </Button>
+          )}
+        </Box>
       </Box>
     </>
   );

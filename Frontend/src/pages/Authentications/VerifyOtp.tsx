@@ -54,10 +54,25 @@ const VerifyOtp = () => {
 
   return (
     <>
-     <Box className="otp-container">
-    <Card className="otp-card">
+    <Card
+        sx={{
+          width: 500,
+          padding: 3,
+          borderRadius: "12px",
+          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+          background: "#fff",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "30vh", // This makes sure the card is centered vertically
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)", // Centers the card in the middle of the page
+        }}
+      >
       <CardContent>
-        <Typography variant="h5" gutterBottom>
+        <Typography variant="h5" gutterBottom align="center" sx={{ fontWeight: "bold", color: "#333", mb: 2 }}>
           Verify OTP
         </Typography>
         
@@ -73,7 +88,6 @@ const VerifyOtp = () => {
         </Button>
       </CardContent>
     </Card>
-  </Box>
   <NotificationComponent />
     </>
    

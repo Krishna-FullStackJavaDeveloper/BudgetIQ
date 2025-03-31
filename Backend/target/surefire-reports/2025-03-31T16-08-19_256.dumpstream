@@ -1,0 +1,5 @@
+# Created at 2025-03-31T16:08:19.672
+Boot Manifest-JAR contains absolute paths in classpath 'D:\Krishna\My Project\BudgetIQ\Backend\target\test-classes'
+Hint: <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+'other' has different root
+

@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.auth</groupId>
-    <artifactId>authentication</artifactId>
+    <artifactId>budgetIQ</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>roleBaseAuthentication</name>
+    <name>budgetIQ</name>
     <description>Springboot role base authentication</description>
     <url/>
     <licenses>
@@ -91,6 +91,10 @@
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.retry</groupId>
+            <artifactId>spring-retry</artifactId>
         </dependency>
 
 <!-- cache memory Dependency -->

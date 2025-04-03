@@ -1,17 +1,27 @@
-import React, { useState, useCallback } from 'react';
-import { Snackbar, Alert, SnackbarCloseReason } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Snackbar, Alert } from '@mui/material';
 
 type NotificationProps = {
-  open: boolean;
   message: string;
   severity: 'success' | 'error' | 'warning' | 'info';
   onClose: () => void;
 };
 
-const Notification: React.FC<NotificationProps> = ({ open, message, severity, onClose }) => {
+const Notification: React.FC<NotificationProps> = ({ message, severity, onClose }) => {
+  const [open, setOpen] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setOpen(false);
+      onClose();  // Remove notification from context
+    }, 5000); // Auto-close after 5s
+
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
   return (
-    <Snackbar open={open} autoHideDuration={10000} onClose={onClose}>
-      <Alert onClose={onClose} severity={severity}>
+    <Snackbar open={open} autoHideDuration={5000} onClose={() => setOpen(false)}>
+      <Alert onClose={onClose} severity={severity} sx={{ width: '100%' }}>
         {message}
       </Alert>
     </Snackbar>

@@ -20,13 +20,13 @@ import {
   FormLabel,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
-import { useNotification } from "../../components/common/useNotification";
 import { getUserDetails, updateUser } from "../../api/user";
 import EditIcon from "@mui/icons-material/Edit"; // To show edit button
 import SaveIcon from "@mui/icons-material/Save"; // For save button
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { useLocation } from "react-router-dom";
 import RestoreIcon from '@mui/icons-material/Restore';
+import { useNotification } from "../../components/common/NotificationProvider";
 
 const Profile = () => {
   const [userDetails, setUserDetails] = useState<any | null>(null);

@@ -1,8 +1,10 @@
-import React from 'react';
-import { AppBar, Toolbar, Typography, Button, useTheme } from '@mui/material';
+import React, { useState } from 'react';
+import { AppBar, Toolbar, Typography, Button, useTheme, IconButton, Badge, Menu, MenuItem } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth'; 
 import BudgetIQIcon from "../../assets/BudgetIQ.png";
+import { useNotification } from '../common/NotificationProvider';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 // BudgetiQ.png
 
 const Header: React.FC = () => {
@@ -10,6 +12,19 @@ const Header: React.FC = () => {
   const { isAuthenticated, handleLogout, roles } = useAuth(); // Access the authentication state and handleLogout function
   const navigate = useNavigate();
 
+   // Access notifications from global context
+   const { notifications, removeNotification } = useNotification();  
+// Notification Menu Logic
+const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+const handleNotificationClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  // Only set anchorEl if it's not already open
+  if (anchorEl !== event.currentTarget) {
+    setAnchorEl(event.currentTarget);
+  }
+};
+const handleNotificationClose = () => {
+  setAnchorEl(null);
+};
  
   const handleLogoutClick = () => {
     handleLogout(); // Dispatch logout action
@@ -33,7 +48,8 @@ const Header: React.FC = () => {
   
 
   return (
-    <AppBar position="sticky" sx={{ 
+    <>
+    <AppBar position="fixed" sx={{ width: '100%',  top: 0,
       background: 'linear-gradient(135deg, #6a11cb, #2575fc, #6a11cb)', // Purple to blue
     }}>
       <Toolbar>
@@ -57,6 +73,33 @@ const Header: React.FC = () => {
         </Typography>
 
         {/* Conditionally render Login or Logout button based on isAuthenticated */}
+        {isAuthenticated && (
+          <>
+            {/* Notification Icon with Badge */}
+            <IconButton color="inherit" onClick={handleNotificationClick} sx={{ mr: 1 }}>
+              <Badge badgeContent={notifications.length} color="error">
+              <NotificationsIcon />
+              </Badge>
+            </IconButton>
+
+            {/* Notification Dropdown Menu */}
+            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleNotificationClose}>
+              {notifications.length > 0 ? (
+                notifications.map((notification, index) => (
+                  <MenuItem
+                    key={index}
+                    sx={{ color: notification.severity === "error" ? "red" : "green" }}
+                    onClick={() => removeNotification(index)} // Remove on click
+                  >
+                    {notification.message}
+                  </MenuItem>
+                ))
+              ) : (
+                <MenuItem>No new notifications</MenuItem>
+              )}
+            </Menu>
+          </>
+        )}
         {isAuthenticated ? (
           <Button
             color="inherit"
@@ -115,6 +158,11 @@ const Header: React.FC = () => {
         )}
       </Toolbar>
     </AppBar>
+    {/* Add padding to content below the AppBar */}
+    <div style={{ paddingTop: "80px" }}>
+    {/* The rest of your page content goes here */}
+  </div>
+</>
   );
 };
 

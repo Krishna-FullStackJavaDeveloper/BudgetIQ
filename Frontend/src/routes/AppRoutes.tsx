@@ -34,7 +34,7 @@ const AppRoutes = () => {
       {/* User Profilepage */}
       <Route path="/edit-user/:userId" element={<Profile />} />
       <Route path="/manage-users" element={<UserOrg />} />
-      <Route path="/manage-users-test/:userId" element={<ManageUserTest />} />
+      <Route path="/manage-users-test" element={<ManageUserTest />} />
       <Route path="/create_user" element={<Signup />} />
       </Routes>
   );

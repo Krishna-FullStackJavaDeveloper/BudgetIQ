@@ -21,8 +21,8 @@ import {
 import { LinearProgress } from "@mui/joy";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { AxiosError } from "axios";
-import { useNotification } from "../../components/common/useNotification";
 import React from "react";
+import { useNotification } from "../../components/common/NotificationProvider";
 
 interface ISignup {
   username: string;
@@ -58,7 +58,7 @@ const Signup = () => {
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [imageUploading, setImageUploading] = useState(false);
   const navigate = useNavigate();
-  const { showNotification, NotificationComponent } = useNotification();
+  const { showNotification } = useNotification();
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const location = useLocation();
   const role = localStorage.getItem("roles");
@@ -496,8 +496,6 @@ const Signup = () => {
         </CardContent>
       </Card>
       {/* </Box> */}
-
-      <NotificationComponent />
     </>
   );
 };

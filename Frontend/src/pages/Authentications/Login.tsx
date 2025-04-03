@@ -4,8 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { Box, Button, Card, CardContent, IconButton, InputAdornment, TextField, Typography } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { AxiosError } from "axios"; // Import AxiosError if not already imported
-import { useNotification } from '../../components/common/useNotification'; // Import the custom hook
+import { AxiosError } from "axios"; // Import AxiosError if not already imported// Import the custom hook
+import { useNotification } from "../../components/common/NotificationProvider";
 
 
 const Login = () => {
@@ -14,7 +14,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { handleLogin } = useAuth();
-  const { showNotification, NotificationComponent } = useNotification(); 
+  const { showNotification } = useNotification(); 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,8 +143,6 @@ const Login = () => {
           </Typography>
       </CardContent>
     </Card>
-  {/* </Box> */}
-  <NotificationComponent />
     </>
   );
 };

@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { forgotPassword } from "../../api/auth";
 import { Box, Button, Card, CardContent, TextField, Typography } from "@mui/material";
-import { useNotification } from '../../components/common/useNotification';
 import { useNavigate } from "react-router-dom";
+import { useNotification } from "../../components/common/NotificationProvider";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
-  const { showNotification, NotificationComponent } = useNotification();
+  const { showNotification} = useNotification();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -74,7 +74,7 @@ const ForgotPassword = () => {
                   </Button>
               </form>
           </CardContent>
-      </Card><NotificationComponent />
+      </Card>
       </>
   );
 };

@@ -4,7 +4,8 @@ import { useAuth } from "../../hooks/useAuth";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Box, Button, Card, CardContent, TextField, Typography } from "@mui/material";
 import OTP from "../../components/layout/OTP";
-import { useNotification } from '../../components/common/useNotification'; // Import the custom hook // Hook to trigger notifications
+import { useNotification } from "../../components/common/NotificationProvider";
+// Import the custom hook // Hook to trigger notifications
 
 
 const VerifyOtp = () => {
@@ -13,7 +14,7 @@ const VerifyOtp = () => {
   const navigate = useNavigate();
   const { handleLogin } = useAuth();
   const username = location.state?.username;
-  const { showNotification, NotificationComponent } = useNotification(); 
+  const { showNotification } = useNotification(); 
 
   const handleVerify = async () => {
     try {
@@ -88,7 +89,6 @@ const VerifyOtp = () => {
         </Button>
       </CardContent>
     </Card>
-  <NotificationComponent />
     </>
    
   );

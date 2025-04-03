@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import {TableContainer, Box, IconButton, Paper, Table, TableBody, TableRow, TableCell, TableFooter, TablePagination, TableHead, Typography, Card, CardContent, Grid } from "@mui/material";
-import { useNotification } from "../../components/common/useNotification";
+
 import { useNavigate } from "react-router-dom";
 import { getUserDetails, getUsersForAdmin, getUsersForFamilyAdmin } from "../../api/user";
 import { KeyboardArrowDown, KeyboardArrowUp, Visibility } from "@mui/icons-material";
@@ -16,6 +16,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { useNotification } from "../../components/common/NotificationProvider";
 // Register required components
 ChartJS.register(
   CategoryScale,
@@ -458,7 +459,7 @@ const [graphData, setGraphData] = useState<{
                         }}>
                         <CardContent>
                         <Typography variant="h5" color="text.secondary" style={{ marginBottom: "20px" }}>
-                            Users Over Time
+                            Users in Family.
                         </Typography>
                         {graphData.labels.length > 0 && graphData.datasets[0].data.length > 0 && (
                             <Line data={graphData} />

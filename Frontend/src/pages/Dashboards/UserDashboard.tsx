@@ -61,7 +61,11 @@ import {
   Brush,
   Fastfood,
 } from "@mui/icons-material";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+
 
 const transactions = [
   { id: 1, name: "Shopping", amount: 1200, category: "shopping" },
@@ -110,13 +114,15 @@ const UserDashboard = () => {
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
+const [purpose, setPurpose] = useState("");
+  const [date, setDate] = useState<Dayjs | null>(null); // Set state to Dayjs or null
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [isFocused, setIsFocused] = useState(false);
 
   const handleAddExpense = () => {
-    if (!amount || !category) {
+    if (!amount || !category || !date || !purpose) {
       alert("Please fill out all fields");
       return;
     }
@@ -126,7 +132,7 @@ const UserDashboard = () => {
       name: category,
       amount: parseFloat(amount), // Ensure amount is treated as a number
     };
-    console.log("Expense Added:", { amount, category });
+    console.log("Expense Added:", { amount, category, date, purpose });
     setOpen(false); // Close the dialog
   };
 
@@ -366,7 +372,7 @@ const UserDashboard = () => {
             {/* Floating Add Button */}
             <Fab
               color="primary"
-              sx={{ position: "absolute", bottom: 20, right: 20 }}
+              sx={{ position: "absolute", bottom: 20, right: 20}}
               onClick={handleOpen}
               aria-label="Add Expense"
             >
@@ -380,6 +386,9 @@ const UserDashboard = () => {
               onClose={handleClose}
               TransitionComponent={Slide}
               fullWidth
+              PaperProps={{
+                sx: { borderRadius: 5 }, // Adjust the value as needed
+              }}
             >
               <DialogTitle
                 sx={{
@@ -388,7 +397,7 @@ const UserDashboard = () => {
                   position: "relative",
                 }}
               >
-                Add New Expense
+                 Add Expenditure
                 {/* Close Icon Button in the top-right corner */}
                 <IconButton
                   sx={{ position: "absolute", right: 8, top: 8 }}
@@ -404,6 +413,24 @@ const UserDashboard = () => {
                   component="form"
                   sx={{ display: "flex", flexDirection: "column", gap: 3 }}
                 >
+                  {/* Purpose Field */}
+                                    <TextField
+                                      label="Purpose"
+                                      fullWidth
+                                      value={purpose}
+                                      onChange={(e) => setPurpose(e.target.value)}
+                                      variant="outlined"
+                                      onFocus={handleFocus}
+                                      onBlur={handleBlur}
+                                      sx={{
+                                        mt: 2,
+                                        borderRadius: "8px",
+                                        "& .MuiOutlinedInput-root": {
+                                          borderRadius: "8px",
+                                          boxShadow: 2,
+                                        },
+                                      }}
+                                    />
                   {/* Amount Field */}
                   <TextField
                     label="Amount"
@@ -421,7 +448,6 @@ const UserDashboard = () => {
                     onFocus={handleFocus}
                     onBlur={handleBlur}
                     sx={{
-                      mt: 2,
                       borderRadius: "8px",
                       "& .MuiOutlinedInput-root": {
                         borderRadius: "8px",
@@ -451,6 +477,14 @@ const UserDashboard = () => {
                       <MenuItem value="utilities">Utilities</MenuItem>
                     </Select>
                   </FormControl>
+                  {/* Date Picker */}
+                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                      <DatePicker 
+                                      label="Select Date"
+                                       value={date}
+                                       onChange={(newDate) => setDate(newDate)}
+                                      />
+                                    </LocalizationProvider>
                 </Box>
               </DialogContent>
 
@@ -461,6 +495,8 @@ const UserDashboard = () => {
                     console.log(`Amount: ${amount}, Category: ${category}`);
                     setAmount(""); // Reset the Amount field
                     setCategory(""); // Reset the Category field
+                    setDate(null); // Reset the Date field
+                    setPurpose("");
                     handleAddExpense(); // Call your existing add expense function here
                   }}
                   color="primary"
@@ -474,6 +510,8 @@ const UserDashboard = () => {
                   onClick={() => {
                     setAmount(""); // Reset the Amount field
                     setCategory(""); // Reset the Category field
+                    setDate(null); // Reset the Date field
+                    setPurpose("");
                   }}
                   color="secondary"
                   sx={{ borderRadius: "8px", padding: "6px 16px" }}

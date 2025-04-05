@@ -39,7 +39,7 @@ const Login = () => {
           showNotification("Welcome Admin", 'success');
           navigate("/admin-dashboard");
         } else if (data.roles.includes("ROLE_MODERATOR")) {
-          showNotification("Welcome ", 'success');
+         
           navigate("/moderator-dashboard");
         } else {
           showNotification("Welcome user", 'success');

@@ -9,6 +9,7 @@ import PeopleIcon from '@mui/icons-material/People'; // Example icon
 import ReportIcon from '@mui/icons-material/Report'; // Example icon
 import PersonIcon from '@mui/icons-material/Person'; 
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
+import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 
 interface SidebarProps {
   open: boolean;
@@ -30,6 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, toggleSidebar, isAuthenticated,
   const menuItems: Record<string, MenuItem[]> = {
     admin: [
       { label: 'Dashboard', path: '/admin-dashboard', icon: <DashboardIcon /> },
+      { label: 'Add Cash', path: '/add_cash', icon: <LocalAtmIcon /> },
       { label: 'Create User', path: '/create_user', icon: <PersonAddAltIcon /> },
       { label: 'Manage Users', path: '/manage-users', icon: <PeopleIcon /> },
       { label: 'Reports', path: '/manage-users-test', icon: <ReportIcon /> },
@@ -38,6 +40,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, toggleSidebar, isAuthenticated,
     ],
     moderator: [
       { label: 'Dashboard', path: '/moderator-dashboard', icon: <DashboardIcon /> },
+      { label: 'Add Cash', path: '/add_cash', icon: <LocalAtmIcon /> },
       { label: 'Create User', path: '/create_user', icon: <PersonAddAltIcon /> },
       { label: 'Manage Users', path: '/manage-users', icon: <PeopleIcon /> },
       { label: 'Reports', path: '/reports', icon: <ReportIcon /> },
@@ -45,10 +48,11 @@ const Sidebar: React.FC<SidebarProps> = ({ open, toggleSidebar, isAuthenticated,
     ],
     user: [
       { label: 'Dashboard', path: '/user-dashboard', icon: <DashboardIcon /> },
+      { label: 'Add Cash', path: '/add_cash', icon: <LocalAtmIcon /> },
       { label: 'Profile', path: '/profile', icon: <PersonIcon /> },
-      { label: 'Reports', path: '/manage-users-test', icon: <ReportIcon /> },
       { label: 'Settings', path: '/settings', icon: <SettingsIcon /> },
-      { label: 'My Profile', path: `/edit-user/${userId}`, icon: <PersonIcon /> }
+      { label: 'My Profile', path: `/edit-user/${userId}`, icon: <PersonIcon /> },
+      { label: 'Reports', path: '/manage-users-test', icon: <ReportIcon /> },
     ]
   };
 

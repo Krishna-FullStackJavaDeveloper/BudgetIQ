@@ -78,7 +78,7 @@ const handleNotificationClose = () => {
             {/* Notification Icon with Badge */}
             <IconButton color="inherit" onClick={handleNotificationClick} sx={{ mr: 1 }}>
               <Badge badgeContent={notifications.length} color="error">
-              <NotificationsIcon />
+              <NotificationsIcon  sx={{ mb: 1.5}}/>
               </Badge>
             </IconButton>
 

@@ -69,7 +69,8 @@ import { useNavigate } from "react-router-dom";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-
+import UserAvatar from "../../components/common/UserAvatar";
+const userID = localStorage.getItem("user")|| "";
 const transactions = [
   { id: 1, name: "Shopping", amount: 1200, category: "shopping" },
   { id: 2, name: "Stationary", amount: 15, category: "stationary" },
@@ -154,7 +155,7 @@ const ModeratorDashboard = () => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [isFocused, setIsFocused] = useState(false);
-  const handleEditFamily = () => navigate("/edit-family");
+  const handleEditFamily = () => navigate(`/edit-family/${userID}`);
 
   const handlePieClick = () => {
     // Redirect to /manage-users
@@ -190,7 +191,7 @@ const ModeratorDashboard = () => {
     <Box sx={{ p: 3 }}>
       {/* Header with Avatar */}
       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
-        <Avatar sx={{ bgcolor: "primary.main" }}>K</Avatar>
+        <UserAvatar name="Krishna Bhatt" />
         <Typography variant="h5" fontWeight={600}>
           Welcome Back, Krishna!
         </Typography>

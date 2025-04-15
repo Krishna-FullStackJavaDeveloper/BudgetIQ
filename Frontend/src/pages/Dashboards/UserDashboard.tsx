@@ -60,6 +60,7 @@ import {
   LocalGroceryStore,
   Brush,
   Fastfood,
+  Language,
 } from "@mui/icons-material";
 import dayjs, { Dayjs } from "dayjs";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -88,9 +89,10 @@ const categoryData: Record<Category, { icon: JSX.Element; color: string }> = {
 const recentTransactions = transactions.slice(-4);
 
 const data = [
-  { name: "Jan", income: 2000, expense: 800 },
-  { name: "Feb", income: 2500, expense: 1500 },
-  { name: "Mar", income: 2200, expense: 1200 },
+  { name: "Jan", income: 2000, expense: 800, saving: 1200 },
+  { name: "Feb", income: 2500, expense: 1500, saving: 1000 },
+  { name: "Mar", income: 2200, expense: 1200, saving: 1000 },
+  { name: "Apr", income: 2200, expense: 1200, saving: 1000 },
 ];
 
 const recurringTransactions = [
@@ -108,13 +110,20 @@ const recurringTransactions = [
     dueDate: "April 10, 2025",
     icon: <Subscriptions sx={{ color: "#D32F2F" }} />,
   },
+  // import LanguageIcon from '@mui/icons-material/Language';
+  {
+    category: "Bill",
+    description: "Internet Bill",
+    amount: "$45",
+    dueDate: "April 28, 2025",
+    icon: <Language sx={{ color: "#1565C0" }} />,
+  },
 ];
 
 const UserDashboard = () => {
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
-const [purpose, setPurpose] = useState("");
   const [date, setDate] = useState<Dayjs | null>(null); // Set state to Dayjs or null
 
   const handleOpen = () => setOpen(true);
@@ -122,7 +131,7 @@ const [purpose, setPurpose] = useState("");
   const [isFocused, setIsFocused] = useState(false);
 
   const handleAddExpense = () => {
-    if (!amount || !category || !date || !purpose) {
+    if (!amount || !category || !date ) {
       alert("Please fill out all fields");
       return;
     }
@@ -132,7 +141,7 @@ const [purpose, setPurpose] = useState("");
       name: category,
       amount: parseFloat(amount), // Ensure amount is treated as a number
     };
-    console.log("Expense Added:", { amount, category, date, purpose });
+    console.log("Expense Added:", { amount, category, date });
     setOpen(false); // Close the dialog
   };
 
@@ -143,6 +152,35 @@ const [purpose, setPurpose] = useState("");
   const handleBlur = () => {
     setIsFocused(false);
   };
+
+  type StatCardProps = {
+    icon: React.ReactNode;
+    title: string;
+    value: string;
+    color: string;
+  };
+
+  const StatCard: React.FC<StatCardProps> = ({ icon, title, value, color }) => (
+    <Card
+      sx={{
+        borderRadius: 3,
+        boxShadow: 3,
+        p: 2,
+        textAlign: "center",
+        bgcolor: "background.paper",
+      }}
+    >
+      <Box display="flex" justifyContent="center" alignItems="center" mb={1}>
+        <Avatar sx={{ bgcolor: color, width: 48, height: 48 }}>{icon}</Avatar>
+      </Box>
+      <Typography variant="h6" color="textSecondary">
+        {title}
+      </Typography>
+      <Typography variant="h4" color={color}>
+        {value}
+      </Typography>
+    </Card>
+  );
 
   return (
     <Box sx={{ p: 3 }}>
@@ -159,59 +197,43 @@ const [purpose, setPurpose] = useState("");
 
       {/* Alerts */}
       <Grid container spacing={3}>
-        {/* Financial Summary */}
-        <Grid item xs={12}>
-          <Stack direction="row" spacing={2} justifyContent="space-between">
-            {[
-              {
-                icon: <MonetizationOn />,
-                label: "$8,500 Total Income",
-                color: "#16A085",
-              },
-              {
-                icon: <TrendingDown />,
-                label: "$6,000 Total Expense",
-                color: "#C0392B",
-              },
-              {
-                icon: <TrendingUp />,
-                label: "$2,500 Total Savings",
-                color: "#3498DB",
-              },
-              {
-                icon: <CurrencyExchange />,
-                label: "USD | GMT -5",
-                color: "#E67E22",
-              },
-            ].map((item, index) => (
-              <Paper
-                key={index}
-                elevation={3}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 2,
-                  padding: 2,
-                  borderRadius: 3,
-                  bgcolor: item.color,
-                  color: "white",
-                  width: "100%",
-                  maxWidth: 280, // Ensures uniform width
-                  height: 80, // Matches other cards' height
-                }}
-              >
-                {item.icon}
-                <Typography variant="h6" fontWeight="bold">
-                  {item.label}
-                </Typography>
-              </Paper>
-            ))}
-          </Stack>
+           {/* Income and Expense Summary */}
+           <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            icon={<MonetizationOn />}
+            title="Total Income"
+            value="$8,500"
+            color="success.main"
+          />
         </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            icon={<TrendingDown />}
+            title="Total Expense"
+            value="$6,000"
+            color="error.main"
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            icon={<TrendingUp />}
+            title="Total Savings"
+            value="$2,500"
+            color="primary.main"
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            icon={<CurrencyExchange />}
+            title="Currency & Time"
+            value="USD | GMT -5"
+            color="warning.main"
+          />
+        </Grid>
+       
 
         {/* Expenses Chart */}
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12}>
           <Card sx={{ boxShadow: 3, borderRadius: 2 }}>
             <CardContent>
               <Typography variant="h6" fontWeight={600} gutterBottom>
@@ -225,12 +247,15 @@ const [purpose, setPurpose] = useState("");
                   <RechartTooltip
                     content={({ payload, label }) => {
                       if (!payload || payload.length === 0) return null;
-                      const { income, expense } = payload[0].payload;
+                      const { income, expense, saving } = payload[0].payload;
                       const formattedIncome = new Intl.NumberFormat().format(
                         income
                       );
                       const formattedExpense = new Intl.NumberFormat().format(
                         expense
+                      );
+                      const formattedSaving = new Intl.NumberFormat().format(
+                        saving
                       );
                       return (
                         <div
@@ -260,7 +285,7 @@ const [purpose, setPurpose] = useState("");
                             }}
                           >
                             <span>Income:</span>
-                            <span style={{ color: "#16A085" }}>
+                            <span style={{ color: "#82CA9D" }}>
                               ${formattedIncome}
                             </span>
                           </div>
@@ -271,8 +296,19 @@ const [purpose, setPurpose] = useState("");
                             }}
                           >
                             <span>Expense:</span>
-                            <span style={{ color: "#C0392B" }}>
+                            <span style={{ color: "#FB7E41" }}>
                               ${formattedExpense}
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                            }}
+                          >
+                            <span>Saving:</span>
+                            <span style={{ color: "#8884D8" }}>
+                              ${formattedSaving}
                             </span>
                           </div>
                         </div>
@@ -282,28 +318,40 @@ const [purpose, setPurpose] = useState("");
                   {/* <ReferenceLine y={1000} stroke="red" strokeDasharray="3 3" label="Avg Expense" /> */}
                   <Bar
                     dataKey="income"
-                    fill="#16A085"
-                    radius={[30, 30, 0, 0]}
+                    fill="#82CA9D"
+                    radius={[10, 10, 0, 0]}
                     name="Income"
                   >
                     <LabelList
                       dataKey="income"
                       position="top"
-                      fill="#16A085"
+                      fill="#82CA9D"
                       fontSize={12}
                     />
                   </Bar>
-
                   <Bar
                     dataKey="expense"
-                    fill="#C0392B"
-                    radius={[30, 30, 0, 0]}
+                    fill="#FB7E41"
+                    radius={[10, 10, 0, 0]}
                     name="Expense"
                   >
                     <LabelList
                       dataKey="expense"
                       position="top"
-                      fill="#C0392B"
+                      fill="#FB7E41"
+                      fontSize={12}
+                    />
+                  </Bar>
+                  <Bar
+                    dataKey="saving"
+                    fill="#8884D8"
+                    radius={[10, 10, 0, 0]}
+                    name="Saving"
+                  >
+                    <LabelList
+                      dataKey="saving"
+                      position="top"
+                      fill="#8884D8"
                       fontSize={12}
                     />
                   </Bar>
@@ -321,6 +369,7 @@ const [purpose, setPurpose] = useState("");
               borderRadius: 3,
               position: "relative",
               height: 380,
+              mb:4
             }}
           >
             <CardContent sx={{ pb: 9 }}>
@@ -372,7 +421,7 @@ const [purpose, setPurpose] = useState("");
             {/* Floating Add Button */}
             <Fab
               color="primary"
-              sx={{ position: "absolute", bottom: 20, right: 20}}
+              sx={{ position: "absolute", bottom: 20, right: 20,  zIndex: 0}}
               onClick={handleOpen}
               aria-label="Add Expense"
             >
@@ -413,24 +462,7 @@ const [purpose, setPurpose] = useState("");
                   component="form"
                   sx={{ display: "flex", flexDirection: "column", gap: 3 }}
                 >
-                  {/* Purpose Field */}
-                                    <TextField
-                                      label="Purpose"
-                                      fullWidth
-                                      value={purpose}
-                                      onChange={(e) => setPurpose(e.target.value)}
-                                      variant="outlined"
-                                      onFocus={handleFocus}
-                                      onBlur={handleBlur}
-                                      sx={{
-                                        mt: 2,
-                                        borderRadius: "8px",
-                                        "& .MuiOutlinedInput-root": {
-                                          borderRadius: "8px",
-                                          boxShadow: 2,
-                                        },
-                                      }}
-                                    />
+                
                   {/* Amount Field */}
                   <TextField
                     label="Amount"
@@ -448,6 +480,7 @@ const [purpose, setPurpose] = useState("");
                     onFocus={handleFocus}
                     onBlur={handleBlur}
                     sx={{
+                      mt: 2,
                       borderRadius: "8px",
                       "& .MuiOutlinedInput-root": {
                         borderRadius: "8px",
@@ -496,7 +529,7 @@ const [purpose, setPurpose] = useState("");
                     setAmount(""); // Reset the Amount field
                     setCategory(""); // Reset the Category field
                     setDate(null); // Reset the Date field
-                    setPurpose("");
+                   
                     handleAddExpense(); // Call your existing add expense function here
                   }}
                   color="primary"
@@ -511,7 +544,7 @@ const [purpose, setPurpose] = useState("");
                     setAmount(""); // Reset the Amount field
                     setCategory(""); // Reset the Category field
                     setDate(null); // Reset the Date field
-                    setPurpose("");
+                   
                   }}
                   color="secondary"
                   sx={{ borderRadius: "8px", padding: "6px 16px" }}
@@ -523,12 +556,12 @@ const [purpose, setPurpose] = useState("");
           </Card>
         </Grid>
         {/* Recurring tansaction start */}
-        <Grid item xs={12}>
+        <Grid item xs={12} md={8}>
           <Card
             sx={{
               borderRadius: 4,
               boxShadow: 4,
-              p: 2,
+              // p: 2,
               mb: 3,
               // background: "linear-gradient(135deg, #f5f7fa 30%, #c3cfe2 100%)",
             }}

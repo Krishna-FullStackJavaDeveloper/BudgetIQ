@@ -7,11 +7,13 @@
     <list default="true" id="9ef1f0a6-0768-4427-ac2f-d3321830eed0" name="Changes" comment="create get user by userId for all roles.">
       <change beforePath="$PROJECT_DIR$/../Frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../Frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/src/components/layout/Header.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/components/layout/Header.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/Authentications/Login.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/Authentications/Login.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/Dashboards/AdminDashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/Dashboards/AdminDashboard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/components/common/TableFooter.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/components/common/TableHeader.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/components/layout/Sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/components/layout/Sidebar.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/Dashboards/ModeratorDashboar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/Dashboards/ModeratorDashboar.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/Dashboards/UserDashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/Dashboards/UserDashboard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/UserProfile/test" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/routes/AppRoutes.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/routes/AppRoutes.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -79,7 +81,7 @@
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
     &quot;last_directory_selection&quot;: &quot;D:/Krishna/Workspace/IntelliJ/springboot-role-base-authentication/src/test/java&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/Krishna/My Project/BudgetIQ/Backend&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Krishna/My Project/BudgetIQ/Backend&quot;,
     &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;
   }
@@ -90,7 +92,7 @@
         <env name="JAVA_OPTS" value="-Xms512m -Xmx4g -XX:+UseG1GC -XX:MaxGCPauseMillis=200" />
       </envs>
       <option name="MAIN_CLASS_NAME" value="com.auth.RoleBaseAuthenticationApplication" />
-      <module name="authentication" />
+      <module name="budgetIQ" />
       <extension name="coverage">
         <pattern>
           <option name="PATTERN" value="com.auth.*" />

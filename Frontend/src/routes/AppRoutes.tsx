@@ -13,6 +13,9 @@ import ManageUserTest from "../pages/UserProfile/manageUserTest";
 import ForgotPassword from "../pages/Authentications/ForgotPassword";
 import ResetPassword from "../pages/Authentications/ResetPassword";
 import AddCashPage from "../pages/BudgetManagement/AddCashPage";
+import UpdateFamily from "../pages/UserProfile/UpdateFamily";
+import ExpensePage from "../pages/BudgetManagement/ExpensePage";
+import AddCategory from "../pages/BudgetManagement/AddCategory";
 
 const AppRoutes = () => {
   return (
@@ -37,9 +40,11 @@ const AppRoutes = () => {
       <Route path="/manage-users" element={<UserOrg />} />
       <Route path="/manage-users-test" element={<ManageUserTest />} />
       <Route path="/create_user" element={<Signup />} />
-
+      <Route path="/edit-family/:userId" element={<UpdateFamily />} />
       {/* Budget Management pages */}
       <Route path="/add_cash" element={<AddCashPage />} />
+      <Route path="/add_Expense" element={<ExpensePage />} />
+      <Route path="/add_Category" element={<AddCategory />} />
       </Routes>
   );
 };

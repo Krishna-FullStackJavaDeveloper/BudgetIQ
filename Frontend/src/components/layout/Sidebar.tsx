@@ -10,6 +10,9 @@ import ReportIcon from '@mui/icons-material/Report'; // Example icon
 import PersonIcon from '@mui/icons-material/Person'; 
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
+import AddCardIcon from '@mui/icons-material/AddCard';
+import cashWithdrawIcon from '../../assets/cash-withdrawal.png';
+import CategoryIcon from '@mui/icons-material/Category';
 
 interface SidebarProps {
   open: boolean;
@@ -31,28 +34,32 @@ const Sidebar: React.FC<SidebarProps> = ({ open, toggleSidebar, isAuthenticated,
   const menuItems: Record<string, MenuItem[]> = {
     admin: [
       { label: 'Dashboard', path: '/admin-dashboard', icon: <DashboardIcon /> },
-      { label: 'Add Cash', path: '/add_cash', icon: <LocalAtmIcon /> },
       { label: 'Create User', path: '/create_user', icon: <PersonAddAltIcon /> },
       { label: 'Manage Users', path: '/manage-users', icon: <PeopleIcon /> },
+      { label: 'Add Cash', path: '/add_cash', icon: <AddCardIcon /> },
+      { label: 'Add Expense', path: '/add_Expense', icon: <LocalAtmIcon /> },
       { label: 'Reports', path: '/manage-users-test', icon: <ReportIcon /> },
-      { label: 'Settings', path: '/settings', icon: <SettingsIcon /> },
       { label: 'My Profile', path: `/edit-user/${userId}`, icon: <PersonIcon /> }
     ],
     moderator: [
       { label: 'Dashboard', path: '/moderator-dashboard', icon: <DashboardIcon /> },
-      { label: 'Add Cash', path: '/add_cash', icon: <LocalAtmIcon /> },
+      { label: 'Add Cash', path: '/add_cash', icon: <AddCardIcon /> },
       { label: 'Create User', path: '/create_user', icon: <PersonAddAltIcon /> },
+      { label: 'Edit Family', path: `/edit-family/${userId}`, icon: <PersonIcon /> },
       { label: 'Manage Users', path: '/manage-users', icon: <PeopleIcon /> },
       { label: 'Reports', path: '/reports', icon: <ReportIcon /> },
       { label: 'My Profile', path: `/edit-user/${userId}`, icon: <PersonIcon /> }
     ],
     user: [
       { label: 'Dashboard', path: '/user-dashboard', icon: <DashboardIcon /> },
-      { label: 'Add Cash', path: '/add_cash', icon: <LocalAtmIcon /> },
-      { label: 'Profile', path: '/profile', icon: <PersonIcon /> },
+      { label: 'Income', path: '/add_cash', icon: <AddCardIcon /> },
+      // { label: 'Add Expense', path: '/add_Expense', icon: <img src={cashWithdrawIcon} alt="Withdraw Cash" style={{ width: 24, height: 24 }} /> },
+      { label: 'Expense', path: '/add_Expense', icon: <LocalAtmIcon /> },
+      { label: 'Category', path: '/add_Category', icon: <CategoryIcon /> },
+      { label: 'Test-Profile', path: `/edit-user/${userId}`, icon: <PersonIcon /> },
+      { label: 'Dashboard-Test', path: '/manage-users-test', icon: <ReportIcon /> },
       { label: 'Settings', path: '/settings', icon: <SettingsIcon /> },
-      { label: 'My Profile', path: `/edit-user/${userId}`, icon: <PersonIcon /> },
-      { label: 'Reports', path: '/manage-users-test', icon: <ReportIcon /> },
+      { label: 'Profile', path: '/profile', icon: <PersonIcon /> },
     ]
   };
 
@@ -109,28 +116,30 @@ const Sidebar: React.FC<SidebarProps> = ({ open, toggleSidebar, isAuthenticated,
        {/* Sidebar List */}
        <List sx={{ marginTop: '10px' }}>
           {selectedMenu.map((item, index) => (
-            <ListItem
-              key={index}
-              component={RouterLink}
-              to={item.path}
-              sx={{
-                cursor: 'pointer',
-                color: '#333', // Set the text color
-                '&:hover': {
-                  backgroundColor: '#f5f5f5', // Hover color for the list item
-                  color: '#0077b6', // Hover text color
-                },
-                padding: '12px 16px', // Adjust padding for better spacing
-              }}
-              onClick={handleMenuItemClick} // Close sidebar when a menu item is clicked
-            >
-              <ListItemIcon sx={{ color: '#333' }}>
-                {item.icon} {/* Display icon */}
-              </ListItemIcon>
-              <ListItemText primary={item.label} 
-              sx={{ textAlign: 'left', fontWeight: 500 }} // Ensure text is aligned to the left
-             />
-            </ListItem>
+            <React.Fragment key={index}>
+              <ListItem
+                component={RouterLink}
+                to={item.path}
+                sx={{
+                  cursor: 'pointer',
+                  color: '#333', // Set the text color
+                  '&:hover': {
+                    backgroundColor: '#f5f5f5', // Hover color for the list item
+                    color: '#0077b6', // Hover text color
+                  },
+                  padding: '12px 16px', // Adjust padding for better spacing
+                }}
+                onClick={handleMenuItemClick} // Close sidebar when a menu item is clicked
+              >
+                <ListItemIcon sx={{ color: '#333' }}>
+                  {item.icon} {/* Display icon */}
+                </ListItemIcon>
+                <ListItemText primary={item.label} sx={{ textAlign: 'left', fontWeight: 500 }} />
+              </ListItem>
+
+              {/* Add a Divider after certain items */}
+              {index === 2 && <Divider />} {/* For example, add a divider after the third item */}
+            </React.Fragment>
           ))}
         </List>
       </Drawer>

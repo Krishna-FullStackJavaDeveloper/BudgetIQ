@@ -93,7 +93,7 @@ public class FamilyService {
 
     @Async
     private void sendNotificationEmail(User moderator, User user) {
-        // Send email to the moderator
+        // Send email to the moderator(family-admin)
         emailService.sendLoginNotification(moderator.getEmail(), moderator.getFullName(), "userCreated");
 
         //send email to the user

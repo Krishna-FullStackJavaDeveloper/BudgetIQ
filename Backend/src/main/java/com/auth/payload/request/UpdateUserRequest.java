@@ -1,6 +1,7 @@
 package com.auth.payload.request;
 
 import com.auth.eNum.AccountStatus;
+import com.auth.entity.Timezone;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -35,4 +36,5 @@ public class UpdateUserRequest {
 
     private AccountStatus accountStatus;
 
+    private String timezone; // This field holds the timezone, such as 'Asia/Kolkata'
 }

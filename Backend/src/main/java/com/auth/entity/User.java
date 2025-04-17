@@ -13,7 +13,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -55,6 +54,10 @@ public class User {
     @Size(max = 15)
     private String phoneNumber;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "timezone_id")
+    private Timezone timezone;
+
     @Lob
     @Column(name = "profile_pic", columnDefinition = "TEXT")
     private String profilePic;  // Storing profile picture as Base64-encoded string
@@ -63,12 +66,12 @@ public class User {
     private AccountStatus accountStatus = AccountStatus.ACTIVE; // Enum for account status
 
     @CreationTimestamp
-    private LocalDateTime createdAt; // Auto-set when record is created
+    private Instant createdAt; // Auto-set in UTC when record is created
 
     @UpdateTimestamp
-    private LocalDateTime updatedAt; // Auto-updated when record is modified
+    private Instant updatedAt; // Auto-updated in UTC when record is modified
 
-    private LocalDateTime lastLogin; // Stores the last login time
+    private Instant lastLogin; // Stores the last login time in UTC
 
     @Column(columnDefinition = "TINYINT(1)")
     private boolean twoFactorEnabled = false; // 2FA flag

@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "otp")
@@ -28,7 +28,7 @@ public class OTP {
     private String otp;
 
     @Column(nullable = false)
-    private LocalDateTime expirytime; // OTP expiration time
+    private Instant expirytime; // OTP expiration time in UTC (Instant)
 
     @Enumerated(EnumType.STRING)
     private OTPStatus status; // ACTIVE, USED, EXPIRED

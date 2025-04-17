@@ -3,8 +3,6 @@ package com.auth.controller;
 import com.auth.eNum.AccountStatus;
 import com.auth.eNum.ERole;
 import com.auth.entity.Family;
-import com.auth.entity.OTP;
-import com.auth.entity.Role;
 import com.auth.entity.User;
 import com.auth.jwt.AuthTokenFilter;
 import com.auth.jwt.JwtUtils;
@@ -13,9 +11,6 @@ import com.auth.payload.request.OTPVerificationRequest;
 import com.auth.payload.request.SignupRequest;
 import com.auth.payload.response.ApiResponse;
 import com.auth.payload.response.JwtResponse;
-import com.auth.repository.FamilyRepository;
-import com.auth.repository.OTPRepository;
-import com.auth.repository.RoleRepository;
 import com.auth.repository.UserRepository;
 import com.auth.email.EmailService;
 import com.auth.serviceImpl.*;
@@ -31,17 +26,13 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import com.auth.globalException.FamilyNotFoundException;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @RestController
@@ -108,7 +99,7 @@ public class AuthController {
             CompletableFuture.runAsync(() -> emailService.sendLoginNotification(userDetails.getEmail(), userDetails.getUsername(),"login"));
             log.info("User {} logged in successfully", loginRequest.getUsername());
         // Update the last login timestamp for the user
-        user.setLastLogin(LocalDateTime.now()); // Set the current timestamp
+        user.setLastLogin(Instant.now()); // Set the current timestamp
         userRepository.save(user); // Save the updated user to persist the last login time
 
             return ResponseEntity.ok(new ApiResponse<>("Login successful",
@@ -148,14 +139,14 @@ public class AuthController {
 
         // Generate JWT tokens using JwtUtils
         String accessToken = jwtUtils.generateJwtToken(new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()));
-        String refreshToken = jwtUtils.generateRefreshToken(new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()));
+        String refreshToken = refreshTokenService.createRefreshToken(userDetails.getUser());
         log.info("Generated refresh token after OTP Creation: {}", refreshToken);
 
         // Send login notification email asynchronously (to improve response time)
         CompletableFuture.runAsync(() -> emailService.sendLoginNotification(userDetails.getEmail(), userDetails.getUsername(),"login"));
         log.info("User {} logged in successfully!", otpRequest.getUsername());
         // Update the last login timestamp for the user
-        user.setLastLogin(LocalDateTime.now()); // Set the current timestamp
+        user.setLastLogin(Instant.now()); // Set the current timestamp
         userRepository.save(user); // Save the updated user to persist the last login time
 
         return ResponseEntity.ok(new ApiResponse<>("Login successful",
@@ -183,6 +174,7 @@ public class AuthController {
                         .badRequest()
                         .body(new ApiResponse<>("Error: Email is already in use!", null, HttpStatus.BAD_REQUEST.value()));
             }
+
         try {
                 User user = userDetailsService.createNewUser(signUpRequest);
 
@@ -237,6 +229,7 @@ public class AuthController {
         }
 
         String username = jwtUtils.getUserNameFromJwtToken(refreshToken);
+        Long userId = jwtUtils.getUserIdFromJwtToken(refreshToken);
 
         return CompletableFuture.supplyAsync(() -> userRepository.findByUsername(username))
                 .thenApply(userOptional -> {
@@ -244,7 +237,9 @@ public class AuthController {
                         throw new UsernameNotFoundException("User not found"); // Also handled globally
                     }
 
-                    String newAccessToken = jwtUtils.generateJwtTokenFromUsername(username);
+                    String newAccessToken = jwtUtils.generateJwtTokenFromUsername(username, userId);
+//                    String newRefreshToken = refreshTokenService.createRefreshToken(userDetails.getUser());
+//                    String newRefreshToken = jwtUtils.generateRefreshTokenFromUsername(username, userId);
                     return ResponseEntity.ok(
                             new ApiResponse<>("Token refreshed successfully", newAccessToken, HttpStatus.OK.value())
                     );

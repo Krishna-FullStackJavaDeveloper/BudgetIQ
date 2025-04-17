@@ -1,5 +1,6 @@
 package com.auth.config;
 
+import com.auth.annotation.CurrentUserArgumentResolver;
 import com.auth.jwt.AuthEntryPointJwt;
 import com.auth.jwt.AuthTokenFilter;
 import com.auth.jwt.JwtUtils;
@@ -19,6 +20,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+
+import java.util.List;
 
 @Configuration
 @EnableMethodSecurity
@@ -60,7 +64,7 @@ public class WebSecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/api/auth/**", "/api/users/**").permitAll()
-                                .requestMatchers("/api/test/**").permitAll()
+                                .requestMatchers("/api/test/**", "/api/timezones/**" ).permitAll()
 //                                .requestMatchers("/api/users/**").permitAll()
                                 .requestMatchers("/api/files/**").permitAll()
                                 .anyRequest().authenticated()

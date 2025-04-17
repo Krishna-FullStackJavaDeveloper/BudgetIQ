@@ -1,28 +1,35 @@
 package com.auth.globalUtils;
+
+import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.ZoneId;
-import java.util.Date;
+import java.time.format.DateTimeFormatter;
 
 public class DateFormatUtil {
-    public static String formatDate(LocalDateTime dateTime) {
-        if (dateTime == null) {
-            return "N/A"; // Return a default value or empty string
+
+    public static String formatDate(Instant instant, ZoneId zoneId) {
+        if (instant == null) {
+            return "N/A";
         }
-        // Define the custom date-time pattern
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy, EEEE | h:mm a");
-
-        // Convert LocalDateTime to desired format string
-        return dateTime.format(formatter);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy, EEEE | h:mm a").withZone(zoneId);
+        return formatter.format(instant);
     }
 
-    public static void main(String[] args) {
-        // Example date
-        LocalDateTime createdAt = LocalDateTime.of(2025, 3, 12, 14, 56, 5, 642487000); // Example datetime
-
-        // Format the date using the method
-        String formattedDate = formatDate(createdAt);
-
-        System.out.println(formattedDate); // Output: 12-03-2025, Wednesday | 2:56 PM
+    // Optional: Overloaded method for legacy use with LocalDateTime
+    public static String formatDate(LocalDateTime dateTime, ZoneId zoneId) {
+        if (dateTime == null) {
+            return "N/A";
+        }
+        return dateTime.atZone(ZoneId.systemDefault())
+                .withZoneSameInstant(zoneId)
+                .format(DateTimeFormatter.ofPattern("dd-MM-yyyy, EEEE | h:mm a"));
     }
+
+//    public static void main(String[] args) {
+//        Instant now = Instant.now();
+//        System.out.println("Formatted UTC Instant: " + formatDate(now));
+//
+//        LocalDateTime legacy = LocalDateTime.of(2025, 3, 12, 14, 56, 5);
+//        System.out.println("Formatted LocalDateTime: " + formatDate(legacy));
+//    }
 }

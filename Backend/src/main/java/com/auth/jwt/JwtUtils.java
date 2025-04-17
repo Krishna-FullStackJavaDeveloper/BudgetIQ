@@ -11,6 +11,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 @Slf4j
@@ -28,30 +31,37 @@ public class JwtUtils {
 
     private Key cachedKey;
 
-    //    Generates an access token for an authenticated user.
+    //    Generates an access token for an authenticated user with id in payload.
     public String generateJwtToken(Authentication authentication) {
-        return generateToken(((UserDetailsImpl) authentication.getPrincipal()).getUsername(), accessTokenExpirationMs);
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        return generateToken(userDetails.getUsername(), userDetails.getId(), accessTokenExpirationMs);
     }
 
-    //     Generates a refresh token for an authenticated user.
+    // Generates a refresh token for an authenticated user with id in payload
     public String generateRefreshToken(Authentication authentication) {
-        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
+        Instant nowUtc = ZonedDateTime.now(ZoneOffset.UTC).toInstant();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         return Jwts.builder()
-                .setSubject(userPrincipal.getUsername())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpirationMs))
+                .setSubject(userDetails.getUsername())
+                .claim("id", userDetails.getId())  // Add user id in refresh token
+                .setIssuedAt(Date.from(nowUtc))
+                .setExpiration(Date.from(nowUtc.plusMillis(refreshTokenExpirationMs)))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    //    Generates a new access token from a username
-    public String generateJwtTokenFromUsername(String username) {
-        return generateToken(username, accessTokenExpirationMs);
+    // Generates a new access token from a username with id in payload
+    public String generateJwtTokenFromUsername(String username, Long userId) {
+        return generateToken(username, userId, accessTokenExpirationMs);
     }
 
     //    Extracts username from a JWT token.
     public String getUserNameFromJwtToken(String token) {
         return parseTokenClaims(token).getSubject();
+    }
+    // Extracts user id from JWT token.
+    public Long getUserIdFromJwtToken(String token) {
+        return (Long) parseTokenClaims(token).get("id");
     }
 
     // Validates a JWT token.
@@ -73,18 +83,19 @@ public class JwtUtils {
 
     // ============================= PRIVATE HELPER METHODS =============================
 
-    //    Generates a JWT token with a specified expiration time.
-    private String generateToken(String username, int expirationMs) {
-        Date now = new Date();
+    // Generates a JWT token with a specified expiration time, adding user id to the payload
+    private String generateToken(String username, Long userId, int expirationMs) {
+        Instant nowUtc = ZonedDateTime.now(ZoneOffset.UTC).toInstant();
         return Jwts.builder()
                 .setSubject(username)
-                .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + expirationMs))
+                .claim("id", userId)  // Add user id in token payload
+                .setIssuedAt(Date.from(nowUtc))
+                .setExpiration(Date.from(nowUtc.plusMillis(expirationMs)))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    //    Returns the signing key, caching it to avoid redundant decoding.
+    // Returns the signing key, caching it to avoid redundant decoding.
     private Key getSigningKey() {
         if (cachedKey == null) {
             synchronized (this) { // Ensures thread safety
@@ -96,7 +107,8 @@ public class JwtUtils {
         return cachedKey;
     }
 
-    //     Parses and retrieves claims from a JWT token.
+
+    // Parses and retrieves claims from a JWT token.
     private Claims parseTokenClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())

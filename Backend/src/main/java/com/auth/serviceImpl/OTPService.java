@@ -15,7 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
@@ -40,7 +42,7 @@ public class OTPService {
             Optional<OTP> latestOtpOpt = otpRepository.findByUserOrderByExpiryTimeDesc(user, OTPStatus.ACTIVE);
             if (latestOtpOpt.isPresent()) {
                 OTP latestOtp = latestOtpOpt.get();
-                if (latestOtp.getExpirytime().isAfter(LocalDateTime.now().minusSeconds(OTP_REUSE_THRESHOLD_SECONDS))) {
+                if (latestOtp.getExpirytime().isAfter(Instant.now().minusSeconds(OTP_REUSE_THRESHOLD_SECONDS))) {
                     log.info("Reusing OTP for user: {}", user.getUsername());
 
                     // Send email with the old OTP
@@ -63,7 +65,7 @@ public class OTPService {
             OTP newOtp = OTP.builder()
                     .user(user)
                     .otp(otpCode)
-                    .expirytime(LocalDateTime.now().plusMinutes(OTP_EXPIRY_MINUTES))
+                    .expirytime(Instant.now().plus(OTP_EXPIRY_MINUTES, ChronoUnit.MINUTES))
                     .status(OTPStatus.ACTIVE)
                     .build();
 
@@ -105,7 +107,7 @@ public class OTPService {
 
             OTP latestOtp = latestOtpOpt.get();
 
-            if (latestOtp.getExpirytime().isBefore(LocalDateTime.now())) {
+            if (latestOtp.getExpirytime().isBefore(Instant.now())) {
                 log.warn("OTP expired for user: {}", user.getUsername());
                 latestOtp.setStatus(OTPStatus.EXPIRED);
                 otpRepository.save(latestOtp);

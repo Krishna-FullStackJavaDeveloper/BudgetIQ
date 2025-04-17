@@ -10,8 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import java.time.Instant;
 import java.util.Optional;
 
 @Repository
@@ -29,7 +28,7 @@ public interface OTPRepository extends JpaRepository<OTP, Long> {
 
     @Modifying
     @Transactional
-    @Query("UPDATE OTP o SET o.status = 'EXPIRED' WHERE o.status IN ('ACTIVE', 'USED') AND o.expirytime < :currentTime")
-    int bulkExpireOtps(LocalDateTime currentTime);
+    @Query("UPDATE OTP o SET o.status = 'EXPIRED' WHERE o.status IN ('ACTIVE', 'USED') AND o.expirytime <= :expiryTime")
+    int bulkExpireOtps(@Param("expiryTime") Instant expiryTime);
 
 }

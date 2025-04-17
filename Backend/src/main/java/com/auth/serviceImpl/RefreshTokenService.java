@@ -32,18 +32,15 @@ public class RefreshTokenService {
 
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final JwtUtils jwtUtils;
+    private final JwtUtils jwtUtils;  // JwtUtils is injected here
 
-    // Create a fixed thread pool
-    private final ExecutorService executorService = Executors.newFixedThreadPool(10); // Adjust thread count as needed
+    private final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
-    // Cached token to avoid repeated database access
     private RefreshToken cachedRefreshToken;
 
-    //Create or refresh the refresh token
+    // Create or refresh the refresh token
     public String createRefreshToken(User user) {
 
-        // Check if a refresh token already exists for the user
         Optional<RefreshToken> existingToken = refreshTokenRepository.findByUser(user);
 
         if (existingToken.isPresent()) {
@@ -65,11 +62,9 @@ public class RefreshTokenService {
     private String generateNewRefreshToken(User user) {
         UserDetailsImpl userDetails = UserDetailsImpl.build(user);
 
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-        // Generate the refresh token
-        String refreshToken = jwtUtils.generateRefreshToken(authentication);
+        // Generate the refresh token using JwtUtils
+        String refreshToken = jwtUtils.generateRefreshToken(
+                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()));
 
         // Save the refresh token to the database in a separate thread
         executorService.submit(() -> {
@@ -90,6 +85,7 @@ public class RefreshTokenService {
         return refreshToken; // Return the generated refresh token
     }
 
+    // Validate the refresh token
     public boolean validateRefreshToken(String token) {
         Optional<RefreshToken> storedTokenOpt = refreshTokenRepository.findByToken(token);
 
@@ -108,17 +104,10 @@ public class RefreshTokenService {
         // If token is valid, update the cached token
         cachedRefreshToken = storedToken;
         log.info("Successfully validated refresh token for user: {}", storedToken.getUser() != null ? storedToken.getUser().getUsername() : "Unknown User");
-        log.info("Received refresh token: {}", token);
-        log.info("Token expiration date from DB: {}", storedToken.getExpiryDate());
-        log.info("Current time: {}", Instant.now());
         return true; // Token is valid
     }
-    // Shutdown the executor service (consider adding this method in a suitable place in your application lifecycle)
-    @PreDestroy
-    public void shutdown() {
-        executorService.shutdown();
-    }
 
+    // Cleanup expired refresh tokens
     @PreDestroy
     public void cleanupExpiredRefreshTokens() {
         try {
@@ -131,5 +120,10 @@ public class RefreshTokenService {
         } catch (Exception e) {
             log.error("Error during cleanup of expired refresh tokens: {}", e.getMessage());
         }
+    }
+
+    @PreDestroy
+    public void shutdown() {
+        executorService.shutdown();
     }
 }

@@ -4,10 +4,13 @@ import com.auth.eNum.AccountStatus;
 import com.auth.eNum.ERole;
 import com.auth.entity.Family;
 import com.auth.entity.Role;
+import com.auth.entity.Timezone;
 import com.auth.entity.User;
+import com.auth.globalException.ResourceNotFoundException;
 import com.auth.payload.request.SignupRequest;
 import com.auth.repository.FamilyRepository;
 import com.auth.repository.RoleRepository;
+import com.auth.repository.TimezoneRepository;
 import com.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +34,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder encoder;
     private final FamilyRepository familyRepository;
+    private final TimezoneRepository timezoneRepository;
 
     @Override
     @Transactional
@@ -105,6 +108,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         user.setAccountStatus(AccountStatus.valueOf(signUpRequest.getAccountStatus()));
         user.setTwoFactorEnabled(signUpRequest.isTwoFactorEnabled());
         user.setProfilePic(signUpRequest.getProfilePic());
+
+        // ✅ Fetch timezone entity by ID
+        Timezone timezone = timezoneRepository.findByTimezone(signUpRequest.getTimezone())
+                .orElseThrow(() -> new ResourceNotFoundException("Timezone not found: " + signUpRequest.getTimezone()));
+        user.setTimezone(timezone);
 
         Set<Role> roles = getRolesFromRequest(signUpRequest.getRole());
         user.setRoles(roles);

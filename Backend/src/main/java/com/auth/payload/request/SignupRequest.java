@@ -50,4 +50,6 @@ public class SignupRequest {
     @Size(min = 6, max = 40)
     private String passkey;
 
+    private String timezone;
+
 }

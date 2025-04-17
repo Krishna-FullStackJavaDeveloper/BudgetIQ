@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,14 +21,16 @@ public class CleanupExpiredOTPs {
     private final OTPRepository otpRepository;
     private final ExecutorService executorService = Executors.newFixedThreadPool(4); // Thread pool for async tasks
 
-    @Scheduled(cron = "0 0 12 * * ?") // Runs every hour
-    public void cleanupExpiredOTPs() {
+    @Scheduled(cron = "0 0 * * * ?", zone = "UTC") // Runs every hour
+
+public void cleanupExpiredOTPs() {
         try{
             log.info("Started cleaning expired OTPs");
-
+            // Fetch expired OTPs using UTC for comparison
+            Instant currentTimeUtc = Instant.now(); // This is in UTC
             // Using a lazy-loaded stream to process OTPs
             List<OTP> expiredOtps = otpRepository.findAll().stream()
-                    .filter(otp -> otp.getExpirytime().isBefore(LocalDateTime.now()))
+                    .filter(otp -> otp.getExpirytime().isBefore(currentTimeUtc))// expirytime is compared in UTC
                     .collect(Collectors.toList());
 
             // Process in parallel for efficiency

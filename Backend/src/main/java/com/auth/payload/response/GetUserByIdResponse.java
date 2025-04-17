@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Set;
 import java.util.stream.Collectors;
 import com.auth.globalUtils.DateFormatUtil;
@@ -27,9 +28,9 @@ public class GetUserByIdResponse {
     private boolean twoFactorEnabled;
     private Set<String> roles;
     private String familyName;
+    private TimezoneCountryDTO timezoneDetails;
 
-
-    public GetUserByIdResponse(User user) {
+    public GetUserByIdResponse(User user , ZoneId loginUserZoneId) {
         this.id = user.getId();
         this.username = user.getUsername();
         this.email = user.getEmail();
@@ -37,10 +38,10 @@ public class GetUserByIdResponse {
         this.phoneNumber = user.getPhoneNumber();
         this.profilePic = user.getProfilePic();
         this.accountStatus = user.getAccountStatus();
-        // Format dates using DateFormatUtil
-        this.createdAt = DateFormatUtil.formatDate(user.getCreatedAt());
-        this.updatedAt = DateFormatUtil.formatDate(user.getUpdatedAt());
-        this.lastLogin = DateFormatUtil.formatDate(user.getLastLogin());
+        // Format date-time according to timezone
+        this.createdAt = DateFormatUtil.formatDate(user.getCreatedAt(), loginUserZoneId);
+        this.updatedAt = DateFormatUtil.formatDate(user.getUpdatedAt(), loginUserZoneId);
+        this.lastLogin = DateFormatUtil.formatDate(user.getLastLogin(), loginUserZoneId);
 
         this.twoFactorEnabled = user.isTwoFactorEnabled();
         this.roles = user.getRoles().stream().map(role -> role.getName().name()).collect(Collectors.toSet());
@@ -49,6 +50,18 @@ public class GetUserByIdResponse {
             this.familyName = user.getFamily().getFamilyName();
         } else {
             this.familyName = null; // Or handle differently if you prefer
+        }
+        if (user.getTimezone() != null && user.getTimezone().getCountry() != null) {
+            this.timezoneDetails = new TimezoneCountryDTO(
+                    user.getTimezone().getTimezone(),
+                    user.getTimezone().getCountry().getIso(),
+                    user.getTimezone().getCountry().getCountry(),
+                    user.getTimezone().getCountry().getCapital(),
+                    user.getTimezone().getCountry().getCurrencyCode(),
+                    user.getTimezone().getCountry().getCurrencyName()
+            );
+        }else {
+            this.timezoneDetails = null; // Or handle differently if you prefer
         }
     }
 }

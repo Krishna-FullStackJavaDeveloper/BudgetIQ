@@ -23,7 +23,7 @@ public class AdminReportScheduler {
     private final EmailService emailService; // Email sending logic
     private final ExecutorService executorService = Executors.newFixedThreadPool(5); // Thread pool for parallel execution
 
-    @Scheduled(cron = "0 0 9 * * MON") // Every Monday at 9:00 AM
+    @Scheduled(cron = "0 0 9 * * MON", zone = "UTC") // Every Monday at 9:00 AM
     public void sendWeeklyAdminReports() {
         try {
             List<String> adminEmails = userDetails.getAllAdminEmails();

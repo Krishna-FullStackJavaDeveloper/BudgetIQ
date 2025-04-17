@@ -1,6 +1,7 @@
 package com.auth.globalException;
 
 import com.auth.payload.response.ApiResponse;
+import com.auth.payload.response.MessageResponse;
 import io.jsonwebtoken.JwtException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -14,53 +15,25 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 
 import java.util.HashMap;
 import java.util.Map;
 
 
-@RestController
-@ControllerAdvice
+@RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Map<String, String>>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-
-        // Loop through validation errors and add them to the error details map
-        ex.getBindingResult().getAllErrors().forEach(error -> {
-            String fieldName = ((FieldError) error).getField();
-            String message = error.getDefaultMessage();
-            errors.put(fieldName, message);
-        });
-
-        // Return a bad request response with error details
-        ApiResponse<Map<String, String>> response = new ApiResponse<>("Validation failed", errors, HttpStatus.BAD_REQUEST.value());
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-    }
-
     @ExceptionHandler(UnauthorizedAccessException.class)
-    public ResponseEntity<ApiResponse<Object>> handleUnauthorizedAccessException(UnauthorizedAccessException ex) {
-        ApiResponse<Object> apiResponse = new ApiResponse<>(
-                "Access Denied",  // The message to show
-                ex.getMessage(),  // Additional details or message from the exception
-                HttpStatus.FORBIDDEN.value() // Set HTTP Status Code (403)
-        );
+    public ResponseEntity<ApiResponse<MessageResponse>> handleUnauthorizedAccessException(UnauthorizedAccessException ex) {
+        log.error("Unauthorized access error: {}", ex.getMessage(), ex);
+        MessageResponse messageResponse = new MessageResponse(ex.getMessage());
+        ApiResponse<MessageResponse> apiResponse = new ApiResponse<>("Access Denied", messageResponse, HttpStatus.FORBIDDEN.value());
         return new ResponseEntity<>(apiResponse, HttpStatus.FORBIDDEN);
-    }
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ApiResponse<Object>> handleRuntimeException(RuntimeException ex) {
-        ApiResponse<Object> apiResponse = new ApiResponse<>(
-                "Error updating user",  // Custom message
-                ex.getMessage(),  // Details from the exception
-                HttpStatus.INTERNAL_SERVER_ERROR.value()  // Set HTTP Status Code (500)
-        );
-        return new ResponseEntity<>(apiResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -126,13 +99,45 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
                 .body(new ApiResponse<>("Unsupported content type: " + ex.getMessage(), null, HttpStatus.UNSUPPORTED_MEDIA_TYPE.value()));
     }
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ApiResponse<Object>> handleRuntimeException(RuntimeException ex) {
+        ApiResponse<Object> apiResponse = new ApiResponse<>(
+                "Error updating user",  // Custom message
+                ex.getMessage(),  // Details from the exception
+                HttpStatus.INTERNAL_SERVER_ERROR.value()  // Set HTTP Status Code (500)
+        );
+        return new ResponseEntity<>(apiResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Map<String, String>>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+
+        // Loop through validation errors and add them to the error details map
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            String fieldName = ((FieldError) error).getField();
+            String message = error.getDefaultMessage();
+            errors.put(fieldName, message);
+        });
+
+        // Return a bad request response with error details
+        ApiResponse<Map<String, String>> response = new ApiResponse<>("Validation failed", errors, HttpStatus.BAD_REQUEST.value());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<String>> handleGeneralExceptions(Exception ex) {
-        String errorMessage = "An unexpected error occurred: " + ex.getMessage();
-        log.error(errorMessage, ex);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ApiResponse<>(errorMessage, null, HttpStatus.INTERNAL_SERVER_ERROR.value()));
+    public ResponseEntity<ApiResponse<MessageResponse>> handleGeneralException(Exception ex) {
+        log.error("An error occurred: {}", ex.getMessage(), ex);
+
+        MessageResponse messageResponse = new MessageResponse("An unexpected error occurred.");
+        ApiResponse<MessageResponse> apiResponse = new ApiResponse<>(
+                "Internal Server Error",
+                messageResponse,
+                HttpStatus.INTERNAL_SERVER_ERROR.value()
+        );
+
+        return new ResponseEntity<>(apiResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }

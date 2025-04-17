@@ -70,9 +70,10 @@ public class AuthTokenFilter extends OncePerRequestFilter  {
         String refreshToken = request.getHeader("Refresh-Token");
         if (StringUtils.hasText(refreshToken) && refreshTokenService.validateRefreshToken(refreshToken)) {
             String username = jwtUtils.getUserNameFromJwtToken(refreshToken);
+            Long userId = jwtUtils.getUserIdFromJwtToken(refreshToken); // Extract user ID
             log.info("Refreshing token for user: {}", username);
 
-            String newAccessToken = jwtUtils.generateJwtTokenFromUsername(username);
+            String newAccessToken = jwtUtils.generateJwtTokenFromUsername(username, userId);
             log.info("Generated new access token: {}", newAccessToken);
             response.setHeader("Authorization", "Bearer " + newAccessToken);
 

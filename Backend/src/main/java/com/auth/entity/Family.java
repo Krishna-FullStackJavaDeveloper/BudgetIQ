@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +41,7 @@ public class Family {
     private List<User> users = new ArrayList<>();
 
     @CreationTimestamp
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
 //    store the number of users in the family
     private int userSize;

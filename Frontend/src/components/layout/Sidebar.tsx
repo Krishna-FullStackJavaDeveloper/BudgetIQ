@@ -59,7 +59,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, toggleSidebar, isAuthenticated,
       { label: 'Test-Profile', path: `/edit-user/${userId}`, icon: <PersonIcon /> },
       { label: 'Dashboard-Test', path: '/manage-users-test', icon: <ReportIcon /> },
       { label: 'Settings', path: '/settings', icon: <SettingsIcon /> },
-      { label: 'Profile', path: '/profile', icon: <PersonIcon /> },
+      { label: 'Profile', path: `/edit-user/${userId}`, icon: <PersonIcon /> },
     ]
   };
 

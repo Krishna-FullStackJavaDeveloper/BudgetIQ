@@ -55,7 +55,7 @@ export const getUsersForFamilyAdmin = async (userId: string) => {
     }
 
     // Add Authorization header with token
-    const response = await axios.get(`${API_URL}/mod/getAllUsers/${userId}`, {
+    const response = await axios.get(`${API_URL}/mod/getAllUsers`, {
       headers: {
         Authorization: `Bearer ${token}`, // Attach the token to the request header
       },

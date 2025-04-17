@@ -18,6 +18,7 @@ import {
   RadioGroup,
   Radio,
   FormLabel,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import { getUserDetails, updateUser } from "../../api/user";
@@ -27,6 +28,8 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { useLocation } from "react-router-dom";
 import RestoreIcon from '@mui/icons-material/Restore';
 import { useNotification } from "../../components/common/NotificationProvider";
+import { getTimezone } from "../../api/timeZone";
+
 
 const Profile = () => {
   const [userDetails, setUserDetails] = useState<any | null>(null);
@@ -43,6 +46,7 @@ const Profile = () => {
 
   const location = useLocation();
   const [isEditing, setIsEditing] = useState(location.state?.editMode || false);
+  const [timezones, setTimezones] = useState<any[]>([]);
 
   useEffect(() => {
     if (!userId || !token || !LoginUserID) {
@@ -71,10 +75,27 @@ const Profile = () => {
     }
   }, [userId, token, navigate, showNotification, LoginUserID]);
 
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
+  useEffect(() => {
+    // Fetch timezones if not already fetched
+    if (timezones.length === 0) {
+      const fetchTimezones = async () => {
+        try {
+          const response = await getTimezone();
+          setTimezones(response.data);
+        } catch (error) {
+          console.error("Error fetching timezones:", error);
+        }
+      };
+  
+      fetchTimezones();
+    }
+  }, [timezones]); // Only runs if timezones is empty
 
+  const handleEdit = async () => {
+    setIsEditing(true);
+   
+  };
+  
   const handleSave = async () => {
     if (!token || !editedDetails || !LoginUserID || !userId) {
       showNotification("Error: Missing details or authentication", "error");
@@ -188,7 +209,7 @@ const Profile = () => {
             </Stack>
 
             <Grid container spacing={2} mt={2}>
-              {["fullName", "username", "email", "password", "phoneNumber"].map(
+              {["fullName", "username", "email", "password", "phoneNumber", ""].map(
                 (field) => (
                   <Grid item xs={12} key={field}>
                     <TextField
@@ -288,6 +309,39 @@ const Profile = () => {
                 </Grid>
               ))}
 
+<Grid item xs={12}>
+  <Autocomplete
+    disabled={!isEditing}
+    fullWidth
+    options={timezones}
+    getOptionLabel={(option) => option.country + " - " + option.timezone}
+    value={
+      timezones.find(
+        (tz) =>
+          tz.timezone ===
+          (isEditing
+            ? editedDetails?.timezoneDetails?.timezone
+            : userDetails?.timezoneDetails?.timezone)
+      ) || null
+    }
+    onChange={(event, newValue) => {
+      setEditedDetails((prevDetails: any) => ({
+        ...prevDetails,
+        timezone: newValue?.timezone || "", // directly store timezone string
+      }));
+    }}
+    renderInput={(params) => (
+      <TextField {...params} label="Timezone" variant="outlined" />
+    )}
+    filterOptions={(options, { inputValue }) => {
+      return options.filter(
+        (option) =>
+          option.country.toLowerCase().includes(inputValue.toLowerCase()) ||
+          option.timezone.toLowerCase().includes(inputValue.toLowerCase())
+      );
+    }}
+  />
+</Grid>
               <Grid item xs={12} sx={{ display: "flex", alignItems: "center" }}>
                 {userRoles.includes("ROLE_ADMIN") ||
                 userRoles.includes("ROLE_MODERATOR") ? (

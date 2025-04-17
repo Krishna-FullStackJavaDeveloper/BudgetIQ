@@ -66,10 +66,13 @@ const AddCategory = () => {
         const updatedCategoryList = [...categoryList];
         updatedCategoryList[editIndex] = newCategory;
         setCategoryList(updatedCategoryList);
+        console.log("Updated category list (edit):", updatedCategoryList);
         setDialogMessage("Category updated successfully!");
       } else {
         // Add new category if not editing
-        setCategoryList([...categoryList, newCategory]);
+        const updatedCategoryList = [...categoryList, newCategory];
+        setCategoryList(updatedCategoryList);
+        console.log("Updated category list (add):", updatedCategoryList);
         setDialogMessage("Category added successfully!");
       }
 

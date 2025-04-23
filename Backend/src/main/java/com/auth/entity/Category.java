@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -23,4 +25,11 @@ public class Category {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;  // Link to the user who created the category
 
+    private Long createdBy;
+    private Long updatedBy;
+    private Instant createdAt;
+    private Instant updatedAt;
+
+    @Column(nullable = false)
+    private boolean deleted = false;
 }

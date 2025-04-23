@@ -3,6 +3,7 @@ import { forgotPassword } from "../../api/auth";
 import { Box, Button, Card, CardContent, TextField, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useNotification } from "../../components/common/NotificationProvider";
+import axios from "axios";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -24,10 +25,19 @@ const ForgotPassword = () => {
         showNotification('Check your email for password reset instructions.', 'success');
         navigate('/reset-password', { state: { token: response.data.resetToken, email } });
       } else {
-        showNotification('Failed to send reset link. Please try again.', 'error');
+        // If status code is not 200, handle error based on API response
+    const errorMessage = response.data.message || 'Failed to send reset link. Please try again.';
+    showNotification(errorMessage, 'error');
       }
     } catch (error) {
-      showNotification('An error occurred. Please try again.', 'error');
+       // Catch block to handle any unexpected errors (e.g., network issues)
+  if (axios.isAxiosError(error)) {
+    const errorMessage = error.response?.data?.message || 'An error occurred while making the request. Please try again.';
+    showNotification(errorMessage, 'error');
+  } else {
+    // General error message in case it's not an AxiosError
+    showNotification('An unknown error occurred. Please try again.', 'error');
+  }
     } finally {
       setLoading(false);
     }

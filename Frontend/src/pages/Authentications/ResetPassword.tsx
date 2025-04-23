@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { resetPassword } from '../../api/auth';  // API call for resetting password
 import { Button, TextField, Box, Typography, InputAdornment, IconButton, Card } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useNotification } from '../../components/common/NotificationProvider';
+import axios from 'axios';
 
 const ResetPassword = () => {
   const location = useLocation();
@@ -14,6 +16,8 @@ const ResetPassword = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const { showNotification} = useNotification();
+    const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,11 +35,21 @@ const ResetPassword = () => {
       // Call the API with token and new password
       const response = await resetPassword(token, newPassword);
 
-      if (response.status === 200) {
-        setSuccessMessage('Your password has been reset successfully!');
+      if (response.statusCode === 200) {
+        setSuccessMessage(response.message);
+        showNotification(response.message, 'success');
+        setTimeout(() => {
+          navigate('/login');  // Redirect to the login page after a short delay
+        }, 2000);
+      }else {
+        showNotification(response.message || 'Failed to reset password.', 'error');
       }
     } catch (error) {
-      setError('Failed to reset password. Please try again.');
+      if (error instanceof Error) {
+        showNotification(error.message, 'error');
+      } else {
+        showNotification('Failed to reset password.', 'error');
+      }
     } finally {
       setLoading(false);
     }

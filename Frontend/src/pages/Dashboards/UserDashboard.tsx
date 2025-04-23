@@ -1,4 +1,4 @@
-import React, { JSX, useState } from "react";
+import React, { JSX, useEffect, useState } from "react";
 import {
   Grid,
   Card,
@@ -66,6 +66,7 @@ import dayjs, { Dayjs } from "dayjs";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import Loader from "../../components/common/Loader";
 
 
 const transactions = [
@@ -129,6 +130,7 @@ const UserDashboard = () => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const handleAddExpense = () => {
     if (!amount || !category || !date ) {
@@ -181,6 +183,19 @@ const UserDashboard = () => {
       </Typography>
     </Card>
   );
+
+  useEffect(() => {
+      const timer = setTimeout(() => {
+        setLoading(false); // After 1.5 seconds, stop showing the loader
+      }, 1500);
+    
+      return () => clearTimeout(timer); // Cleanup timer
+    }, []);
+    
+    if (loading) {
+      return <Loader />;
+    }
+  
 
   return (
     <Box sx={{ p: 3 }}>

@@ -26,10 +26,12 @@ import EditIcon from "@mui/icons-material/Edit"; // To show edit button
 import SaveIcon from "@mui/icons-material/Save"; // For save button
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { useLocation } from "react-router-dom";
-import RestoreIcon from '@mui/icons-material/Restore';
+import RestoreIcon from "@mui/icons-material/Restore";
 import { useNotification } from "../../components/common/NotificationProvider";
 import { getTimezone } from "../../api/timeZone";
+import Loader from "../../components/common/Loader";
 
+const timezonePromise = getTimezone();
 
 const Profile = () => {
   const [userDetails, setUserDetails] = useState<any | null>(null);
@@ -47,6 +49,9 @@ const Profile = () => {
   const location = useLocation();
   const [isEditing, setIsEditing] = useState(location.state?.editMode || false);
   const [timezones, setTimezones] = useState<any[]>([]);
+  const [isTimezoneFetched, setIsTimezoneFetched] = useState(false);
+
+  
 
   useEffect(() => {
     if (!userId || !token || !LoginUserID) {
@@ -76,26 +81,20 @@ const Profile = () => {
   }, [userId, token, navigate, showNotification, LoginUserID]);
 
   useEffect(() => {
-    // Fetch timezones if not already fetched
-    if (timezones.length === 0) {
-      const fetchTimezones = async () => {
-        try {
-          const response = await getTimezone();
-          setTimezones(response.data);
-        } catch (error) {
-          console.error("Error fetching timezones:", error);
-        }
-      };
-  
-      fetchTimezones();
-    }
-  }, [timezones]); // Only runs if timezones is empty
+    timezonePromise
+      .then((response) => {
+        setTimezones(response.data);
+        setIsTimezoneFetched(true);
+      })
+      .catch((error) => {
+        console.error("Error fetching timezones:", error);
+      });
+  }, []);
 
   const handleEdit = async () => {
     setIsEditing(true);
-   
   };
-  
+
   const handleSave = async () => {
     if (!token || !editedDetails || !LoginUserID || !userId) {
       showNotification("Error: Missing details or authentication", "error");
@@ -147,18 +146,7 @@ const Profile = () => {
   };
 
   if (loading) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-        <CircularProgress sx={{ display: "block", margin: "auto" }} />
-        <Typography
-          variant="body2"
-          color="textSecondary"
-          sx={{ textAlign: "center", mt: 2 }}
-        >
-          Fetching user details...
-        </Typography>
-      </Box>
-    );
+    return <Loader />;
   }
 
   if (!userDetails) {
@@ -209,27 +197,30 @@ const Profile = () => {
             </Stack>
 
             <Grid container spacing={2} mt={2}>
-              {["fullName", "username", "email", "password", "phoneNumber", ""].map(
-                (field) => (
-                  <Grid item xs={12} key={field}>
-                    <TextField
-                      fullWidth
-                      name={field}
-                      label={field
-                        .replace(/([A-Z])/g, " $1")
-                        .replace(/^./, (str) => str.toUpperCase())}
-                      value={
-                        isEditing
-                          ? editedDetails?.[field]
-                          : userDetails?.[field]
-                      }
-                      onChange={handleChange}
-                      disabled={!isEditing}
-                      variant="outlined"
-                    />
-                  </Grid>
-                )
-              )}
+              {[
+                "fullName",
+                "username",
+                "email",
+                "password",
+                "phoneNumber",
+                "",
+              ].map((field) => (
+                <Grid item xs={12} key={field}>
+                  <TextField
+                    fullWidth
+                    name={field}
+                    label={field
+                      .replace(/([A-Z])/g, " $1")
+                      .replace(/^./, (str) => str.toUpperCase())}
+                    value={
+                      isEditing ? editedDetails?.[field] : userDetails?.[field]
+                    }
+                    onChange={handleChange}
+                    disabled={!isEditing}
+                    variant="outlined"
+                  />
+                </Grid>
+              ))}
               {/* Family Name Field (Non-Editable) */}
               <Grid item xs={12}>
                 <TextField
@@ -309,39 +300,49 @@ const Profile = () => {
                 </Grid>
               ))}
 
-<Grid item xs={12}>
-  <Autocomplete
-    disabled={!isEditing}
-    fullWidth
-    options={timezones}
-    getOptionLabel={(option) => option.country + " - " + option.timezone}
-    value={
-      timezones.find(
-        (tz) =>
-          tz.timezone ===
-          (isEditing
-            ? editedDetails?.timezoneDetails?.timezone
-            : userDetails?.timezoneDetails?.timezone)
-      ) || null
-    }
-    onChange={(event, newValue) => {
-      setEditedDetails((prevDetails: any) => ({
-        ...prevDetails,
-        timezone: newValue?.timezone || "", // directly store timezone string
-      }));
-    }}
-    renderInput={(params) => (
-      <TextField {...params} label="Timezone" variant="outlined" />
-    )}
-    filterOptions={(options, { inputValue }) => {
-      return options.filter(
-        (option) =>
-          option.country.toLowerCase().includes(inputValue.toLowerCase()) ||
-          option.timezone.toLowerCase().includes(inputValue.toLowerCase())
-      );
-    }}
-  />
-</Grid>
+              <Grid item xs={12}>
+                <Autocomplete
+                  disabled={!isEditing}
+                  fullWidth
+                  options={timezones}
+                  getOptionLabel={(option) =>
+                    option.country + " - " + option.timezone
+                  }
+                  value={
+                    timezones.find(
+                      (tz) =>
+                        tz.timezone ===
+                        (isEditing
+                          ? editedDetails?.timezoneDetails?.timezone
+                          : userDetails?.timezoneDetails?.timezone)
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    setEditedDetails((prevDetails: any) => ({
+                      ...prevDetails,
+                      timezone: newValue?.timezone || "", // directly store timezone string
+                    }));
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Timezone"
+                      variant="outlined"
+                    />
+                  )}
+                  filterOptions={(options, { inputValue }) => {
+                    return options.filter(
+                      (option) =>
+                        option.country
+                          .toLowerCase()
+                          .includes(inputValue.toLowerCase()) ||
+                        option.timezone
+                          .toLowerCase()
+                          .includes(inputValue.toLowerCase())
+                    );
+                  }}
+                />
+              </Grid>
               <Grid item xs={12} sx={{ display: "flex", alignItems: "center" }}>
                 {userRoles.includes("ROLE_ADMIN") ||
                 userRoles.includes("ROLE_MODERATOR") ? (

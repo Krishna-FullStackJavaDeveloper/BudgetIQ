@@ -1,11 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   TextField,
   Grid,
   Typography,
   Button,
-  Paper,
   IconButton,
   Table,
   TableHead,
@@ -24,6 +23,13 @@ import {
 import * as MuiIcons from "@mui/icons-material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import {
+  getAllCategories,
+  addCategory,
+  updateCategory,
+  deleteCategory,
+} from "../../api/category"; // Importing API methods
+import axios from "axios";
 
 const AddCategory = () => {
   const [categoryName, setCategoryName] = useState("");
@@ -35,6 +41,7 @@ const AddCategory = () => {
   const [openModal, setOpenModal] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
   const [editIndex, setEditIndex] = useState<number | null>(null); // Track the index of the category being edited
+  const [totalCategories, setTotalCategories] = useState(0); // New state for total count
 
   // Pagination state
   const [page, setPage] = useState(0);
@@ -44,7 +51,8 @@ const AddCategory = () => {
   const [order, setOrder] = useState<"asc" | "desc">("asc");
   const [orderBy, setOrderBy] = useState<string>("name");
 
-  const iconNames = Object.keys(MuiIcons) as (keyof typeof MuiIcons)[];
+  const iconNames = Object.keys(MuiIcons) as (keyof typeof MuiIcons)[]; // Icon names array
+  
   const filteredIcons =
     iconSearch.length > 0
       ? iconNames.filter((name) =>
@@ -52,27 +60,25 @@ const AddCategory = () => {
         )
       : [];
 
-  const handleAddCategory = () => {
+  const handleAddCategory = async () => {
     if (!categoryName || !selectedIconName) return;
 
     setIsLoading(true);
 
-    // Simulate an async operation (like API call)
-    setTimeout(() => {
-      const newCategory = { name: categoryName, iconName: selectedIconName, color };
+    try {
+      const newCategory = {
+        name: categoryName,
+        iconName: selectedIconName,
+        color,
+      };
 
       if (editIndex !== null) {
         // Update category if editing an existing one
-        const updatedCategoryList = [...categoryList];
-        updatedCategoryList[editIndex] = newCategory;
-        setCategoryList(updatedCategoryList);
-        console.log("Updated category list (edit):", updatedCategoryList);
+        await updateCategory(categoryList[editIndex].id, newCategory); // Use the API call
         setDialogMessage("Category updated successfully!");
       } else {
         // Add new category if not editing
-        const updatedCategoryList = [...categoryList, newCategory];
-        setCategoryList(updatedCategoryList);
-        console.log("Updated category list (add):", updatedCategoryList);
+        await addCategory(newCategory); // Use the API call
         setDialogMessage("Category added successfully!");
       }
 
@@ -85,13 +91,34 @@ const AddCategory = () => {
       setSelectedIconName("");
       setColor("#1976d2");
       setEditIndex(null); // Clear the edit state
-    }, 1000); // Simulated delay
+
+      // Fetch updated category list
+      fetchCategories();
+    }catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        // Handle Axios-specific error
+        setDialogMessage(error.response?.data.message || 'Something went wrong!');
+      } else {
+        // Handle non-Axios error
+        setDialogMessage('Unexpected error occurred.');
+      }
+    } finally {
+      setIsLoading(false); // Ensuring it runs whether there's an error or not
+      setOpenModal(true); // Open modal even in case of error (optional)
+    }
   };
 
-  const handleDelete = (index: number) => {
-    const updated = [...categoryList];
-    updated.splice(index, 1);
-    setCategoryList(updated);
+  const handleDelete = async (index: number) => {
+    try {
+      await deleteCategory(categoryList[index].id); // Use the API call to delete
+      const updatedList = categoryList.filter((_, idx) => idx !== index);
+      setCategoryList(updatedList); // Update the state after deletion
+
+      // Fetch updated category list after deletion
+      fetchCategories();
+    } catch (error) {
+      console.error("Error deleting category:", error);
+    }
   };
 
   const handleEdit = (index: number) => {
@@ -106,32 +133,35 @@ const AddCategory = () => {
   const handleRequestSort = (event: React.MouseEvent<unknown>, property: string) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
-    setOrderBy(property);
+    setOrderBy(property); // 👈 this will trigger useEffect now
   };
 
   const handleChangePage = (event: any, newPage: number) => {
     setPage(newPage);
+    setCategoryList([]); // Clear the current category list before fetching new page data
   };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0); // Reset page to 0 when rows per page changes
   };
 
-  const IconComponent = MuiIcons[selectedIconName as keyof typeof MuiIcons];
-
-  // Sort the data based on the current order and column
-  const sortedData = [...categoryList].sort((a, b) => {
-    if (orderBy === "name") {
-      return order === "asc"
-        ? a.name.localeCompare(b.name)
-        : b.name.localeCompare(a.name);
+  const fetchCategories = async () => {
+    try {
+      const sortQuery = `${orderBy},${order}`; // Sorting query
+      const response = await getAllCategories(page, rowsPerPage, sortQuery);
+      const totalCount = response.data.page.totalElements;
+      setTotalCategories(totalCount);
+      setCategoryList(response.data.content);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
     }
-    return 0;
-  });
-
-  // Calculate the data to display on the current page
-  const currentData = sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  };
+  useEffect(() => {
+    fetchCategories();
+  }, [page, rowsPerPage, order, orderBy]);
 
   return (
     <Box p={4}>
@@ -156,14 +186,19 @@ const AddCategory = () => {
             freeSolo
             options={filteredIcons}
             inputValue={iconSearch}
-            onInputChange={(event, newInputValue) => setIconSearch(newInputValue)}
+            onInputChange={(event, newInputValue) =>
+              setIconSearch(newInputValue)
+            }
             onChange={(event, newValue) => {
               setSelectedIconName(newValue || "");
             }}
             renderOption={(props, option) => {
               const Icon = MuiIcons[option as keyof typeof MuiIcons];
               return (
-                <li {...props} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <li
+                  {...props}
+                  style={{ display: "flex", alignItems: "center", gap: 10 }}
+                >
                   {Icon && <Icon fontSize="small" />}
                   <span>{option}</span>
                 </li>
@@ -236,35 +271,49 @@ const AddCategory = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {currentData.map((cat, idx) => {
-              const Icon = MuiIcons[cat.iconName as keyof typeof MuiIcons];
-              return (
-                <TableRow key={idx}>
-                  <TableCell>
-                    {Icon && <Icon sx={{ color: cat.color, fontSize: 28 }} />}
-                  </TableCell>
-                  <TableCell>{cat.name}</TableCell>
-                  <TableCell>
-                    <Box
-                      sx={{
-                        width: 24,
-                        height: 24,
-                        borderRadius: "50%",
-                        bgcolor: cat.color,
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell align="right">
-                    <IconButton color="primary" onClick={() => handleEdit(idx)}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton color="error" onClick={() => handleDelete(idx)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+            {categoryList.length > 0 ? (
+              categoryList.map((cat, idx) => {
+                const Icon = MuiIcons[cat.iconName as keyof typeof MuiIcons];
+                return (
+                  <TableRow key={idx}>
+                    <TableCell>
+                      {Icon && <Icon sx={{ color: cat.color, fontSize: 28 }} />}
+                    </TableCell>
+                    <TableCell>{cat.name}</TableCell>
+                    <TableCell>
+                      <Box
+                        sx={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: "50%",
+                          bgcolor: cat.color,
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell align="right">
+                      <IconButton
+                        color="primary"
+                        onClick={() => handleEdit(idx)}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton
+                        color="error"
+                        onClick={() => handleDelete(idx)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            ) : (
+              <TableRow>
+                <TableCell colSpan={4} align="center">
+                  No categories available
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
 
@@ -272,7 +321,7 @@ const AddCategory = () => {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={categoryList.length}
+          count={totalCategories || 0} // Default to 0 if totalCategories is not valid
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
@@ -282,7 +331,9 @@ const AddCategory = () => {
 
       {/* Dialog Box for confirmation */}
       <Dialog open={openModal} onClose={() => setOpenModal(false)}>
-        <DialogTitle>Category {dialogMessage.includes('added') ? 'Added' : 'Updated'}</DialogTitle>
+        <DialogTitle>
+          Category {dialogMessage.includes("added") ? "Added" : "Updated"}
+        </DialogTitle>
         <DialogContent>
           <Typography>{dialogMessage}</Typography>
         </DialogContent>

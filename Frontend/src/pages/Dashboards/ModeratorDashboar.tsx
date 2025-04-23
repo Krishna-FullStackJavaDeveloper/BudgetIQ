@@ -1,4 +1,4 @@
-import React, { JSX, useState } from "react";
+import React, { JSX, useEffect, useState } from "react";
 import {
   Grid,
   Card,
@@ -30,6 +30,7 @@ import {
   Select,
   MenuItem,
   InputAdornment,
+  CircularProgress,
 } from "@mui/material";
 import {
   BarChart,
@@ -70,6 +71,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import UserAvatar from "../../components/common/UserAvatar";
+import Loader from "../../components/common/Loader";
 const userID = localStorage.getItem("user")|| "";
 const transactions = [
   { id: 1, name: "Shopping", amount: 1200, category: "shopping" },
@@ -156,6 +158,7 @@ const ModeratorDashboard = () => {
   const handleClose = () => setOpen(false);
   const [isFocused, setIsFocused] = useState(false);
   const handleEditFamily = () => navigate(`/edit-family/${userID}`);
+  const [loading, setLoading] = useState(true);
 
   const handlePieClick = () => {
     // Redirect to /manage-users
@@ -187,7 +190,32 @@ const ModeratorDashboard = () => {
     setIsFocused(false);
   };
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false); // After 1.5 seconds, stop showing the loader
+    }, 1500);
+  
+    return () => clearTimeout(timer); // Cleanup timer
+  }, []);
+  
+  if (loading) {
+    return <Loader />;
+  }
+
   return (
+    <>
+     {/* {loading ? (
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <CircularProgress size={80} color="primary" />
+      </Box>
+    ) : ( */}
     <Box sx={{ p: 3 }}>
       {/* Header with Avatar */}
       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
@@ -768,6 +796,8 @@ const ModeratorDashboard = () => {
         </Grid>
       </Grid>
     </Box>
+    {/* )} */}
+    </>
   );
 };
 

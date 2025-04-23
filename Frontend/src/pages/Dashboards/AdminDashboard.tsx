@@ -1,4 +1,4 @@
-import React, { JSX, useState } from "react";
+import React, { JSX, useEffect, useState } from "react";
 import {
   Grid,
   Card,
@@ -70,6 +70,7 @@ import dayjs, { Dayjs } from 'dayjs'; // Import Dayjs if using Dayjs
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import Loader from "../../components/common/Loader";
 
 
 const transactions = [
@@ -146,6 +147,7 @@ const AdminDashboard = () => {
   const handleClose = () => setOpen(false);
   const [isFocused, setIsFocused] = useState(false);
   const handleEditFamily = () => navigate("/edit-family");
+  const [loading, setLoading] = useState(true);
 
   const handlePieClick = () => {
     // Redirect to /manage-users
@@ -178,6 +180,18 @@ const AdminDashboard = () => {
   const handleBlur = () => {
     setIsFocused(false);
   };
+
+  useEffect(() => {
+      const timer = setTimeout(() => {
+        setLoading(false); // After 1.5 seconds, stop showing the loader
+      }, 1500);
+    
+      return () => clearTimeout(timer); // Cleanup timer
+    }, []);
+    
+    if (loading) {
+      return <Loader />;
+    }
 
   return (
     <Box sx={{ p: 3 }}>

@@ -10,7 +10,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
+
 import java.time.format.DateTimeFormatter;
 import java.time.ZonedDateTime;
 
@@ -40,24 +40,19 @@ public class EmailService {
 
             // Load templates lazily
             emailTemplateService.loadTemplates("notification-email-templates.properties");
-            // Get subject
-            String subject = emailTemplateService.getSubject("email." +action);
 
-            // Format the date and time
-            ZonedDateTime now = ZonedDateTime.now();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy, EEEE | h:mm a", Locale.ENGLISH);
-            String formattedTime = "Today (" + now.format(formatter) + ")";
+            // Get subject
+            String subject = emailTemplateService.getSubject("email." + action);
 
             // Prepare dynamic placeholders
             Map<String, String> placeholders = new HashMap<>();
             placeholders.put("name", userName);
-            placeholders.put("formatted_time", formattedTime);
 
             // Get formatted body with dynamic values
-            String body = emailTemplateService.getFormattedBody("email." +action, placeholders);
+            String body = emailTemplateService.getFormattedBody("email." + action, placeholders);
 
             // Set email details
-            message.setFrom("Art Asylum <" + senderEmail + ">");
+            message.setFrom("BudgetIQ <" + senderEmail + ">"); // Updated to BudgetIQ
             message.setReplyTo("no-reply@gmail.com");
             message.setTo(recipientEmail);
             message.setSubject(subject);
@@ -73,41 +68,44 @@ public class EmailService {
         });
     }
 
-    public void sendOTPNotification(String recipientEmail,  String userName, String action,String otpCode) {
-
+    public void sendOTPNotification(String recipientEmail, String userName, String action, String otpCode) {
         executorService.submit(() -> {
-            SimpleMailMessage message = new SimpleMailMessage();
-
-            // Load templates lazily
-            emailTemplateService.loadTemplates("notification-email-templates.properties");
-            // Get subject
-            String subject = emailTemplateService.getSubject("email." +action);
-
-            // Format the date and time
-            ZonedDateTime now = ZonedDateTime.now();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy, EEEE | h:mm a", Locale.ENGLISH);
-            String formattedTime = "Today (" + now.format(formatter) + ")";
-
-            // Prepare dynamic placeholders
-            Map<String, String> placeholders = new HashMap<>();
-            placeholders.put("name", userName);
-            placeholders.put("otp", otpCode);
-
-            placeholders.put("formatted_time", formattedTime);
-
-            // Get formatted body with dynamic values
-            String body = emailTemplateService.getFormattedBody("email." +action, placeholders);
-
-            // Set email details
-            message.setFrom("Art Asylum <" + senderEmail + ">");
-            message.setReplyTo("no-reply@gmail.com");
-            message.setTo(recipientEmail);
-            message.setSubject(subject);
-            message.setText(body);
-
             try {
+                // Load templates lazily
+                emailTemplateService.loadTemplates("notification-email-templates.properties");
+
+                // Get subject
+                String subject = emailTemplateService.getSubject("email." + action);
+
+                // Prepare dynamic placeholders
+                Map<String, String> placeholders = new HashMap<>();
+                placeholders.put("name", userName);
+                placeholders.put("otp", otpCode);
+
+                // Build the HTML body manually (instead of getting from templates)
+                String body = "<td align=\"left\" valign=\"top\" style=\"padding:25px 0px 0px\">" +
+                        "<h2 style=\"font-family:'Noto IKEA','Noto Sans','Helvetica Neue',Arial,sans-serif;" +
+                        "font-weight:bold;font-size:30px;line-height:40px;color:#111;margin:0 0 25px;padding:0\">Hi " + userName + "!</h2>" +
+                        "<div style=\"font-family:'Noto IKEA','Noto Sans','Helvetica Neue',Arial,sans-serif;" +
+                        "font-weight:normal;font-size:14px;line-height:18px;color:#111;margin:0;padding:0\">" +
+                        "<p style=\"margin:0 0 25px\">Enter these 6 digits where you requested your one-time code:</p>" +
+                        "<p style=\"font-size:48px\"><b>" + otpCode + "</b></p>" +
+                        "<p style=\"margin:0 0 25px\">Please don't share your one-time code. This one-time code remains valid for 5 minutes only.</p>" +
+                        "<p>Sincerely,<br/>Team BudgetIQ</p>" +
+                        "</div></td>";
+
+                // Create MimeMessage for HTML email
+                MimeMessage mimeMessage = emailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+                helper.setFrom("BudgetIQ <" + senderEmail + ">");
+                helper.setReplyTo("no-reply@gmail.com");
+                helper.setTo(recipientEmail);
+                helper.setSubject(subject);
+                helper.setText("<html><body><table>" + body + "</table></body></html>", true); // Set 'true' for HTML content
+
                 // Send the email
-                emailSender.send(message);
+                emailSender.send(mimeMessage);
                 log.info("OTP email sent to {}", recipientEmail);
             } catch (Exception e) {
                 log.error("Failed to send OTP email to {}: {}", recipientEmail, e.getMessage());
@@ -135,10 +133,10 @@ public class EmailService {
                         + "<p>Or use this token to reset your password: <strong style='font-size: 12px; color: black;'>"
                         + token + "</strong></p>"
                         + "<p>If you didn't request this, ignore this email.</p>"
-                        + "<p>Best Regards,<br>Krishna & Team</p>";
+                        + "<p>Best Regards,<br>Team BudgetIQ </p>";
 
                 // Set email details
-                helper.setFrom("Art Asylum <" + senderEmail + ">");
+                helper.setFrom("BudgetIQ <" + senderEmail + ">");
                 helper.setReplyTo("no-reply@gmail.com");
                 helper.setTo(recipientEmail);
                 helper.setSubject(subject);

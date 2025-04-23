@@ -5,8 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9ef1f0a6-0768-4427-ac2f-d3321830eed0" name="Changes" comment="create get user by userId for all roles.">
-      <change beforePath="$PROJECT_DIR$/../Frontend/src/components/layout/Sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/components/layout/Sidebar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/BudgetManagement/AddCategory.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/BudgetManagement/AddCategory.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/App.css" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/App.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/components/common/Loader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/components/common/Loader.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/Authentications/ForgotPassword.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/Authentications/ForgotPassword.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/Authentications/ResetPassword.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/Authentications/ResetPassword.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/Dashboards/AdminDashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/Dashboards/AdminDashboard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/Dashboards/ModeratorDashboar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/Dashboards/ModeratorDashboar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/Dashboards/UserDashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/Dashboards/UserDashboard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/UserProfile/Profile.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/UserProfile/Profile.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -18,9 +24,9 @@
       <list>
         <option value="Enum" />
         <option value="Exception" />
-        <option value="Interface" />
         <option value="AnnotationType" />
         <option value="Class" />
+        <option value="Interface" />
       </list>
     </option>
   </component>
@@ -67,20 +73,20 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.JwtDebugger.executor": "Run",
-    "Application.RoleBaseAuthenticationApplication.executor": "Debug",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true",
-    "last_directory_selection": "D:/Krishna/Workspace/IntelliJ/springboot-role-base-authentication/src/test/java",
-    "last_opened_file_path": "C:/Krishna/My Project/BudgetIQ/Backend",
-    "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "preferences.lookFeel"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.JwtDebugger.executor&quot;: &quot;Run&quot;,
+    &quot;Application.RoleBaseAuthenticationApplication.executor&quot;: &quot;Debug&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_directory_selection&quot;: &quot;D:/Krishna/Workspace/IntelliJ/springboot-role-base-authentication/src/test/java&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Krishna/My Project/BudgetIQ/Backend&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="Application.RoleBaseAuthenticationApplication">
     <configuration name="JwtDebugger" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.auth.globalUtils.JwtDebugger" />

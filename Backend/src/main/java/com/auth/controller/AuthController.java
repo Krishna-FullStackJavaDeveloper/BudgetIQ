@@ -84,7 +84,7 @@ public class AuthController {
         if (user.isTwoFactorEnabled()) {
             // If 2FA is enabled, generate and send OTP
             otpService.generateOTP(user); //otp is generated and saved.
-            return ResponseEntity.ok(new ApiResponse<>("2FA OTP sent to your email", null, HttpStatus.ACCEPTED.value()));
+            return ResponseEntity.ok(new ApiResponse<>("OTP sent to your email", null, HttpStatus.ACCEPTED.value()));
         }
 
         List<String> roles = userDetails.getAuthorities().stream()
@@ -272,20 +272,23 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+    public ResponseEntity<ApiResponse<Object>> resetPassword(@RequestBody Map<String, String> request) {
         String token = request.get("token");
         String newPassword = request.get("newPassword");
 
         if (token == null || newPassword == null || token.isEmpty() || newPassword.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Token and new password are required"));
+            ApiResponse<Object> errorResponse = new ApiResponse<>("Token and new password are required", null, 400);
+            return ResponseEntity.badRequest().body(errorResponse);
         }
 
         User user = userRepository.findByResetToken(token)
                 .orElseThrow(() -> new RuntimeException("Invalid or expired token"));
 
         if (user.getTokenExpiry().isBefore(Instant.now())) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Token expired"));
+            ApiResponse<Object> errorResponse = new ApiResponse<>("Token expired", null, 400);
+            return ResponseEntity.badRequest().body(errorResponse);
         }
+
 
         String hashedPassword = passwordEncoder.encode(newPassword);
         user.setPassword(hashedPassword);
@@ -296,6 +299,7 @@ public class AuthController {
         // Send reset password email asynchronously
         CompletableFuture.runAsync(() -> emailService.sendLoginNotification(user.getEmail(), user.getUsername(), "resetPassword"));
 
-        return ResponseEntity.ok(Map.of("message", "Password reset successful"));
+        ApiResponse<Object> successResponse = new ApiResponse<>("Password reset successful", null, 200);
+        return ResponseEntity.ok(successResponse);
     }
 }

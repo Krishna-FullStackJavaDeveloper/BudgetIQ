@@ -1,4 +1,4 @@
-import React, { JSX, useEffect, useState } from "react";
+import React, { JSX, useEffect, useRef, useState } from "react";
 import {
   Grid,
   Card,
@@ -63,11 +63,19 @@ import {
   Language,
 } from "@mui/icons-material";
 import dayjs, { Dayjs } from "dayjs";
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import Loader from "../../components/common/Loader";
+import { getAllCategories } from "../../api/category";
+import * as MuiIcons from "@mui/icons-material";
 
+interface Category {
+  id: number;
+  name: string;
+  iconName: string;
+  color: string;
+}
 
 const transactions = [
   { id: 1, name: "Shopping", amount: 1200, category: "shopping" },
@@ -76,16 +84,6 @@ const transactions = [
   { id: 4, name: "Art Supply", amount: 200, category: "art" },
   { id: 5, name: "Uber Eats", amount: 35, category: "food" },
 ];
-// Define category icons and colors with an explicit type for the keys
-type Category = "shopping" | "stationary" | "groceries" | "art" | "food";
-
-const categoryData: Record<Category, { icon: JSX.Element; color: string }> = {
-  shopping: { icon: <ShoppingCart />, color: "#FF5722" },
-  stationary: { icon: <School />, color: "#2196F3" },
-  groceries: { icon: <LocalGroceryStore />, color: "#4CAF50" },
-  art: { icon: <Brush />, color: "#9C27B0" },
-  food: { icon: <Fastfood />, color: "#FF9800" },
-};
 
 const recentTransactions = transactions.slice(-4);
 
@@ -124,7 +122,6 @@ const recurringTransactions = [
 const UserDashboard = () => {
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState("");
   const [date, setDate] = useState<Dayjs | null>(null); // Set state to Dayjs or null
 
   const handleOpen = () => setOpen(true);
@@ -132,8 +129,12 @@ const UserDashboard = () => {
   const [isFocused, setIsFocused] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const [category, setCategory] = useState("");
+  const [categoryList, setCategoryList] = useState<any[]>([]);
+  const hasFetched = useRef(false);
+
   const handleAddExpense = () => {
-    if (!amount || !category || !date ) {
+    if (!amount || !category || !date) {
       alert("Please fill out all fields");
       return;
     }
@@ -185,18 +186,36 @@ const UserDashboard = () => {
   );
 
   useEffect(() => {
-      const timer = setTimeout(() => {
-        setLoading(false); // After 1.5 seconds, stop showing the loader
-      }, 1500);
-    
-      return () => clearTimeout(timer); // Cleanup timer
-    }, []);
-    
-    if (loading) {
-      return <Loader />;
-    }
-  
+    const fetchCategories = async () => {
+      try {
+        // Ensure fetch happens only once
+        if (!hasFetched.current) {
+          hasFetched.current = true;
 
+          const data = await getAllCategories(0, 100, "name");
+          if (data.data && Array.isArray(data.data.content)) {
+            setCategoryList(data.data.content); // Set categories state
+          } else {
+            setCategoryList([]); // Fallback to empty list
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load categories", error);
+        setCategoryList([]); // Fallback to empty list
+      }
+    };
+    fetchCategories();
+
+    const timer = setTimeout(() => {
+      setLoading(false); // After 1.5 seconds, stop showing the loader
+    }, 1500);
+
+    return () => clearTimeout(timer); // Cleanup timer
+  }, []);
+
+  if (loading) {
+    return <Loader />;
+  }
   return (
     <Box sx={{ p: 3 }}>
       {/* Header with Avatar */}
@@ -212,8 +231,8 @@ const UserDashboard = () => {
 
       {/* Alerts */}
       <Grid container spacing={3}>
-           {/* Income and Expense Summary */}
-           <Grid item xs={12} sm={6} md={3}>
+        {/* Income and Expense Summary */}
+        <Grid item xs={12} sm={6} md={3}>
           <StatCard
             icon={<MonetizationOn />}
             title="Total Income"
@@ -245,7 +264,6 @@ const UserDashboard = () => {
             color="warning.main"
           />
         </Grid>
-       
 
         {/* Expenses Chart */}
         <Grid item xs={12}>
@@ -384,7 +402,7 @@ const UserDashboard = () => {
               borderRadius: 3,
               position: "relative",
               height: 380,
-              mb:4
+              mb: 4,
             }}
           >
             <CardContent sx={{ pb: 9 }}>
@@ -404,20 +422,20 @@ const UserDashboard = () => {
                     backgroundColor: "rgba(255, 255, 255, 0.7)",
                     mb: 1,
                     boxShadow: 1,
-                    color: categoryData[tx.category as Category].color, // Type assertion for category
-                    borderLeft: `5px solid ${
-                      categoryData[tx.category as Category].color
-                    }`, // Set left border color
+                    // color: categoryData[tx.category as Category].color, // Type assertion for category
+                    // borderLeft: `5px solid ${
+                    //   categoryData[tx.category as Category].color
+                    // }`, // Set left border color
                   }}
                 >
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     {/* Category Icon */}
                     <Box
-                      sx={{
-                        color: categoryData[tx.category as Category].color,
-                      }}
+                    // sx={{
+                    //   color: categoryData[tx.category as Category].color,
+                    // }}
                     >
-                      {categoryData[tx.category as Category].icon}
+                      {/* {categoryData[tx.category as Category].icon} */}
                     </Box>
                     <Typography variant="body1" sx={{ fontWeight: "bold" }}>
                       {tx.name}
@@ -436,7 +454,7 @@ const UserDashboard = () => {
             {/* Floating Add Button */}
             <Fab
               color="primary"
-              sx={{ position: "absolute", bottom: 20, right: 20,  zIndex: 0}}
+              sx={{ position: "absolute", bottom: 20, right: 20, zIndex: 0 }}
               onClick={handleOpen}
               aria-label="Add Expense"
             >
@@ -461,7 +479,7 @@ const UserDashboard = () => {
                   position: "relative",
                 }}
               >
-                 Add Expenditure
+                Add Expenditure
                 {/* Close Icon Button in the top-right corner */}
                 <IconButton
                   sx={{ position: "absolute", right: 8, top: 8 }}
@@ -477,7 +495,6 @@ const UserDashboard = () => {
                   component="form"
                   sx={{ display: "flex", flexDirection: "column", gap: 3 }}
                 >
-                
                   {/* Amount Field */}
                   <TextField
                     label="Amount"
@@ -518,21 +535,67 @@ const UserDashboard = () => {
                           boxShadow: 2,
                         },
                       }}
+                      renderValue={(selected) => {
+                        const selectedCategory = categoryList.find(
+                          (cat) => cat.name === selected
+                        );
+                        if (selectedCategory) {
+                          const IconComponent =
+                            MuiIcons[
+                              selectedCategory.iconName as keyof typeof MuiIcons
+                            ] || MuiIcons.Brush;
+                          return (
+                            <div
+                              style={{ display: "flex", alignItems: "center" }}
+                            >
+                              <IconComponent
+                                sx={{
+                                  marginRight: 2,
+                                  color: selectedCategory.color,
+                                }}
+                              />
+                              <Typography
+                                sx={{ color: selectedCategory.color }}
+                              >
+                                {selectedCategory.name}
+                              </Typography>
+                            </div>
+                          );
+                        }
+                        return null; // Return nothing if no category is selected
+                      }}
                     >
-                      <MenuItem value="food">Food</MenuItem>
-                      <MenuItem value="transport">Transport</MenuItem>
-                      <MenuItem value="entertainment">Entertainment</MenuItem>
-                      <MenuItem value="utilities">Utilities</MenuItem>
+                      {categoryList.length === 0 ? (
+                        <MenuItem disabled>No categories available</MenuItem>
+                      ) : (
+                        categoryList.map((cat) => {
+                          const IconComponent =
+                            MuiIcons[cat.iconName as keyof typeof MuiIcons] ||
+                            MuiIcons.Brush;
+
+                          return (
+                            <MenuItem key={cat.id} value={cat.name}>
+                              {/* Apply color to the icon and text */}
+                              <IconComponent
+                                sx={{ marginRight: 2, color: cat.color }}
+                              />
+                              <Typography sx={{ color: cat.color }}>
+                                {cat.name}
+                              </Typography>
+                            </MenuItem>
+                          );
+                        })
+                      )}
                     </Select>
                   </FormControl>
                   {/* Date Picker */}
-                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                      <DatePicker 
-                                      label="Select Date"
-                                       value={date}
-                                       onChange={(newDate) => setDate(newDate)}
-                                      />
-                                    </LocalizationProvider>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Select Date"
+                      value={date}
+                      onChange={(newDate) => setDate(newDate)}
+                    />
+                  </LocalizationProvider>
                 </Box>
               </DialogContent>
 
@@ -544,7 +607,7 @@ const UserDashboard = () => {
                     setAmount(""); // Reset the Amount field
                     setCategory(""); // Reset the Category field
                     setDate(null); // Reset the Date field
-                   
+
                     handleAddExpense(); // Call your existing add expense function here
                   }}
                   color="primary"
@@ -559,7 +622,6 @@ const UserDashboard = () => {
                     setAmount(""); // Reset the Amount field
                     setCategory(""); // Reset the Category field
                     setDate(null); // Reset the Date field
-                   
                   }}
                   color="secondary"
                   sx={{ borderRadius: "8px", padding: "6px 16px" }}

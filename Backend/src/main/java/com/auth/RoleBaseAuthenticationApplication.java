@@ -7,7 +7,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication (scanBasePackages = "com.auth")
-//@EnableScheduling
+@EnableScheduling
 @EnableCaching // Enable Spring's cache functionality
 public class RoleBaseAuthenticationApplication {
 

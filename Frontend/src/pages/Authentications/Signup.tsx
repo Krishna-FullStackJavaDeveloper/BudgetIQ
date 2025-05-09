@@ -74,9 +74,12 @@ const Signup = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
+     // Trim the username field before updating the state
+  const newValue = name === "username" ? value.trim() : value;
+
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: newValue,
     });
     // If password is being updated, evaluate its strength
     if (name === "password") {

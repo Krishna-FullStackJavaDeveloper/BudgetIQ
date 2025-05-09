@@ -1,5 +1,5 @@
 // ExpensePage.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Grid,
   Card,
@@ -50,6 +50,14 @@ import {
 } from "chart.js";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { getAllCategories } from "../../api/category";
+
+interface Category {
+  id: number;
+  name: string;
+  iconName: string;
+  color: string;
+}
 
 const chartData = [
   { date: "2025-04-01", amount: 20, source: "Food" },
@@ -69,19 +77,7 @@ const chartData = [
   { date: "2025-04-15", amount: 12, source: "Food" },
 ];
 
-const categoryData = [
-  { name: "Food", color: "#FF6B6B", icon: "restaurant" },
-  { name: "Travel", color: "#4ECDC4", icon: "flight" },
-  { name: "Shopping", color: "#FFD93D", icon: "shopping_cart" },
-  { name: "Bills", color: "#1E90FF", icon: "receipt" },
-  { name: "Entertainment", color: "#A29BFE", icon: "theaters" },
-  { name: "Health", color: "#00B894", icon: "healing" },
-  { name: "Grocery", color: "#A1887F", icon: "ShoppingBasket" },
-  { name: "Stationery", color: "#78909C", icon: "DesignServices" },
-  { name: "Gass", color: "#EC407A", icon: "LocalGasStation" },
-];
 const ExpensePage = () => {
-  const [category, setCategory] = useState("");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState<Dayjs | null>(null);
   const [openModal, setOpenModal] = useState(false);
@@ -94,6 +90,9 @@ const ExpensePage = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [data, setData] = useState(chartData);
+  const [category, setCategory] = useState("");
+    const [categoryList, setCategoryList] = useState<any[]>([]);
+    const hasFetched = useRef(false);
 
   const [selectedMonth, setSelectedMonth] = useState<dayjs.Dayjs | null>(
     dayjs()
@@ -139,10 +138,10 @@ const ExpensePage = () => {
   
   // Function to get category details (color and icon) for each source
   const getCategoryDetails = (source: string) => {
-    const category = categoryData.find((cat) => cat.name === source);
+    const category = categoryList.find((cat) => cat.name === source);
     return category
-      ? { color: category.color, icon: category.icon }
-      : { color: "#000", icon: "" };
+      ? { color: category.color, icon: category.iconName }
+      : { color: "#000", icon: "" }; // fallback
   };
 
   const capitalizeIconName = (name: string): string => {
@@ -164,14 +163,14 @@ const ExpensePage = () => {
       return;
     }
 
-    const categoryDetails = categoryData.find((cat) => cat.name === category);
+    const categoryDetails = categoryList.find((cat) => cat.name === category);
 
     if (!categoryDetails) {
       console.error("Category not found");
       return;
     }
 
-    const { color, icon } = categoryDetails;
+    const { color, iconName: icon } = categoryDetails;
 
     setIsLoading(true);
     setTimeout(() => {
@@ -267,7 +266,7 @@ const ExpensePage = () => {
 
   // Adding background color and icon based on the source/category
   const enhancedData = sortedTableData.map((item) => {
-    const categoryDetails = categoryData.find(
+    const categoryDetails = categoryList.find(
       (cat) => cat.name === item.source
     );
     if (categoryDetails) {
@@ -297,19 +296,39 @@ const ExpensePage = () => {
   );
 
   // Prepare the data for the pie chart from the updated `data` state
-  const chartLabels = categoryData.map((item) => item.name);
+  const chartLabels = categoryList.map((item) => item.name);
 
   // Use `data` state to calculate the amounts for each category dynamically
-  const chartValues = categoryData.map((item) =>
+  const chartValues = categoryList.map((item) =>
     filteredData
       .filter((data) => data.source === item.name)
       .reduce((acc, curr) => acc + curr.amount, 0)
   );
 
-  const backgroundColors = categoryData.map((item) => item.color);
-  const borderColors = categoryData.map((item) => item.color);
+  const backgroundColors = categoryList.map((item) => item.color);
+  const borderColors = categoryList.map((item) => item.color);
 
   useEffect(() => {
+     const fetchCategories = async () => {
+          try {
+            // Ensure fetch happens only once
+            if (!hasFetched.current) {
+              hasFetched.current = true;
+    
+              const data = await getAllCategories(0, 100, "name");
+              if (data.data && Array.isArray(data.data.content)) {
+                setCategoryList(data.data.content); // Set categories state
+              } else {
+                setCategoryList([]); // Fallback to empty list
+              }
+            }
+          } catch (error) {
+            console.error("Failed to load categories", error);
+            setCategoryList([]); // Fallback to empty list
+          }
+        };
+        fetchCategories();
+        
     setTotalAmount(filteredData.reduce((sum, item) => sum + item.amount, 0));
   }, [filteredData]);
 
@@ -394,9 +413,7 @@ const ExpensePage = () => {
               </Box>
             </Typography>
 
-            <FormControl
-              fullWidth
-              variant="outlined"
+           <FormControl fullWidth variant="outlined"
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
               sx={{
@@ -407,51 +424,73 @@ const ExpensePage = () => {
                   borderRadius: "8px",
                   boxShadow: 2,
                 },
-              }}
-            >
-              <InputLabel>Category</InputLabel>
-              <Select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                label="Category"
-                renderValue={(selected) => {
-                  const selectedCategory = categoryData.find(
-                    (cat) => cat.name === selected
-                  );
-                  const IconComponent = getMuiIcon(
-                    selectedCategory?.icon || ""
-                  ); // Use `getMuiIcon` to get the component
-                  return (
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      {IconComponent && (
-                        <IconComponent
-                          sx={{ color: selectedCategory?.color }}
-                        />
-                      )}
-                      <Typography color={selectedCategory?.color}>
-                        {selectedCategory?.name}
-                      </Typography>
-                    </Box>
-                  );
-                }}
-              >
-                {categoryData.map((item) => {
-                  const IconComponent = getMuiIcon(item.icon); // Use `getMuiIcon` to get the component
-                  return (
-                    <MenuItem key={item.name} value={item.name}>
-                      <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                      >
-                        {IconComponent && (
-                          <IconComponent sx={{ color: item.color }} />
-                        )}
-                        <Typography color={item.color}>{item.name}</Typography>
-                      </Box>
-                    </MenuItem>
-                  );
-                })}
-              </Select>
-            </FormControl>
+              }}>
+                              <InputLabel>Category</InputLabel>
+                              <Select
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value)}
+                                label="Category"
+                                required
+                                sx={{
+                                  borderRadius: "8px",
+                                  "& .MuiOutlinedInput-root": {
+                                    borderRadius: "8px",
+                                    boxShadow: 2,
+                                  },
+                                }}
+                                renderValue={(selected) => {
+                                  const selectedCategory = categoryList.find(
+                                    (cat) => cat.name === selected
+                                  );
+                                  if (selectedCategory) {
+                                    const IconComponent =
+                                      MuiIcons[
+                                        selectedCategory.iconName as keyof typeof MuiIcons
+                                      ] || MuiIcons.Brush;
+                                    return (
+                                      <div
+                                        style={{ display: "flex", alignItems: "center" }}
+                                      >
+                                        <IconComponent
+                                          sx={{
+                                            marginRight: 2,
+                                            color: selectedCategory.color,
+                                          }}
+                                        />
+                                        <Typography
+                                          sx={{ color: selectedCategory.color }}
+                                        >
+                                          {selectedCategory.name}
+                                        </Typography>
+                                      </div>
+                                    );
+                                  }
+                                  return null; // Return nothing if no category is selected
+                                }}
+                              >
+                                {categoryList.length === 0 ? (
+                                  <MenuItem disabled>No categories available</MenuItem>
+                                ) : (
+                                  categoryList.map((cat) => {
+                                    const IconComponent =
+                                      MuiIcons[cat.iconName as keyof typeof MuiIcons] ||
+                                      MuiIcons.Brush;
+          
+                                    return (
+                                      <MenuItem key={cat.id} value={cat.name}>
+                                        {/* Apply color to the icon and text */}
+                                        <IconComponent
+                                          sx={{ marginRight: 2, color: cat.color }}
+                                        />
+                                        <Typography sx={{ color: cat.color }}>
+                                          {cat.name}
+                                        </Typography>
+                                      </MenuItem>
+                                    );
+                                  })
+                                )}
+                              </Select>
+                            </FormControl>
             <TextField
               label="Amount"
               type="number"

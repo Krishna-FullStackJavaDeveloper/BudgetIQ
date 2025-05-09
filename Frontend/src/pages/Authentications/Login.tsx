@@ -103,7 +103,7 @@ const Login = () => {
             fullWidth
             margin="normal"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => setUsername(e.target.value.trim())}
             // helperText="You can use either your username or email to log in."
             // sx={{mb:0}}
           />

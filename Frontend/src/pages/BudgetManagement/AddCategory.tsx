@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Box,
   TextField,
@@ -35,22 +35,20 @@ const AddCategory = () => {
   const [categoryName, setCategoryName] = useState("");
   const [iconSearch, setIconSearch] = useState("");
   const [selectedIconName, setSelectedIconName] = useState("");
-  const [color, setColor] = useState("#1976d2");
+  const [color, setColor] = useState("#6ea6dd");
   const [categoryList, setCategoryList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
   const [editIndex, setEditIndex] = useState<number | null>(null); // Track the index of the category being edited
   const [totalCategories, setTotalCategories] = useState(0); // New state for total count
-
+  const hasFetched = useRef(false);
   // Pagination state
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-
   // Sorting state
   const [order, setOrder] = useState<"asc" | "desc">("asc");
   const [orderBy, setOrderBy] = useState<string>("name");
-
   const iconNames = Object.keys(MuiIcons) as (keyof typeof MuiIcons)[]; // Icon names array
   
   const filteredIcons =
@@ -89,7 +87,7 @@ const AddCategory = () => {
       setCategoryName("");
       setIconSearch("");
       setSelectedIconName("");
-      setColor("#1976d2");
+      setColor("#6ea6dd");
       setEditIndex(null); // Clear the edit state
 
       // Fetch updated category list
@@ -160,7 +158,12 @@ const AddCategory = () => {
     }
   };
   useEffect(() => {
+    const delay = setTimeout(() => {
     fetchCategories();
+  }, 30); // Debounce time in milliseconds
+
+  // Cleanup to avoid memory leaks or rapid re-calls
+  return () => clearTimeout(delay);
   }, [page, rowsPerPage, order, orderBy]);
 
   return (

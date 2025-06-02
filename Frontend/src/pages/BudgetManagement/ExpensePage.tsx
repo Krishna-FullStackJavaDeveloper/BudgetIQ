@@ -1,5 +1,5 @@
 // ExpensePage.tsx
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Grid,
   Card,
@@ -51,35 +51,27 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { getAllCategories } from "../../api/category";
-
-interface Category {
+import {
+  createExpense,
+  deleteExpense,
+  getAllExpenses,
+  getExpenseHistory,
+  getMonthlyExpenses,
+  updateExpense,
+} from "../../api/expense";
+import utc from "dayjs/plugin/utc";
+dayjs.extend(utc);
+interface Expense {
   id: number;
-  name: string;
-  iconName: string;
-  color: string;
+  amount: number;
+  date: string;
+  category: string;
 }
-
-const chartData = [
-  { date: "2025-04-01", amount: 20, source: "Food" },
-  { date: "2025-04-02", amount: 40, source: "Travel" },
-  { date: "2025-04-03", amount: 30, source: "Shopping" },
-  { date: "2025-04-04", amount: 6.3, source: "Bills" },
-  { date: "2025-04-05", amount: 30, source: "Entertainment" },
-  { date: "2025-04-06", amount: 20, source: "Health" },
-  { date: "2025-04-07", amount: 50, source: "Grocery" },
-  { date: "2025-04-08", amount: 20, source: "Stationery" },
-  { date: "2025-04-09", amount: 10, source: "Food" },
-  { date: "2025-04-10", amount: 70, source: "Grocery" },
-  { date: "2025-04-11", amount: 33, source: "Grocery" },
-  { date: "2025-04-12", amount: 23.5, source: "Food" },
-  { date: "2025-04-13", amount: 26, source: "Gass" },
-  { date: "2025-04-14", amount: 5, source: "Food" },
-  { date: "2025-04-15", amount: 12, source: "Food" },
-];
 
 const ExpensePage = () => {
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState<Dayjs | null>(null);
+  const [category, setCategory] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -89,53 +81,121 @@ const ExpensePage = () => {
   const [orderBy, setOrderBy] = useState("date");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [data, setData] = useState(chartData);
-  const [category, setCategory] = useState("");
-    const [categoryList, setCategoryList] = useState<any[]>([]);
-    const hasFetched = useRef(false);
+  const [data, setData] = useState<Expense[]>([]);
+  const [categoryList, setCategoryList] = useState<any[]>([]);
+  const hasFetched = useRef(false);
+  const [editingId, setEditingId] = React.useState<number | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState<dayjs.Dayjs>(dayjs());
+  const [itemToDelete, setItemToDelete] = useState<{ id: number } | null>(null);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [totalCount, setTotalCount] = useState(0); // For total pages from API
+  const [chartData, setChartData] = useState<Expense[]>([]);
+  // Handle submit and add new data entry
+  const handleSubmit = async () => {
+    if (!category || !amount || !date) {
+      setOpenSnackbar(true);
+      return;
+    }
 
-  const [selectedMonth, setSelectedMonth] = useState<dayjs.Dayjs | null>(
-    dayjs()
-  );
+    const categoryDetails = categoryList.find((cat) => cat.name === category);
 
-  const filteredData = data.filter((item) => {
-    const itemDate = dayjs(item.date);
-    return (
-      selectedMonth &&
-      itemDate.month() === selectedMonth.month() &&
-      itemDate.year() === selectedMonth.year()
-    );
-  });
+    if (!categoryDetails) {
+      console.error("Category not found");
+      return;
+    }
 
-  const handleEdit = (item: { date: string; amount: number; source: string; } | {
-      color: string; // Add the category color
-      icon: string; date: string; amount: number; source: string;
-    }) => {
-    // Logic for editing the item (e.g., open a modal or redirect to a form)
-    console.log("Edit item:", item);
-  };
-  
-  const handleDelete = (item: { date: string; amount: number; source: string; } | {
-      color: string; // Add the category color
-      icon: string; date: string; amount: number; source: string;
-    }) => {
-    // Open confirmation dialog
-    const isConfirmed = window.confirm(`Are you sure you want to delete this item?`);
-    
-    if (isConfirmed) {
-      // Filter out the item from data based on its unique properties (e.g., `item.date` or `item.source`)
-      const updatedData = data.filter(
-        (dataItem) => dataItem.date !== item.date || dataItem.source !== item.source
-      );
-      
-      // Update the data state with the new filtered data
-      setData(updatedData);
-  
-      // Optionally, you can log the item to confirm deletion
-      console.log("Deleted item:", item);
+    setIsLoading(true);
+
+    try {
+      const newExpense = {
+        category,
+        amount: parseFloat(amount),
+        date: date.toISOString(),
+      };
+
+      const saved = await createExpense(newExpense);
+
+      setData((prev) => [...prev, saved.data]);
+      setOpenModal(true);
+      handleClear();
+    } catch (error) {
+      console.error("Error adding expense:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
-  
+
+  const handleDelete = async (item: { id: number }) => {
+    setItemToDelete(item);
+    setOpenDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+
+    try {
+      await deleteExpense(itemToDelete.id);
+      setData((prev) => prev.filter((i) => i.id !== itemToDelete.id));
+      //  await fetchExpenses();
+      // await fetchMonthlyExpenses();
+      await handleExpenseAction();
+    } catch (error) {
+      console.error("Error deleting item:", error);
+    } finally {
+      setOpenDeleteModal(false);
+      setItemToDelete(null);
+    }
+  };
+
+  const handleEdit = async (item: { id: number }) => {
+    try {
+      const data = await getExpenseHistory(item.id);
+      setEditingId(item.id);
+
+      // Set values only if category list is already loaded
+      if (categoryList.length > 0) {
+        setAmount(data.data.amount?.toString() || "");
+        setDate(dayjs(data.data.date));
+
+        const exists = categoryList.find(
+          (cat) => cat.name === data.data.category
+        );
+        if (exists) {
+          setCategory(data.data.category);
+        } else {
+          setCategory(""); // fallback
+        }
+      } else {
+        // Retry once category list is fetched
+        const waitForList = setInterval(() => {
+          if (categoryList.length > 0) {
+            clearInterval(waitForList);
+            setAmount(data.amount?.toString() || "");
+            setDate(dayjs(data.date));
+            setCategory(data.category);
+          }
+        }, 200);
+      }
+    } catch (error) {
+      console.error("Edit failed", error);
+    }
+  };
+  const handleUpdate = async () => {
+    if (editingId === null) return;
+
+    try {
+      await updateExpense(editingId, {
+        category,
+        amount: Number(amount),
+        date: date ? date.toISOString() : "",
+      });
+      setOpenModal(true);
+      // You may want to refresh your expenses list here if applicable
+    } catch (error) {
+      console.error("Update failed:", error);
+    }
+  };
+
   // Function to get category details (color and icon) for each source
   const getCategoryDetails = (source: string) => {
     const category = categoryList.find((cat) => cat.name === source);
@@ -156,133 +216,77 @@ const ExpensePage = () => {
     return (MuiIcons as Record<string, React.ElementType>)[capitalized] || null;
   };
 
-  // Handle submit and add new data entry
-  const handleSubmit = () => {
-    if (!category || !amount || !date) {
-      setOpenSnackbar(true);
-      return;
-    }
-
-    const categoryDetails = categoryList.find((cat) => cat.name === category);
-
-    if (!categoryDetails) {
-      console.error("Category not found");
-      return;
-    }
-
-    const { color, iconName: icon } = categoryDetails;
-
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      setOpenModal(true);
-
-      const newEntry = {
-        date: date.format("YYYY-MM-DD"),
-        amount: parseFloat(amount),
-        source: category,
-        color: color,
-        icon: icon,
-      };
-
-      setData((prev) => [...prev, newEntry]);
-      handleClear();
-    }, 2000);
-  };
-
   const handleClear = () => {
     setCategory("");
     setAmount("");
     setDate(null);
+    setEditingId(null);
   };
 
-  // Helper to sum amounts
-  const sum = (arr: any[]) => arr.reduce((acc, cur) => acc + cur.amount, 0);
+  const filteredData = chartData.filter((item) => {
+    const itemDate = dayjs(item.date);
+    return (
+      selectedMonth &&
+      itemDate.month() === selectedMonth.month() &&
+      itemDate.year() === selectedMonth.year()
+    );
+  });
 
-  // Sort chartData by date ascending
-  const sortedData = [...filteredData].sort((a, b) =>
-    dayjs(a.date).diff(dayjs(b.date))
-  );
+  // 1. Current & Previous Month Keys
+  const currentMonthKey = selectedMonth.format("YYYY-MM");
+  const previousMonthKey = selectedMonth.subtract(1, "month").format("YYYY-MM");
 
-  // Get up to the last 14 days
-  const last14Days = sortedData.slice(-14);
+  // 2. Group by YYYY-MM
+  const groupByMonth = (expenses: Expense[]): Record<string, Expense[]> => {
+    return expenses.reduce((acc, expense) => {
+      const key = dayjs.utc(expense.date).format("YYYY-MM");
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(expense);
+      return acc;
+    }, {} as Record<string, Expense[]>);
+  };
 
-  // Split smartly
-  let prev7Days: typeof data = [];
-  let last7Days: typeof data = [];
-  if (last14Days.length >= 7) {
-    // If we have at least 7 days, split into two chunks
-    last7Days = last14Days.slice(-7);
-    prev7Days = last14Days.slice(0, last14Days.length - 7);
+  // 3. Group chartData
+  const grouped = groupByMonth(chartData);
+
+  // 4. Sum function
+  const sum = (arr: Expense[]): number =>
+    arr.reduce((acc, item) => acc + item.amount, 0);
+
+  // 5. Get current and previous data
+  const currentMonthData = grouped[currentMonthKey] || [];
+  const previousMonthData = grouped[previousMonthKey] || [];
+
+  const currentSum = sum(currentMonthData);
+  const previousSum = sum(previousMonthData);
+
+  // 6. Calculate percentage change
+  let formattedPercent = "N/A";
+  let isPositive = true;
+
+  if (!(previousMonthKey in grouped)) {
+    formattedPercent = "N/A";
+  } else if (previousSum === 0 && currentSum > 0) {
+    formattedPercent = "▲ 100%";
+  } else if (previousSum === 0 && currentSum === 0) {
+    formattedPercent = "N/A";
   } else {
-    // If less than 7 days, treat all as current week, no previous data
-    last7Days = last14Days;
-    prev7Days = [];
+    const rawChange = ((currentSum - previousSum) / previousSum) * 100;
+    const cappedChange = Math.min(Math.abs(rawChange), 100);
+    isPositive = rawChange >= 0;
+    formattedPercent = `${isPositive ? "▲" : "▼"} ${cappedChange.toFixed(1)}%`;
   }
 
-  // Calculate sums
-  const last7Sum = sum(last7Days);
-  const prev7Sum = sum(prev7Days);
-
-  // Avoid divide-by-zero and cap at 100%
-  let rawChange = prev7Sum > 0 ? ((last7Sum - prev7Sum) / prev7Sum) * 100 : 0;
-  const cappedChange = Math.min(Math.abs(rawChange), 100);
-  const isPositive = rawChange >= 0;
-
-  // Final percent string
-  const formattedPercent =
-    prev7Days.length > 0 && prev7Sum > 0
-      ? `${isPositive ? "▲" : "▼"} ${cappedChange.toFixed(1)}%`
-      : "N/A";
-
   // Table functions
-  const handleRequestSort = (property: React.SetStateAction<string>) => {
+  const handleRequestSort = (property: string) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
   };
 
-  const handleChangePage = (
-    event: any,
-    newPage: React.SetStateAction<number>
-  ) => {
+  const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
-
-  const sortedTableData = [...filteredData].sort((a, b) => {
-    if (orderBy === "amount") {
-      return order === "asc" ? a.amount - b.amount : b.amount - a.amount;
-    }
-    if (orderBy === "source") {
-      return order === "asc"
-        ? a.source.localeCompare(b.source)
-        : b.source.localeCompare(a.source);
-    }
-    // Default: sort by date
-    return order === "asc"
-      ? new Date(a.date).getTime() - new Date(b.date).getTime()
-      : new Date(b.date).getTime() - new Date(a.date).getTime();
-  });
-
-  // Adding background color and icon based on the source/category
-  const enhancedData = sortedTableData.map((item) => {
-    const categoryDetails = categoryList.find(
-      (cat) => cat.name === item.source
-    );
-    if (categoryDetails) {
-      return {
-        ...item,
-        color: categoryDetails.color, // Add the category color
-        icon: categoryDetails.icon, // Add the category icon
-      };
-    }
-    return item; // If no matching category, return item unchanged
-  });
-
-  const paginatedData = enhancedData.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
 
   //Pie chart hooks
   // Register the necessary chart.js components
@@ -301,36 +305,145 @@ const ExpensePage = () => {
   // Use `data` state to calculate the amounts for each category dynamically
   const chartValues = categoryList.map((item) =>
     filteredData
-      .filter((data) => data.source === item.name)
+      .filter((data) => data.category === item.name)
       .reduce((acc, curr) => acc + curr.amount, 0)
   );
+  // console.log("chart data:", chartData);
 
   const backgroundColors = categoryList.map((item) => item.color);
   const borderColors = categoryList.map((item) => item.color);
 
+  const fetchExpenses = async () => {
+    try {
+      const month = selectedMonth.month() + 1; // month is 0-indexed in Dayjs
+      const year = selectedMonth.year();
+
+      const res = await getAllExpenses(
+        page,
+        rowsPerPage,
+        `${orderBy},${order}`,
+        month,
+        year
+      );
+
+      if (res.data && Array.isArray(res?.data?.content)) {
+        setData(res.data.content);
+        setTotalCount(res.data.page.totalElements || 0);
+      } else {
+        setData([]);
+      }
+    } catch (error) {
+      console.error("Error fetching expenses:", error);
+      setData([]);
+    }
+  };
+
+  // const fetchMonthlyExpenses = async () => {
+  //   try {
+  //     const month = selectedMonth.month() + 1;
+  //     const year = selectedMonth.year();
+
+  //     const prevMonthObj = selectedMonth.subtract(1, "month");
+  //     const prevMonth = prevMonthObj.month() + 1;
+  //     const prevYear = prevMonthObj.year();
+
+  //     // Call both months in parallel
+  //     const [currentRes, prevRes] = await Promise.all([
+  //       getMonthlyExpenses(month, year),
+  //       getMonthlyExpenses(prevMonth, prevYear),
+  //     ]);
+
+  //     // Merge both sets of data
+  //     const combinedData = [
+  //       ...(currentRes.data || []),
+  //       ...(prevRes.data || []),
+  //     ];
+
+  //     setChartData(combinedData); // store both months
+  //   } catch (error) {
+  //     console.error("Error fetching monthly expenses:", error);
+  //     setChartData([]);
+  //   }
+  // };
+
+  const isFetchingRef = useRef(false);
+
+  const fetchMonthlyExpenses = async () => {
+    if (isFetchingRef.current) {
+      return;
+    }
+
+    isFetchingRef.current = true;
+
+    try {
+      const month = selectedMonth.month() + 1;
+      const year = selectedMonth.year();
+
+      const prevMonthObj = selectedMonth.subtract(1, "month");
+      const prevMonth = prevMonthObj.month() + 1;
+      const prevYear = prevMonthObj.year();
+
+      const [currentRes, prevRes] = await Promise.all([
+        getMonthlyExpenses(month, year),
+        getMonthlyExpenses(prevMonth, prevYear),
+      ]);
+
+      const combinedData = [
+        ...(currentRes.data || []),
+        ...(prevRes.data || []),
+      ];
+
+      setChartData(combinedData);
+    } catch (error) {
+      console.error("Error fetching monthly expenses:", error);
+      setChartData([]);
+    } finally {
+      isFetchingRef.current = false;
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      if (!hasFetched.current) {
+        hasFetched.current = true;
+        const data = await getAllCategories(0, 100, "name");
+        if (data.data && Array.isArray(data.data.content)) {
+          setCategoryList(data.data.content);
+        } else {
+          setCategoryList([]);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to load categories", error);
+      setCategoryList([]);
+    }
+  };
+
+  //   useEffect(() => {
+  //   const initialLoad = async () => {
+  //     await fetchExpenses();
+  //     await fetchMonthlyExpenses();
+  //     fetchCategories();
+  //   };
+  //   initialLoad(); // ✅ Only called ONCE when the page loads
+  // }, [page, rowsPerPage, orderBy, order, selectedMonth]);
+
+  // 1. Combine both into a single reusable function
+  const handleExpenseAction = async () => {
+    await fetchExpenses(); // paginated data for table
+    await fetchMonthlyExpenses(); // full data for chart
+  };
+
   useEffect(() => {
-     const fetchCategories = async () => {
-          try {
-            // Ensure fetch happens only once
-            if (!hasFetched.current) {
-              hasFetched.current = true;
-    
-              const data = await getAllCategories(0, 100, "name");
-              if (data.data && Array.isArray(data.data.content)) {
-                setCategoryList(data.data.content); // Set categories state
-              } else {
-                setCategoryList([]); // Fallback to empty list
-              }
-            }
-          } catch (error) {
-            console.error("Failed to load categories", error);
-            setCategoryList([]); // Fallback to empty list
-          }
-        };
-        fetchCategories();
-        
+    // fetchExpenses();
+    fetchCategories();
+    handleExpenseAction();
+    // fetchMonthlyExpenses();
+  }, [page, rowsPerPage, orderBy, order, selectedMonth]);
+
+  useEffect(() => {
     setTotalAmount(filteredData.reduce((sum, item) => sum + item.amount, 0));
-  }, [filteredData]);
+  }, []);
 
   return (
     <Grid container spacing={1} p={3}>
@@ -371,7 +484,9 @@ const ExpensePage = () => {
                     views={["month", "year"]} // Allow both month and year views
                     label="Select Month"
                     value={selectedMonth}
-                    onChange={(newValue) => setSelectedMonth(newValue)} // Update selected month
+                    onChange={(newValue) =>
+                      setSelectedMonth(newValue ?? dayjs())
+                    } // Update selected month
                     sx={{
                       width: "100%",
                       "& .MuiOutlinedInput-root": {
@@ -409,11 +524,13 @@ const ExpensePage = () => {
               alignItems="center"
             >
               <Box component="span" sx={{ mx: 1 }}>
-                Add Expense
+                {editingId ? "Edit Expense" : "Add Expense"}
               </Box>
             </Typography>
 
-           <FormControl fullWidth variant="outlined"
+            <FormControl
+              fullWidth
+              variant="outlined"
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
               sx={{
@@ -424,73 +541,70 @@ const ExpensePage = () => {
                   borderRadius: "8px",
                   boxShadow: 2,
                 },
-              }}>
-                              <InputLabel>Category</InputLabel>
-                              <Select
-                                value={category}
-                                onChange={(e) => setCategory(e.target.value)}
-                                label="Category"
-                                required
-                                sx={{
-                                  borderRadius: "8px",
-                                  "& .MuiOutlinedInput-root": {
-                                    borderRadius: "8px",
-                                    boxShadow: 2,
-                                  },
-                                }}
-                                renderValue={(selected) => {
-                                  const selectedCategory = categoryList.find(
-                                    (cat) => cat.name === selected
-                                  );
-                                  if (selectedCategory) {
-                                    const IconComponent =
-                                      MuiIcons[
-                                        selectedCategory.iconName as keyof typeof MuiIcons
-                                      ] || MuiIcons.Brush;
-                                    return (
-                                      <div
-                                        style={{ display: "flex", alignItems: "center" }}
-                                      >
-                                        <IconComponent
-                                          sx={{
-                                            marginRight: 2,
-                                            color: selectedCategory.color,
-                                          }}
-                                        />
-                                        <Typography
-                                          sx={{ color: selectedCategory.color }}
-                                        >
-                                          {selectedCategory.name}
-                                        </Typography>
-                                      </div>
-                                    );
-                                  }
-                                  return null; // Return nothing if no category is selected
-                                }}
-                              >
-                                {categoryList.length === 0 ? (
-                                  <MenuItem disabled>No categories available</MenuItem>
-                                ) : (
-                                  categoryList.map((cat) => {
-                                    const IconComponent =
-                                      MuiIcons[cat.iconName as keyof typeof MuiIcons] ||
-                                      MuiIcons.Brush;
-          
-                                    return (
-                                      <MenuItem key={cat.id} value={cat.name}>
-                                        {/* Apply color to the icon and text */}
-                                        <IconComponent
-                                          sx={{ marginRight: 2, color: cat.color }}
-                                        />
-                                        <Typography sx={{ color: cat.color }}>
-                                          {cat.name}
-                                        </Typography>
-                                      </MenuItem>
-                                    );
-                                  })
-                                )}
-                              </Select>
-                            </FormControl>
+              }}
+            >
+              <InputLabel>Category</InputLabel>
+              <Select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                label="Category"
+                required
+                sx={{
+                  borderRadius: "8px",
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "8px",
+                    boxShadow: 2,
+                  },
+                }}
+                renderValue={(selected) => {
+                  const selectedCategory = categoryList.find(
+                    (cat) => cat.name === selected
+                  );
+                  if (selectedCategory) {
+                    const IconComponent =
+                      MuiIcons[
+                        selectedCategory.iconName as keyof typeof MuiIcons
+                      ] || MuiIcons.Brush;
+                    return (
+                      <div style={{ display: "flex", alignItems: "center" }}>
+                        <IconComponent
+                          sx={{
+                            marginRight: 2,
+                            color: selectedCategory.color,
+                          }}
+                        />
+                        <Typography sx={{ color: selectedCategory.color }}>
+                          {selectedCategory.name}
+                        </Typography>
+                      </div>
+                    );
+                  }
+                  return null; // Return nothing if no category is selected
+                }}
+              >
+                {categoryList.length === 0 ? (
+                  <MenuItem disabled>No categories available</MenuItem>
+                ) : (
+                  categoryList.map((cat) => {
+                    const IconComponent =
+                      MuiIcons[cat.iconName as keyof typeof MuiIcons] ||
+                      MuiIcons.Brush;
+
+                    return (
+                      <MenuItem key={cat.id} value={cat.name}>
+                        {/* Apply color to the icon and text */}
+                        <IconComponent
+                          sx={{ marginRight: 2, color: cat.color }}
+                        />
+                        <Typography sx={{ color: cat.color }}>
+                          {cat.name}
+                        </Typography>
+                      </MenuItem>
+                    );
+                  })
+                )}
+              </Select>
+            </FormControl>
             <TextField
               label="Amount"
               type="number"
@@ -540,23 +654,47 @@ const ExpensePage = () => {
             <Box
               sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}
             >
-              <Button
-                variant="contained"
-                color="error"
-                onClick={handleSubmit}
-                fullWidth
-                sx={{ mr: 1 }}
-              >
-                Submit
-              </Button>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={handleClear}
-                fullWidth
-              >
-                Clear
-              </Button>
+              {editingId ? (
+                <>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleUpdate}
+                    fullWidth
+                    sx={{ mr: 1 }}
+                  >
+                    Update
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    onClick={handleClear}
+                    fullWidth
+                  >
+                    Clear
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={handleSubmit}
+                    fullWidth
+                    sx={{ mr: 1 }}
+                  >
+                    Submit
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    onClick={handleClear}
+                    fullWidth
+                  >
+                    Clear
+                  </Button>
+                </>
+              )}
             </Box>
           </CardContent>
         </Card>
@@ -677,7 +815,7 @@ const ExpensePage = () => {
                 content={({ payload, label }) => {
                   if (!payload || payload.length === 0) return null;
 
-                  const { amount, source } = payload[0].payload;
+                  const { amount, category } = payload[0].payload;
 
                   const formattedLabel = new Date(label).toLocaleDateString(
                     "en-US",
@@ -726,9 +864,9 @@ const ExpensePage = () => {
                           justifyContent: "space-between",
                         }}
                       >
-                        <span>Source:</span>
+                        <span>Category:</span>
                         <span style={{ fontWeight: "bold", color: "#90CAF9" }}>
-                          {source}
+                          {category}
                         </span>
                       </div>
                     </div>
@@ -750,10 +888,10 @@ const ExpensePage = () => {
 
       {/* Pie Chart Grid Item */}
       <Grid item xs={12} sm={8} md={4}>
-        <Card sx={{ borderRadius: 4, boxShadow: 4, mt: 2 }}>
+        <Card sx={{ borderRadius: 4, boxShadow: 4, mt: 2, mb: 4 }}>
           <CardContent>
             <Box width="100%" display="flex" justifyContent="center">
-              <div style={{ width: "250px", height: "365px" }}>
+              <div style={{ width: "250px", height: "403px" }}>
                 <Pie
                   style={{ marginTop: 1 }}
                   data={{
@@ -825,12 +963,12 @@ const ExpensePage = () => {
                     </TableCell>
 
                     <TableCell
-                      sortDirection={orderBy === "source" ? order : false}
+                      sortDirection={orderBy === "category" ? order : false}
                     >
                       <TableSortLabel
-                        active={orderBy === "source"}
-                        direction={orderBy === "source" ? order : "asc"}
-                        onClick={() => handleRequestSort("source")}
+                        active={orderBy === "category"}
+                        direction={orderBy === "category" ? order : "asc"}
+                        onClick={() => handleRequestSort("category")}
                       >
                         <strong>Category</strong>
                       </TableSortLabel>
@@ -846,15 +984,15 @@ const ExpensePage = () => {
                         <strong>Amount ($)</strong>
                       </TableSortLabel>
                     </TableCell>
-                      {/* New Actions Column */}
-              <TableCell align="center">
-                <strong>Actions</strong>
-              </TableCell>
+                    {/* New Actions Column */}
+                    <TableCell align="center">
+                      <strong>Actions</strong>
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {paginatedData.map((item, index) => {
-                    const { color, icon } = getCategoryDetails(item.source); // Get category color and icon based on source
+                  {data.map((item, index) => {
+                    const { color, icon } = getCategoryDetails(item.category); // Get category color and icon based on source
                     const IconComponent = getMuiIcon(icon); // Get the MUI icon component
                     return (
                       <TableRow key={index}>
@@ -878,25 +1016,25 @@ const ExpensePage = () => {
                             {IconComponent && (
                               <IconComponent sx={{ marginRight: 1 }} />
                             )}
-                            {item.source}
+                            {item.category}
                           </Box>
                         </TableCell>
                         <TableCell>{item.amount.toFixed(2)}</TableCell>
-                         {/* Actions Column */}
-                  <TableCell align="center">
-                    <IconButton
-                      color="primary"
-                      onClick={() => handleEdit(item)} // Add logic to handle edit
-                    >
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
-                      color="secondary"
-                      onClick={() => handleDelete(item)} // Add logic to handle delete
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </TableCell>
+                        {/* Actions Column */}
+                        <TableCell align="center">
+                          <IconButton
+                            color="primary"
+                            onClick={() => handleEdit(item)} // Add logic to handle edit
+                          >
+                            <EditIcon />
+                          </IconButton>
+                          <IconButton
+                            color="secondary"
+                            onClick={() => handleDelete(item)} // Add logic to handle delete
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </TableCell>
                       </TableRow>
                     );
                   })}
@@ -904,7 +1042,7 @@ const ExpensePage = () => {
               </Table>
               <TablePagination
                 component="div"
-                count={data.length}
+                count={totalCount}
                 page={page}
                 onPageChange={handleChangePage}
                 rowsPerPage={rowsPerPage}
@@ -921,14 +1059,56 @@ const ExpensePage = () => {
         message="All fields are required"
       />
 
-      <Dialog open={openModal} onClose={() => setOpenModal(false)}>
-        <DialogTitle>Expense Added</DialogTitle>
+      <Dialog
+        open={openModal}
+        onClose={() => {
+          setOpenModal(false);
+          handleClear(); // Clear only after user sees the dialog
+        }}
+      >
+        <DialogTitle>
+          {editingId === null ? "Expense Added" : "Expense Updated"}
+        </DialogTitle>
         <DialogContent>
-          <Typography>Expense has been successfully recorded.</Typography>
+          <Typography>
+            {editingId === null
+              ? "Expense has been successfully recorded."
+              : "Expense has been successfully updated."}
+          </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenModal(false)} autoFocus>
+          <Button
+            onClick={async () => {
+              setOpenModal(false);
+              // await fetchExpenses();
+              // await fetchMonthlyExpenses();
+              await handleExpenseAction();
+              handleClear(); // Safe to clear here
+            }}
+            autoFocus
+          >
             OK
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={openDeleteModal} onClose={() => setOpenDeleteModal(false)}>
+        <DialogTitle>Delete Expense</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to delete this item?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={confirmDelete} color="error">
+            OK
+          </Button>
+          <Button
+            onClick={() => {
+              setOpenDeleteModal(false);
+              setItemToDelete(null);
+            }}
+            color="primary"
+          >
+            Cancel
           </Button>
         </DialogActions>
       </Dialog>

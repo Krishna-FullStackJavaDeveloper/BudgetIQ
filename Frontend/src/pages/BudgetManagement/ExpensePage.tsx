@@ -136,8 +136,6 @@ const ExpensePage = () => {
     try {
       await deleteExpense(itemToDelete.id);
       setData((prev) => prev.filter((i) => i.id !== itemToDelete.id));
-      //  await fetchExpenses();
-      // await fetchMonthlyExpenses();
       await handleExpenseAction();
     } catch (error) {
       console.error("Error deleting item:", error);
@@ -338,34 +336,6 @@ const ExpensePage = () => {
     }
   };
 
-  // const fetchMonthlyExpenses = async () => {
-  //   try {
-  //     const month = selectedMonth.month() + 1;
-  //     const year = selectedMonth.year();
-
-  //     const prevMonthObj = selectedMonth.subtract(1, "month");
-  //     const prevMonth = prevMonthObj.month() + 1;
-  //     const prevYear = prevMonthObj.year();
-
-  //     // Call both months in parallel
-  //     const [currentRes, prevRes] = await Promise.all([
-  //       getMonthlyExpenses(month, year),
-  //       getMonthlyExpenses(prevMonth, prevYear),
-  //     ]);
-
-  //     // Merge both sets of data
-  //     const combinedData = [
-  //       ...(currentRes.data || []),
-  //       ...(prevRes.data || []),
-  //     ];
-
-  //     setChartData(combinedData); // store both months
-  //   } catch (error) {
-  //     console.error("Error fetching monthly expenses:", error);
-  //     setChartData([]);
-  //   }
-  // };
-
   const isFetchingRef = useRef(false);
 
   const fetchMonthlyExpenses = async () => {
@@ -419,15 +389,6 @@ const ExpensePage = () => {
     }
   };
 
-  //   useEffect(() => {
-  //   const initialLoad = async () => {
-  //     await fetchExpenses();
-  //     await fetchMonthlyExpenses();
-  //     fetchCategories();
-  //   };
-  //   initialLoad(); // ✅ Only called ONCE when the page loads
-  // }, [page, rowsPerPage, orderBy, order, selectedMonth]);
-
   // 1. Combine both into a single reusable function
   const handleExpenseAction = async () => {
     await fetchExpenses(); // paginated data for table
@@ -435,10 +396,8 @@ const ExpensePage = () => {
   };
 
   useEffect(() => {
-    // fetchExpenses();
     fetchCategories();
     handleExpenseAction();
-    // fetchMonthlyExpenses();
   }, [page, rowsPerPage, orderBy, order, selectedMonth]);
 
   useEffect(() => {
@@ -825,6 +784,13 @@ const ExpensePage = () => {
                     }
                   );
 
+                  // Find the color from categoryList based on the category
+                  const categoryColor =
+                    categoryList.find(
+                      (item) =>
+                        item.name.toLowerCase() === category.toLowerCase()
+                    )?.color || "#90CAF9"; // fallback color if not found
+
                   return (
                     <div
                       style={{
@@ -865,7 +831,9 @@ const ExpensePage = () => {
                         }}
                       >
                         <span>Category:</span>
-                        <span style={{ fontWeight: "bold", color: "#90CAF9" }}>
+                        <span
+                          style={{ fontWeight: "bold", color: categoryColor }}
+                        >
                           {category}
                         </span>
                       </div>

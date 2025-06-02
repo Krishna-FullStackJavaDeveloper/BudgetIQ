@@ -14,6 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,9 +39,9 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     @Override
-    public Page<ExpenseResponse> getAllExpenses(Pageable pageable, Long userId) {
+    public Page<ExpenseResponse> getAllExpenses(Pageable pageable, Long userId, Integer month, Integer year) {
         User user = userRepository.findById(userId).orElseThrow();
-        return expenseRepository.findByUserAndDeletedFalse(user, pageable)
+        return expenseRepository.findByUserAndDateMonthYear(user, month, year, pageable)
                 .map(this::mapToResponse);
     }
 
@@ -67,6 +69,13 @@ public class ExpenseServiceImpl implements ExpenseService {
     public ExpenseResponse getExpenseHistory(Long id) {
         Expense expense = expenseRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Expense not found"));
         return mapToResponse(expense);
+    }
+
+    public List<ExpenseResponse> getMonthlyExpenses(Long userId, Integer month, Integer year) {
+        List<Expense> expenses = expenseRepository.findByUserIdAndMonthAndYear(userId, month, year);
+        return expenses.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
     private ExpenseResponse mapToResponse(Expense expense) {

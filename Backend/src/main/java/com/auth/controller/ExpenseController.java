@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/expenses")
 @RequiredArgsConstructor
@@ -34,12 +36,28 @@ public class ExpenseController {
     // List Expenses
     @GetMapping
     public ResponseEntity<ApiResponse<PagedModel<ExpenseResponse>>> getAllExpenses(Pageable pageable,
+                                                                                   @RequestParam(required = false) Integer month,
+                                                                                   @RequestParam(required = false) Integer year,
                                                                                    @CurrentUser UserDetailsImpl loggedInUser) {
         Long userId = loggedInUser.getId();
-        Page<ExpenseResponse> expenses = expenseService.getAllExpenses(pageable, userId);
+        Page<ExpenseResponse> expenses = expenseService.getAllExpenses(pageable, userId, month, year);
         PagedModel<ExpenseResponse> pagedModel = PagedModel.of(expenses.getContent(),
                 new PagedModel.PageMetadata(expenses.getSize(), expenses.getNumber(), expenses.getTotalElements()));
         ApiResponse<PagedModel<ExpenseResponse>> response = new ApiResponse<>("Expenses fetched successfully.", pagedModel, 200);
+        return ResponseEntity.ok(response);
+    }
+
+    //Get monthly expense
+    @GetMapping("/monthly")
+    public ResponseEntity<ApiResponse<List<ExpenseResponse>>> getMonthlyExpenses(
+            @RequestParam Integer month,
+            @RequestParam Integer year,
+            @CurrentUser UserDetailsImpl loggedInUser) {
+
+        Long userId = loggedInUser.getId();
+        List<ExpenseResponse> expenses = expenseService.getMonthlyExpenses(userId, month, year);
+
+        ApiResponse<List<ExpenseResponse>> response = new ApiResponse<>("Monthly expenses fetched successfully.", expenses, 200);
         return ResponseEntity.ok(response);
     }
 
@@ -71,4 +89,7 @@ public class ExpenseController {
         ApiResponse<ExpenseResponse> response = new ApiResponse<>("Expense history fetched successfully.", responseBody, 200);
         return ResponseEntity.ok(response);
     }
+
+
+
 }

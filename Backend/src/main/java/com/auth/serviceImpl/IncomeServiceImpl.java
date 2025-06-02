@@ -1,8 +1,10 @@
 package com.auth.serviceImpl;
+import com.auth.entity.Expense;
 import com.auth.entity.Income;
 import com.auth.entity.User;
 import com.auth.globalException.ResourceNotFoundException;
 import com.auth.payload.request.IncomeRequest;
+import com.auth.payload.response.ExpenseResponse;
 import com.auth.payload.response.IncomeResponse;
 import com.auth.repository.IncomeRepository;
 import com.auth.repository.UserRepository;
@@ -13,6 +15,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,10 +41,17 @@ public class IncomeServiceImpl implements IncomeService{
     }
 
     @Override
-    public Page<IncomeResponse> getAllIncomes(Pageable pageable, Long userId) {
+    public Page<IncomeResponse> getAllIncomes(Pageable pageable, Long userId, Integer month, Integer year) {
         User user = userRepository.findById(userId).orElseThrow();
-        return incomeRepository.findByUserAndDeletedFalse(user, pageable)
+        return incomeRepository.findByUserAndDateMonthYear(user,  month, year, pageable)
                 .map(this::mapToResponse);
+    }
+
+    public List<IncomeResponse> getMonthlyIncomes(Long userId, Integer month, Integer year) {
+        List<Income> incomes = incomeRepository.findByUserIdAndMonthAndYear(userId, month, year);
+        return incomes.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
     @Override

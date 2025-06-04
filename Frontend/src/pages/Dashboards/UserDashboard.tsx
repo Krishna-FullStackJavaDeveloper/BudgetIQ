@@ -69,43 +69,44 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import Loader from "../../components/common/Loader";
 import { getAllCategories } from "../../api/category";
 import * as MuiIcons from "@mui/icons-material";
+import { createExpense, getAllExpenses } from "../../api/expense";
+import { fetchUserSummary } from "../../api/dashboard";
+import { getCurrencySymbol } from "../../hooks/currencyUtils";
 
-interface Category {
+interface Expense {
   id: number;
-  name: string;
-  iconName: string;
-  color: string;
+  amount: number;
+  date: string;
+  category: string;
 }
 
-const transactions = [
-  { id: 1, name: "Shopping", amount: 1200, category: "shopping" },
-  { id: 2, name: "Stationary", amount: 15, category: "stationary" },
-  { id: 3, name: "Groceries", amount: 230, category: "groceries" },
-  { id: 4, name: "Art Supply", amount: 200, category: "art" },
-  { id: 5, name: "Uber Eats", amount: 35, category: "food" },
-];
+interface MonthlySummary {
+  month: string;
+  income: number;
+  expense: number;
+  saving: number;
+}
 
-const recentTransactions = transactions.slice(-4);
-
-const data = [
-  { name: "Jan", income: 2000, expense: 800, saving: 1200 },
-  { name: "Feb", income: 2500, expense: 1500, saving: 1000 },
-  { name: "Mar", income: 2200, expense: 1200, saving: 1000 },
-  { name: "Apr", income: 2200, expense: 1200, saving: 1000 },
-];
+interface SummaryResponse {
+  name: string;
+  timezone : string;
+  currencyCode: string;
+  currencyName: string;
+  monthlyData: MonthlySummary[];
+}
 
 const recurringTransactions = [
   {
     category: "Rent",
     description: "Monthly House Rent",
-    amount: "$1200",
+    amount: "1200",
     dueDate: "April 5, 2025",
     icon: <Home sx={{ color: "#3B48E0" }} />,
   },
   {
     category: "Subscription",
     description: "Netflix Premium",
-    amount: "$15",
+    amount: "15",
     dueDate: "April 10, 2025",
     icon: <Subscriptions sx={{ color: "#D32F2F" }} />,
   },
@@ -113,7 +114,7 @@ const recurringTransactions = [
   {
     category: "Bill",
     description: "Internet Bill",
-    amount: "$45",
+    amount: "45",
     dueDate: "April 28, 2025",
     icon: <Language sx={{ color: "#1565C0" }} />,
   },
@@ -132,20 +133,59 @@ const UserDashboard = () => {
   const [category, setCategory] = useState("");
   const [categoryList, setCategoryList] = useState<any[]>([]);
   const hasFetched = useRef(false);
+  const [expenseData, setExpenseData] = useState<Expense[]>([]);
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState<dayjs.Dayjs>(dayjs());
 
-  const handleAddExpense = () => {
+  const [summary, setSummary] = useState<SummaryResponse | null>(null);
+
+  // Use currency this utility(hooks) in your components
+  const currencySymbol =
+  getCurrencySymbol(summary?.currencyCode || summary?.currencyName || "");
+  const timezoneLabel = summary?.timezone?.replace("_", " ") || "N/A";
+  const currencyLabel = `${summary?.currencyCode || ""}`;
+
+  const SummaryComponent = () => {
+    const getSummary = async () => {
+      try {
+        const res = await fetchUserSummary();
+        setSummary(res.data);
+      } catch (err) {
+        console.error("Failed to fetch summary", err);
+      }
+    };
+    getSummary();
+  };
+
+  const handleAddExpense = async () => {
     if (!amount || !category || !date) {
       alert("Please fill out all fields");
       return;
     }
     // Proceed with adding the expense
-    const newTransaction = {
-      id: new Date().getTime(),
-      name: category,
-      amount: parseFloat(amount), // Ensure amount is treated as a number
-    };
-    console.log("Expense Added:", { amount, category, date });
-    setOpen(false); // Close the dialog
+    try {
+      const newExpense = {
+        category,
+        amount: parseFloat(amount),
+        date: date.toISOString(),
+      };
+      const saved = await createExpense(newExpense);
+      setExpenseData((prev) => [...prev, saved.data]);
+      setOpenModal(true);
+      fetchExpenses();
+      handleClear();
+    } catch (error) {
+      console.error("Error adding expense:", error);
+    } finally {
+      setOpenModal(false);
+      setOpen(false); // Close the dialog
+    }
+  };
+
+  const handleClear = () => {
+    setCategory("");
+    setAmount("");
+    setDate(null);
   };
 
   const handleFocus = () => {
@@ -184,28 +224,84 @@ const UserDashboard = () => {
       </Typography>
     </Card>
   );
+  //  Function to get category details (color and icon) for each source
+  const getCategoryDetails = (source: string) => {
+    const category = categoryList.find((cat) => cat.name === source);
+    return category
+      ? { color: category.color, icon: category.iconName }
+      : { color: "#000", icon: "" }; // fallback
+  };
+
+  const capitalizeIconName = (name: string): string => {
+    return name
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join("");
+  };
+
+  const getMuiIcon = (iconName: string): React.ElementType | null => {
+    const capitalized = capitalizeIconName(iconName);
+    return (MuiIcons as Record<string, React.ElementType>)[capitalized] || null;
+  };
+
+  const currentMonth = new Date().toLocaleString("en-US", {
+    month: "short",
+    year: "numeric",
+  }); // Example: "Jun 2025"
+  const formattedMonth = currentMonth.replace(" ", "-"); // "Jun-2025"
+
+  const currentMonthData = summary?.monthlyData?.find(
+    (entry) => entry.month === formattedMonth
+  );
+
+  const fetchCategories = async () => {
+    try {
+      // Ensure fetch happens only once
+      if (!hasFetched.current) {
+        hasFetched.current = true;
+
+        const data = await getAllCategories(0, 100, "name");
+        if (data.data && Array.isArray(data.data.content)) {
+          setCategoryList(data.data.content); // Set categories state
+        } else {
+          setCategoryList([]); // Fallback to empty list
+        }
+      }
+    } catch (error) {
+      console.error("Failed to load categories", error);
+      setCategoryList([]); // Fallback to empty list
+    }
+  };
+
+  const fetchExpenses = async () => {
+    try {
+      const month = selectedMonth.month() + 1; // month is 0-indexed in Dayjs
+      const year = selectedMonth.year();
+
+      const res = await getAllExpenses(
+        0, // page = 0
+        4, // size = 4
+        "date,desc", // sort = date,asc
+        month, // month = 6
+        year
+      );
+
+      if (res.data && Array.isArray(res?.data?.content)) {
+        setExpenseData(res.data.content);
+        // setTotalCount(res.data.page.totalElements || 0);
+      } else {
+        setExpenseData([]);
+      }
+    } catch (error) {
+      console.error("Error fetching expenses:", error);
+      setExpenseData([]);
+    }
+  };
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        // Ensure fetch happens only once
-        if (!hasFetched.current) {
-          hasFetched.current = true;
-
-          const data = await getAllCategories(0, 100, "name");
-          if (data.data && Array.isArray(data.data.content)) {
-            setCategoryList(data.data.content); // Set categories state
-          } else {
-            setCategoryList([]); // Fallback to empty list
-          }
-        }
-      } catch (error) {
-        console.error("Failed to load categories", error);
-        setCategoryList([]); // Fallback to empty list
-      }
-    };
     fetchCategories();
-
+    fetchExpenses();
+    SummaryComponent();
     const timer = setTimeout(() => {
       setLoading(false); // After 1.5 seconds, stop showing the loader
     }, 1500);
@@ -222,7 +318,7 @@ const UserDashboard = () => {
       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
         <Avatar sx={{ bgcolor: "primary.main" }}>K</Avatar>
         <Typography variant="h5" fontWeight={600}>
-          Welcome Back, Krishna!
+          Welcome Back, {summary?.name}
         </Typography>
         <Typography variant="subtitle2" color="textSecondary">
           {dayjs().format("MMMM DD, YYYY")}
@@ -235,16 +331,17 @@ const UserDashboard = () => {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             icon={<MonetizationOn />}
-            title="Total Income"
-            value="$8,500"
+            // (${formattedMonth})
+            title={`Total Income `} 
+            value={`${currencySymbol}  ${currentMonthData?.saving?.toLocaleString() || 0}`}
             color="success.main"
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             icon={<TrendingDown />}
-            title="Total Expense"
-            value="$6,000"
+            title={`Total Expense`}
+            value={`${currencySymbol} ${currentMonthData?.expense?.toLocaleString() || 0}`}
             color="error.main"
           />
         </Grid>
@@ -252,15 +349,15 @@ const UserDashboard = () => {
           <StatCard
             icon={<TrendingUp />}
             title="Total Savings"
-            value="$2,500"
+            value={`${currencySymbol} ${currentMonthData?.saving?.toLocaleString() || 0}`}
             color="primary.main"
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             icon={<CurrencyExchange />}
-            title="Currency & Time"
-            value="USD | GMT -5"
+            title="Currency"
+            value={`${currencyLabel} | ${currencySymbol}`}
             color="warning.main"
           />
         </Grid>
@@ -272,10 +369,14 @@ const UserDashboard = () => {
               <Typography variant="h6" fontWeight={600} gutterBottom>
                 Monthly Income & Expenses
               </Typography>
+
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={data}>
+                <BarChart
+                  data={summary?.monthlyData || []}
+                  margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
+                  <XAxis dataKey="month" />
                   <YAxis />
                   <RechartTooltip
                     content={({ payload, label }) => {
@@ -319,7 +420,7 @@ const UserDashboard = () => {
                           >
                             <span>Income:</span>
                             <span style={{ color: "#82CA9D" }}>
-                              ${formattedIncome}
+                              {currencySymbol} {formattedIncome}
                             </span>
                           </div>
                           <div
@@ -330,7 +431,7 @@ const UserDashboard = () => {
                           >
                             <span>Expense:</span>
                             <span style={{ color: "#FB7E41" }}>
-                              ${formattedExpense}
+                              {currencySymbol} {formattedExpense}
                             </span>
                           </div>
                           <div
@@ -341,14 +442,13 @@ const UserDashboard = () => {
                           >
                             <span>Saving:</span>
                             <span style={{ color: "#8884D8" }}>
-                              ${formattedSaving}
+                              {currencySymbol} {formattedSaving}
                             </span>
                           </div>
                         </div>
                       );
                     }}
                   />
-                  {/* <ReferenceLine y={1000} stroke="red" strokeDasharray="3 3" label="Avg Expense" /> */}
                   <Bar
                     dataKey="income"
                     fill="#82CA9D"
@@ -393,7 +493,6 @@ const UserDashboard = () => {
             </CardContent>
           </Card>
         </Grid>
-
         {/* Transactions List */}
         <Grid item xs={12} md={4}>
           <Card
@@ -406,49 +505,54 @@ const UserDashboard = () => {
             }}
           >
             <CardContent sx={{ pb: 9 }}>
-              {/* Extra padding for floating button */}
               <Typography variant="h6" fontWeight={600} gutterBottom>
                 Recent Transactions
               </Typography>
-              {recentTransactions.map((tx) => (
-                <Box
-                  key={tx.id}
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    p: 1.5,
-                    borderRadius: 2,
-                    backgroundColor: "rgba(255, 255, 255, 0.7)",
-                    mb: 1,
-                    boxShadow: 1,
-                    // color: categoryData[tx.category as Category].color, // Type assertion for category
-                    // borderLeft: `5px solid ${
-                    //   categoryData[tx.category as Category].color
-                    // }`, // Set left border color
-                  }}
-                >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    {/* Category Icon */}
+
+              {expenseData.map((tx) => {
+                const { color, icon } = getCategoryDetails(tx.category);
+                const IconComponent = getMuiIcon(icon); // Assumes a mapping utility for icons
+
+                return (
+                  <Box
+                    key={tx.id}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      p: 1.7,
+                      borderRadius: "12px",
+                      background: "rgba(255, 255, 255, 0.7)",
+                      backdropFilter: "blur(8px)",
+                      borderLeft: `8px solid ${color}`,
+                      boxShadow: "0 4px 14px rgba(0, 0, 0, 0.06)",
+                      mb: 1.5,
+                    }}
+                  >
                     <Box
-                    // sx={{
-                    //   color: categoryData[tx.category as Category].color,
-                    // }}
+                      sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
                     >
-                      {/* {categoryData[tx.category as Category].icon} */}
+                      {IconComponent && (
+                        <IconComponent sx={{ color, fontSize: 22 }} />
+                      )}
+                      <Typography variant="body1" fontWeight="bold">
+                        {tx.category}
+                      </Typography>
+                      {/* <Typography variant="caption" color="text.secondary">
+                        {dayjs(tx.date).format("MMM DD, YYYY")}
+                      </Typography> */}
                     </Box>
-                    <Typography variant="body1" sx={{ fontWeight: "bold" }}>
-                      {tx.name}
+                    <Typography
+                      variant="body2"
+                      fontWeight="bold"
+                      // color="#3498DB"
+                      color="#263238"
+                    >
+                      {currencySymbol} {tx.amount.toFixed(2)}
                     </Typography>
                   </Box>
-                  <Typography
-                    variant="body2"
-                    sx={{ fontWeight: "bold", color: "#0288D1" }}
-                  >
-                    ${tx.amount}
-                  </Typography>
-                </Box>
-              ))}
+                );
+              })}
             </CardContent>
 
             {/* Floating Add Button */}
@@ -506,7 +610,7 @@ const UserDashboard = () => {
                     InputProps={{
                       startAdornment:
                         isFocused || amount ? (
-                          <InputAdornment position="start">$</InputAdornment>
+                          <InputAdornment position="start">{currencySymbol}</InputAdornment>
                         ) : null,
                     }}
                     onFocus={handleFocus}
@@ -704,7 +808,7 @@ const UserDashboard = () => {
                         <TableCell
                           sx={{ fontWeight: "bold", color: "#0288D1" }}
                         >
-                          {txn.amount}
+                          {currencySymbol} {txn.amount}
                         </TableCell>
                         <TableCell
                           sx={{ color: "#2E7D32", fontWeight: "bold" }}

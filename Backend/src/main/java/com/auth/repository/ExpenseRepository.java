@@ -8,7 +8,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 public interface ExpenseRepository extends JpaRepository<Expense, Long> {
     @Query("SELECT e FROM Expense e " +
@@ -30,4 +33,10 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
     List<Expense> findByUserIdAndMonthAndYear(@Param("userId") Long userId,
                                               @Param("month") Integer month,
                                               @Param("year") Integer year);
+
+    @Query("SELECT MIN(i.date) FROM Expense i WHERE i.user.id = :userId AND i.deleted = false")
+    Optional<Instant> findMinDateByUser(@Param("userId") Long userId);
+
+    @Query("SELECT SUM(i.amount) FROM Expense i WHERE i.user.id = :userId AND i.date BETWEEN :start AND :end AND i.deleted = false")
+    Optional<BigDecimal> sumByUserAndDateRange(@Param("userId") Long userId, @Param("start") Instant start, @Param("end") Instant end);
 }

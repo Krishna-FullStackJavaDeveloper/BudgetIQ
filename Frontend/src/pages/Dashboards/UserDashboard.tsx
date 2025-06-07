@@ -72,28 +72,8 @@ import * as MuiIcons from "@mui/icons-material";
 import { createExpense, getAllExpenses } from "../../api/expense";
 import { fetchUserSummary } from "../../api/dashboard";
 import { getCurrencySymbol } from "../../hooks/currencyUtils";
-
-interface Expense {
-  id: number;
-  amount: number;
-  date: string;
-  category: string;
-}
-
-interface MonthlySummary {
-  month: string;
-  income: number;
-  expense: number;
-  saving: number;
-}
-
-interface SummaryResponse {
-  name: string;
-  timezone : string;
-  currencyCode: string;
-  currencyName: string;
-  monthlyData: MonthlySummary[];
-}
+import { Expense } from "../../components/Interface/Expense";
+import { SummaryResponse } from "../../components/Interface/SummaryResponse";
 
 const recurringTransactions = [
   {
@@ -173,6 +153,7 @@ const UserDashboard = () => {
       setExpenseData((prev) => [...prev, saved.data]);
       setOpenModal(true);
       fetchExpenses();
+      SummaryComponent();
       handleClear();
     } catch (error) {
       console.error("Error adding expense:", error);
@@ -318,7 +299,7 @@ const UserDashboard = () => {
       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
         <Avatar sx={{ bgcolor: "primary.main" }}>K</Avatar>
         <Typography variant="h5" fontWeight={600}>
-          Welcome Back, {summary?.name}
+          Welcome Back, {summary?.name}!
         </Typography>
         <Typography variant="subtitle2" color="textSecondary">
           {dayjs().format("MMMM DD, YYYY")}
@@ -333,7 +314,7 @@ const UserDashboard = () => {
             icon={<MonetizationOn />}
             // (${formattedMonth})
             title={`Total Income `} 
-            value={`${currencySymbol}  ${currentMonthData?.saving?.toLocaleString() || 0}`}
+            value={`${currencySymbol}  ${currentMonthData?.income?.toLocaleString() || 0}`}
             color="success.main"
           />
         </Grid>

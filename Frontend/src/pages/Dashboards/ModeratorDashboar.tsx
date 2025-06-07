@@ -1,4 +1,4 @@
-import React, { JSX, useEffect, useState } from "react";
+import React, { JSX, useEffect, useRef, useState } from "react";
 import {
   Grid,
   Card,
@@ -67,29 +67,19 @@ import {
 } from "@mui/icons-material";
 import dayjs, { Dayjs } from "dayjs";
 import { useNavigate } from "react-router-dom";
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import UserAvatar from "../../components/common/UserAvatar";
 import Loader from "../../components/common/Loader";
-const userID = localStorage.getItem("user")|| "";
-const transactions = [
-  { id: 1, name: "Shopping", amount: 1200, category: "shopping" },
-  { id: 2, name: "Stationary", amount: 15, category: "stationary" },
-  { id: 3, name: "Groceries", amount: 230, category: "groceries" },
-  { id: 4, name: "Art Supply", amount: 200, category: "art" },
-  { id: 5, name: "Uber Eats", amount: 35, category: "food" },
-];
-// Define category icons and colors with an explicit type for the keys
-type Category = "shopping" | "stationary" | "groceries" | "art" | "food";
-
-const categoryData: Record<Category, { icon: JSX.Element; color: string }> = {
-  shopping: { icon: <ShoppingCart />, color: "#FF5722" },
-  stationary: { icon: <School />, color: "#2196F3" },
-  groceries: { icon: <LocalGroceryStore />, color: "#4CAF50" },
-  art: { icon: <Brush />, color: "#9C27B0" },
-  food: { icon: <Fastfood />, color: "#FF9800" },
-};
+import { Expense } from "../../components/Interface/Expense";
+import { SummaryResponse } from "../../components/Interface/SummaryResponse";
+import { createExpense, getAllExpenses } from "../../api/expense";
+import { fetchUserSummary } from "../../api/dashboard";
+import { getCurrencySymbol } from "../../hooks/currencyUtils";
+import { getAllCategories } from "../../api/category";
+import * as MuiIcons from "@mui/icons-material";
+const userID = localStorage.getItem("user") || "";
 
 const familyData = {
   familyName: "Bhatt Family",
@@ -98,16 +88,24 @@ const familyData = {
 };
 
 const familyMemberData = [
-  { name: 'Active', value: 3 },
-  { name: 'Inactive', value: 1 },
-  { name: 'Other', value: 1 },
+  { name: "Active", value: 3 },
+  { name: "Inactive", value: 1 },
+  { name: "Other", value: 1 },
 ];
 
 // Colors for each slice
-const COLORS = ['#16A085', '#C0392B', '#D35400'];
+const COLORS = ["#16A085", "#C0392B", "#D35400"];
 
 // Custom label function
-const renderCustomLabel = (props: { cx: any; cy: any; midAngle: any; innerRadius: any; outerRadius: any; value: any; name: any; }) => {
+const renderCustomLabel = (props: {
+  cx: any;
+  cy: any;
+  midAngle: any;
+  innerRadius: any;
+  outerRadius: any;
+  value: any;
+  name: any;
+}) => {
   const { cx, cy, midAngle, innerRadius, outerRadius, name } = props;
   const RADIAN = Math.PI / 180;
   const radius = outerRadius + (innerRadius - outerRadius) / 2;
@@ -115,20 +113,18 @@ const renderCustomLabel = (props: { cx: any; cy: any; midAngle: any; innerRadius
   const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
   return (
-    <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={12}>
+    <text
+      x={x}
+      y={y}
+      fill="white"
+      textAnchor="middle"
+      dominantBaseline="central"
+      fontSize={12}
+    >
       {`${name}`}
     </text>
   );
 };
-
-const recentTransactions = transactions.slice(-4);
-
-const data = [
-  { name: "Jan", income: 2000, expense: 800 },
-  { name: "Feb", income: 2500, expense: 1500 },
-  { name: "Mar", income: 2200, expense: 1200 },
-];
-
 const recurringTransactions = [
   {
     category: "Rent",
@@ -150,36 +146,72 @@ const ModeratorDashboard = () => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState("");
   const [purpose, setPurpose] = useState("");
-  const [date, setDate] = useState<Dayjs | null>(null); 
-  
+  const [date, setDate] = useState<Dayjs | null>(null);
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [isFocused, setIsFocused] = useState(false);
   const handleEditFamily = () => navigate(`/edit-family/${userID}`);
   const [loading, setLoading] = useState(true);
 
-  const handlePieClick = () => {
-    // Redirect to /manage-users
-    navigate('/manage-users');
+  const [category, setCategory] = useState("");
+  const [categoryList, setCategoryList] = useState<any[]>([]);
+  const hasFetched = useRef(false);
+  const [expenseData, setExpenseData] = useState<Expense[]>([]);
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState<dayjs.Dayjs>(dayjs());
+
+  const [summary, setSummary] = useState<SummaryResponse | null>(null);
+
+  // Use currency this utility(hooks) in your components
+  const currencySymbol = getCurrencySymbol(
+    summary?.currencyCode || summary?.currencyName || ""
+  );
+  const timezoneLabel = summary?.timezone?.replace("_", " ") || "N/A";
+  const currencyLabel = `${summary?.currencyCode || ""}`;
+
+  const SummaryComponent = () => {
+    const getSummary = async () => {
+      try {
+        const res = await fetchUserSummary();
+        setSummary(res.data);
+      } catch (err) {
+        console.error("Failed to fetch summary", err);
+      }
+    };
+    getSummary();
   };
 
-  const totalUsers = familyMemberData.reduce((acc, curr) => acc + curr.value, 0);
-  
-  const handleAddExpense = () => {
-    if (!amount || !category || !date || !purpose) {
+  const handleAddExpense = async () => {
+    if (!amount || !category || !date) {
       alert("Please fill out all fields");
       return;
     }
     // Proceed with adding the expense
-    const newTransaction = {
-      id: new Date().getTime(),
-      name: category,
-      amount: parseFloat(amount), // Ensure amount is treated as a number
-    };
-    console.log("Expense Added:", { amount, category, date, purpose });
-    setOpen(false); // Close the dialog
+    try {
+      const newExpense = {
+        category,
+        amount: parseFloat(amount),
+        date: date.toISOString(),
+      };
+      const saved = await createExpense(newExpense);
+      setExpenseData((prev) => [...prev, saved.data]);
+      setOpenModal(true);
+      fetchExpenses();
+      SummaryComponent();
+      handleClear();
+    } catch (error) {
+      console.error("Error adding expense:", error);
+    } finally {
+      setOpenModal(false);
+      setOpen(false); // Close the dialog
+    }
+  };
+  const handleClear = () => {
+    setCategory("");
+    setAmount("");
+    setDate(null);
   };
 
   const handleFocus = () => {
@@ -190,50 +222,154 @@ const ModeratorDashboard = () => {
     setIsFocused(false);
   };
 
+  const handlePieClick = () => {
+    // Redirect to /manage-users
+    navigate("/manage-users");
+  };
+
+  const totalUsers = familyMemberData.reduce(
+    (acc, curr) => acc + curr.value,
+    0
+  );
+
+  //  Function to get category details (color and icon) for each source
+  const getCategoryDetails = (source: string) => {
+    const category = categoryList.find((cat) => cat.name === source);
+    return category
+      ? { color: category.color, icon: category.iconName }
+      : { color: "#000", icon: "" }; // fallback
+  };
+
+  const capitalizeIconName = (name: string): string => {
+    return name
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join("");
+  };
+
+  const getMuiIcon = (iconName: string): React.ElementType | null => {
+    const capitalized = capitalizeIconName(iconName);
+    return (MuiIcons as Record<string, React.ElementType>)[capitalized] || null;
+  };
+
+  const currentMonth = new Date().toLocaleString("en-US", {
+    month: "short",
+    year: "numeric",
+  }); // Example: "Jun 2025"
+  const formattedMonth = currentMonth.replace(" ", "-"); // "Jun-2025"
+
+  const currentMonthData = summary?.monthlyData?.find(
+    (entry) => entry.month === formattedMonth
+  );
+
+  const fetchCategories = async () => {
+    try {
+      // Ensure fetch happens only once
+      if (!hasFetched.current) {
+        hasFetched.current = true;
+
+        const data = await getAllCategories(0, 100, "name");
+        if (data.data && Array.isArray(data.data.content)) {
+          setCategoryList(data.data.content); // Set categories state
+        } else {
+          setCategoryList([]); // Fallback to empty list
+        }
+      }
+    } catch (error) {
+      console.error("Failed to load categories", error);
+      setCategoryList([]); // Fallback to empty list
+    }
+  };
+
+  const fetchExpenses = async () => {
+    try {
+      const month = selectedMonth.month() + 1; // month is 0-indexed in Dayjs
+      const year = selectedMonth.year();
+
+      const res = await getAllExpenses(
+        0, // page = 0
+        4, // size = 4
+        "date,desc", // sort = date,asc
+        month, // month = 6
+        year
+      );
+
+      if (res.data && Array.isArray(res?.data?.content)) {
+        setExpenseData(res.data.content);
+        // setTotalCount(res.data.page.totalElements || 0);
+      } else {
+        setExpenseData([]);
+      }
+    } catch (error) {
+      console.error("Error fetching expenses:", error);
+      setExpenseData([]);
+    }
+  };
+
   useEffect(() => {
+    fetchCategories();
+    fetchExpenses();
+    SummaryComponent();
+
     const timer = setTimeout(() => {
       setLoading(false); // After 1.5 seconds, stop showing the loader
     }, 1500);
-  
+
     return () => clearTimeout(timer); // Cleanup timer
   }, []);
-  
+
   if (loading) {
     return <Loader />;
   }
 
-  return (
-    <>
-     {/* {loading ? (
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <CircularProgress size={80} color="primary" />
+  type StatCardProps = {
+    icon: React.ReactNode;
+    title: string;
+    value: string;
+    color: string;
+  };
+
+  const StatCard: React.FC<StatCardProps> = ({ icon, title, value, color }) => (
+    <Card
+      sx={{
+        borderRadius: 3,
+        boxShadow: 3,
+        p: 2,
+        textAlign: "center",
+        bgcolor: "background.paper",
+      }}
+    >
+      <Box display="flex" justifyContent="center" alignItems="center" mb={1}>
+        <Avatar sx={{ bgcolor: color, width: 48, height: 48 }}>{icon}</Avatar>
       </Box>
-    ) : ( */}
+      <Typography variant="h6" color="textSecondary">
+        {title}
+      </Typography>
+      <Typography variant="h4" color={color}>
+        {value}
+      </Typography>
+    </Card>
+  );
+
+  return (
     <Box sx={{ p: 3 }}>
       {/* Header with Avatar */}
       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
-        <UserAvatar name="Krishna Bhatt" />
+        <Avatar sx={{ bgcolor: "primary.main" }}>K</Avatar>
         <Typography variant="h5" fontWeight={600}>
-          Welcome Back, Krishna!
+          Welcome Back, {summary?.name}!
         </Typography>
         <Typography variant="subtitle2" color="textSecondary">
           {dayjs().format("MMMM DD, YYYY")}
         </Typography>
       </Stack>
-
-      {/* Moderator Card */}
+      {/* Alerts */}
       <Grid container spacing={3}>
-          {/* Family Details Section */}
-          <Grid item xs={12} md={6} >
-          <Card sx={{ p: 3, borderRadius: 3, boxShadow: 4 }} >
-            <Typography variant="h6" fontWeight={600} sx={{ mb: 3}}>
+        {/* Moderator Card */}
+        {/* Family Details Section */}
+        <Grid item xs={12} md={6}>
+          <Card sx={{ p: 3, borderRadius: 3, boxShadow: 4 }}>
+            <Typography variant="h6" fontWeight={600} sx={{ mb: 3 }}>
               Family Details
             </Typography>
             <Typography variant="body1" sx={{ mt: 1 }}>
@@ -257,145 +393,155 @@ const ModeratorDashboard = () => {
               Edit Family
             </Button>
           </Card>
-      </Grid>
-      <Grid item xs={12} md={6}>
-      <Card sx={{ p: 3, borderRadius: 3, boxShadow: 4 }}>
-        {/* <Typography variant="h6" fontWeight={600}>User Status Distribution</Typography> */}
-       
-        <ResponsiveContainer width="100%" height={196}>
-          <PieChart>
-            <Pie
-              data={familyMemberData}
-              dataKey="value"
-              nameKey="name"
-              cx="50%" cy="50%" outerRadius="100%"
-              labelLine={false} // Disable the label line to avoid clutter
-              label={renderCustomLabel} // Use custom label to display name and value
-              onClick={handlePieClick}
-            >
-              {familyMemberData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <RechartTooltip   content={({ payload, label }) => {
-                if (!payload || payload.length === 0) return null;
-                const { name, value } = payload[0].payload;
-                return (
-                  <div
-                    style={{
-                      padding: "10px",
-                      background: "#333",
-                      color: "#fff",
-                      borderRadius: "8px",
-                      width: "100px",
-                      textAlign: "left",
-                      boxShadow: "0px 4px 10px rgba(0,0,0,0.2)",
-                    }}
-                  >
-                    <strong
-                      style={{
-                        display: "block",
-                        marginBottom: "5px",
-                        textAlign: "center",
-                      }}
-                    >
-                      {label}
-                    </strong>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <span>{name}:</span>
-                      <span style={{ color: COLORS[familyMemberData.findIndex((item) => item.name === name)] }}>
-                        {value}
-                      </span>
-                    </div>
-                  </div>
-                );
-              }}
-               />
-          </PieChart>
-        </ResponsiveContainer>
-        <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-          Total Family Members: <strong>{totalUsers}</strong>
-        </Typography>
-      </Card>
-    </Grid>
-
-        {/* Financial Summary */}
-        <Grid item xs={12}>
-          <Stack direction="row" spacing={2} justifyContent="space-between">
-            {[
-              {
-                icon: <MonetizationOn />,
-                label: "$8,500 Total Income",
-                color: "#16A085",
-              },
-              {
-                icon: <TrendingDown />,
-                label: "$6,000 Total Expense",
-                color: "#C0392B",
-              },
-              {
-                icon: <TrendingUp />,
-                label: "$2,500 Total Savings",
-                color: "#3498DB",
-              },
-              {
-                icon: <CurrencyExchange />,
-                label: "USD | GMT -5",
-                color: "#E67E22",
-              },
-            ].map((item, index) => (
-              <Paper
-                key={index}
-                elevation={3}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 2,
-                  padding: 2,
-                  borderRadius: 3,
-                  bgcolor: item.color,
-                  color: "white",
-                  width: "100%",
-                  maxWidth: 280, // Ensures uniform width
-                  height: 80, // Matches other cards' height
-                }}
-              >
-                {item.icon}
-                <Typography variant="h6" fontWeight="bold">
-                  {item.label}
-                </Typography>
-              </Paper>
-            ))}
-          </Stack>
         </Grid>
+        <Grid item xs={12} md={6}>
+          <Card sx={{ p: 3, borderRadius: 3, boxShadow: 4 }}>
+            {/* <Typography variant="h6" fontWeight={600}>User Status Distribution</Typography> */}
 
+            <ResponsiveContainer width="100%" height={196}>
+              <PieChart>
+                <Pie
+                  data={familyMemberData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius="100%"
+                  labelLine={false} // Disable the label line to avoid clutter
+                  label={renderCustomLabel} // Use custom label to display name and value
+                  onClick={handlePieClick}
+                >
+                  {familyMemberData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <RechartTooltip
+                  content={({ payload, label }) => {
+                    if (!payload || payload.length === 0) return null;
+                    const { name, value } = payload[0].payload;
+                    return (
+                      <div
+                        style={{
+                          padding: "10px",
+                          background: "#333",
+                          color: "#fff",
+                          borderRadius: "8px",
+                          width: "100px",
+                          textAlign: "left",
+                          boxShadow: "0px 4px 10px rgba(0,0,0,0.2)",
+                        }}
+                      >
+                        <strong
+                          style={{
+                            display: "block",
+                            marginBottom: "5px",
+                            textAlign: "center",
+                          }}
+                        >
+                          {label}
+                        </strong>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <span>{name}:</span>
+                          <span
+                            style={{
+                              color:
+                                COLORS[
+                                  familyMemberData.findIndex(
+                                    (item) => item.name === name
+                                  )
+                                ],
+                            }}
+                          >
+                            {value}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+            <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+              Total Family Members: <strong>{totalUsers}</strong>
+            </Typography>
+          </Card>
+        </Grid>
+        {/* Income and Expense Summary */}
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            icon={<MonetizationOn />}
+            // (${formattedMonth})
+            title={`Total Income `}
+            value={`${currencySymbol}  ${
+              currentMonthData?.income?.toLocaleString() || 0
+            }`}
+            color="success.main"
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            icon={<TrendingDown />}
+            title={`Total Expense`}
+            value={`${currencySymbol} ${
+              currentMonthData?.expense?.toLocaleString() || 0
+            }`}
+            color="error.main"
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            icon={<TrendingUp />}
+            title="Total Savings"
+            value={`${currencySymbol} ${
+              currentMonthData?.saving?.toLocaleString() || 0
+            }`}
+            color="primary.main"
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            icon={<CurrencyExchange />}
+            title="Currency"
+            value={`${currencyLabel} | ${currencySymbol}`}
+            color="warning.main"
+          />
+        </Grid>
         {/* Expenses Chart */}
         <Grid item xs={12} md={8}>
-          <Card sx={{ boxShadow: 3, borderRadius: 2 }}>
+          <Card sx={{ boxShadow: 3, borderRadius: 3 }}>
             <CardContent>
               <Typography variant="h6" fontWeight={600} gutterBottom>
                 Monthly Income & Expenses
               </Typography>
+
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={data}>
+                <BarChart
+                  data={summary?.monthlyData || []}
+                  margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
+                  <XAxis dataKey="month" />
                   <YAxis />
                   <RechartTooltip
                     content={({ payload, label }) => {
                       if (!payload || payload.length === 0) return null;
-                      const { income, expense } = payload[0].payload;
+                      const { income, expense, saving } = payload[0].payload;
                       const formattedIncome = new Intl.NumberFormat().format(
                         income
                       );
                       const formattedExpense = new Intl.NumberFormat().format(
                         expense
+                      );
+                      const formattedSaving = new Intl.NumberFormat().format(
+                        saving
                       );
                       return (
                         <div
@@ -425,8 +571,8 @@ const ModeratorDashboard = () => {
                             }}
                           >
                             <span>Income:</span>
-                            <span style={{ color: "#16A085" }}>
-                              ${formattedIncome}
+                            <span style={{ color: "#82CA9D" }}>
+                              {currencySymbol} {formattedIncome}
                             </span>
                           </div>
                           <div
@@ -436,39 +582,61 @@ const ModeratorDashboard = () => {
                             }}
                           >
                             <span>Expense:</span>
-                            <span style={{ color: "#C0392B" }}>
-                              ${formattedExpense}
+                            <span style={{ color: "#FB7E41" }}>
+                              {currencySymbol} {formattedExpense}
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                            }}
+                          >
+                            <span>Saving:</span>
+                            <span style={{ color: "#8884D8" }}>
+                              {currencySymbol} {formattedSaving}
                             </span>
                           </div>
                         </div>
                       );
                     }}
                   />
-                  {/* <ReferenceLine y={1000} stroke="red" strokeDasharray="3 3" label="Avg Expense" /> */}
                   <Bar
                     dataKey="income"
-                    fill="#16A085"
-                    radius={[30, 30, 0, 0]}
+                    fill="#82CA9D"
+                    radius={[10, 10, 0, 0]}
                     name="Income"
                   >
                     <LabelList
                       dataKey="income"
                       position="top"
-                      fill="#16A085"
+                      fill="#82CA9D"
                       fontSize={12}
                     />
                   </Bar>
-
                   <Bar
                     dataKey="expense"
-                    fill="#C0392B"
-                    radius={[30, 30, 0, 0]}
+                    fill="#FB7E41"
+                    radius={[10, 10, 0, 0]}
                     name="Expense"
                   >
                     <LabelList
                       dataKey="expense"
                       position="top"
-                      fill="#C0392B"
+                      fill="#FB7E41"
+                      fontSize={12}
+                    />
+                  </Bar>
+                  <Bar
+                    dataKey="saving"
+                    fill="#8884D8"
+                    radius={[10, 10, 0, 0]}
+                    name="Saving"
+                  >
+                    <LabelList
+                      dataKey="saving"
+                      position="top"
+                      fill="#8884D8"
                       fontSize={12}
                     />
                   </Bar>
@@ -477,7 +645,6 @@ const ModeratorDashboard = () => {
             </CardContent>
           </Card>
         </Grid>
-
         {/* Transactions List */}
         <Grid item xs={12} md={4}>
           <Card
@@ -486,59 +653,60 @@ const ModeratorDashboard = () => {
               borderRadius: 3,
               position: "relative",
               height: 380,
-              
             }}
           >
             <CardContent sx={{ pb: 9 }}>
-              {/* Extra padding for floating button */}
               <Typography variant="h6" fontWeight={600} gutterBottom>
                 Recent Transactions
               </Typography>
-              {recentTransactions.map((tx) => (
-                <Box
-                  key={tx.id}
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    p: 1.5,
-                    borderRadius: 2,
-                    backgroundColor: "rgba(255, 255, 255, 0.7)",
-                    mb: 1,
-                    boxShadow: 1,
-                    color: categoryData[tx.category as Category].color, // Type assertion for category
-                    borderLeft: `5px solid ${
-                      categoryData[tx.category as Category].color
-                    }`, // Set left border color
-                  }}
-                >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    {/* Category Icon */}
+
+              {expenseData.map((tx) => {
+                const { color, icon } = getCategoryDetails(tx.category);
+                const IconComponent = getMuiIcon(icon); // Assumes a mapping utility for icons
+
+                return (
+                  <Box
+                    key={tx.id}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      p: 1.7,
+                      borderRadius: "12px",
+                      background: "rgba(255, 255, 255, 0.7)",
+                      backdropFilter: "blur(8px)",
+                      borderLeft: `8px solid ${color}`,
+                      boxShadow: "0 4px 14px rgba(0, 0, 0, 0.06)",
+                      mb: 1.5,
+                    }}
+                  >
                     <Box
-                      sx={{
-                        color: categoryData[tx.category as Category].color,
-                      }}
+                      sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
                     >
-                      {categoryData[tx.category as Category].icon}
+                      {IconComponent && (
+                        <IconComponent sx={{ color, fontSize: 22 }} />
+                      )}
+                      <Typography variant="body1" fontWeight="bold">
+                        {tx.category}
+                      </Typography>
                     </Box>
-                    <Typography variant="body1" sx={{ fontWeight: "bold" }}>
-                      {tx.name}
+                    <Typography
+                      variant="body2"
+                      fontWeight="bold"
+                      // color="#3498DB"
+                      color="#263238"
+                    >
+                      {currencySymbol} {tx.amount.toFixed(2)}
                     </Typography>
                   </Box>
-                  <Typography
-                    variant="body2"
-                    sx={{ fontWeight: "bold", color: "#0288D1" }}
-                  >
-                    ${tx.amount}
-                  </Typography>
-                </Box>
-              ))}
+                );
+              })}
             </CardContent>
 
             {/* Floating Add Button */}
             <Fab
               color="primary"
-              sx={{ position: "absolute", bottom: 15, right: 20, zIndex: 0}}
+              sx={{ position: "absolute", bottom: 20, right: 20, zIndex: 0 }}
               onClick={handleOpen}
               aria-label="Add Expense"
             >
@@ -563,7 +731,7 @@ const ModeratorDashboard = () => {
                   position: "relative",
                 }}
               >
-                 Add Expenditure
+                Add Expenditure
                 {/* Close Icon Button in the top-right corner */}
                 <IconButton
                   sx={{ position: "absolute", right: 8, top: 8 }}
@@ -579,24 +747,6 @@ const ModeratorDashboard = () => {
                   component="form"
                   sx={{ display: "flex", flexDirection: "column", gap: 3 }}
                 >
-                  {/* Purpose Field */}
-                                    <TextField
-                                      label="Purpose"
-                                      fullWidth
-                                      value={purpose}
-                                      onChange={(e) => setPurpose(e.target.value)}
-                                      variant="outlined"
-                                      onFocus={handleFocus}
-                                      onBlur={handleBlur}
-                                      sx={{
-                                        mt: 2,
-                                        borderRadius: "8px",
-                                        "& .MuiOutlinedInput-root": {
-                                          borderRadius: "8px",
-                                          boxShadow: 2,
-                                        },
-                                      }}
-                                    />
                   {/* Amount Field */}
                   <TextField
                     label="Amount"
@@ -608,12 +758,15 @@ const ModeratorDashboard = () => {
                     InputProps={{
                       startAdornment:
                         isFocused || amount ? (
-                          <InputAdornment position="start">$</InputAdornment>
+                          <InputAdornment position="start">
+                            {currencySymbol}
+                          </InputAdornment>
                         ) : null,
                     }}
                     onFocus={handleFocus}
                     onBlur={handleBlur}
                     sx={{
+                      mt: 2,
                       borderRadius: "8px",
                       "& .MuiOutlinedInput-root": {
                         borderRadius: "8px",
@@ -636,21 +789,70 @@ const ModeratorDashboard = () => {
                           boxShadow: 2,
                         },
                       }}
+                      renderValue={(selected) => {
+                        const selectedCategory = categoryList.find(
+                          (cat) => cat.name === selected
+                        );
+                        if (selectedCategory) {
+                          const IconComponent =
+                            MuiIcons[
+                              selectedCategory.iconName as keyof typeof MuiIcons
+                            ] || MuiIcons.Brush;
+                          return (
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <IconComponent
+                                sx={{
+                                  marginRight: 2,
+                                  color: selectedCategory.color,
+                                }}
+                              />
+                              <Typography
+                                sx={{ color: selectedCategory.color }}
+                              >
+                                {selectedCategory.name}
+                              </Typography>
+                            </div>
+                          );
+                        }
+                        return null; // Return nothing if no category is selected
+                      }}
                     >
-                      <MenuItem value="food">Food</MenuItem>
-                      <MenuItem value="transport">Transport</MenuItem>
-                      <MenuItem value="entertainment">Entertainment</MenuItem>
-                      <MenuItem value="utilities">Utilities</MenuItem>
+                      {categoryList.length === 0 ? (
+                        <MenuItem disabled>No categories available</MenuItem>
+                      ) : (
+                        categoryList.map((cat) => {
+                          const IconComponent =
+                            MuiIcons[cat.iconName as keyof typeof MuiIcons] ||
+                            MuiIcons.Brush;
+
+                          return (
+                            <MenuItem key={cat.id} value={cat.name}>
+                              {/* Apply color to the icon and text */}
+                              <IconComponent
+                                sx={{ marginRight: 2, color: cat.color }}
+                              />
+                              <Typography sx={{ color: cat.color }}>
+                                {cat.name}
+                              </Typography>
+                            </MenuItem>
+                          );
+                        })
+                      )}
                     </Select>
                   </FormControl>
                   {/* Date Picker */}
-                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                      <DatePicker 
-                                      label="Select Date"
-                                       value={date}
-                                       onChange={(newDate) => setDate(newDate)}
-                                      />
-                                    </LocalizationProvider>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Select Date"
+                      value={date}
+                      onChange={(newDate) => setDate(newDate)}
+                    />
+                  </LocalizationProvider>
                 </Box>
               </DialogContent>
 
@@ -662,7 +864,7 @@ const ModeratorDashboard = () => {
                     setAmount(""); // Reset the Amount field
                     setCategory(""); // Reset the Category field
                     setDate(null); // Reset the Date field
-                    setPurpose("");
+
                     handleAddExpense(); // Call your existing add expense function here
                   }}
                   color="primary"
@@ -677,7 +879,6 @@ const ModeratorDashboard = () => {
                     setAmount(""); // Reset the Amount field
                     setCategory(""); // Reset the Category field
                     setDate(null); // Reset the Date field
-                    setPurpose("");
                   }}
                   color="secondary"
                   sx={{ borderRadius: "8px", padding: "6px 16px" }}
@@ -689,115 +890,113 @@ const ModeratorDashboard = () => {
           </Card>
         </Grid>
         {/* Recurring tansaction start */}
-        <Grid item xs={12}>
+        <Grid item xs={12} >
           <Card
-            sx={{
-              borderRadius: 4,
-              boxShadow: 4,
-              p: 2,
-              mb: 3,
-              // background: "linear-gradient(135deg, #f5f7fa 30%, #c3cfe2 100%)",
-            }}
-          >
-            <CardContent>
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: "bold",
-                  color: "#333",
-                  mb: 2,
-                  textAlign: "center",
-                }}
-              >
-                {/* 🔁  */}
-                Recurring Transactions
-              </Typography>
+              sx={{
+                borderRadius: 4,
+                boxShadow: 4,
+                p: 2,
+                mb: 3,
+              }}
+            >
+              <CardContent>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    fontWeight: "bold",
+                    color: "#333",
+                    mb: 2,
+                    textAlign: "center",
+                  }}
+                >
+                  {/* 🔁  */}
+                  Recurring Transactions
+                </Typography>
 
-              <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
-                <Table>
-                  <TableHead>
-                    <TableRow sx={{ backgroundColor: "#8E44AD" }}>
-                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                        Category
-                      </TableCell>
-                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                        Description
-                      </TableCell>
-                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                        Amount
-                      </TableCell>
-                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                        Next Due
-                      </TableCell>
-                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                        Action
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {recurringTransactions.map((txn, index) => (
-                      <TableRow
-                        key={txn.category}
-                        sx={{
-                          backgroundColor: index % 2 === 0 ? "#f8f8f8" : "#fff",
-                        }}
-                      >
-                        <TableCell>
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                            }}
-                          >
-                            <Avatar sx={{ bgcolor: "transparent" }}>
-                              {txn.icon}
-                            </Avatar>
-                            {txn.category}
-                          </Box>
+                <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ backgroundColor: "#8E44AD" }}>
+                        <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
+                          Category
                         </TableCell>
-                        <TableCell>{txn.description}</TableCell>
-                        <TableCell
-                          sx={{ fontWeight: "bold", color: "#0288D1" }}
-                        >
-                          {txn.amount}
+                        <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
+                          Description
                         </TableCell>
-                        <TableCell
-                          sx={{ color: "#2E7D32", fontWeight: "bold" }}
-                        >
-                          {txn.dueDate}
+                        <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
+                          Amount
                         </TableCell>
-                        <TableCell
-                          sx={{ color: "#2E7D32", fontWeight: "bold" }}
-                        >
-                          <MuiTooltip title="Mark as Paid">
-                            <IconButton color="success">
-                              <CheckCircle />
-                            </IconButton>
-                          </MuiTooltip>
-                          <MuiTooltip title="Edit">
-                            <IconButton color="primary">
-                              <Edit />
-                            </IconButton>
-                          </MuiTooltip>
-                          <MuiTooltip title="Delete">
-                            <IconButton color="error">
-                              <Delete />
-                            </IconButton>
-                          </MuiTooltip>
+                        <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
+                          Next Due
+                        </TableCell>
+                        <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
+                          Action
                         </TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </CardContent>
-          </Card>
+                    </TableHead>
+                    <TableBody>
+                      {recurringTransactions.map((txn, index) => (
+                        <TableRow
+                          key={txn.category}
+                          sx={{
+                            backgroundColor:
+                              index % 2 === 0 ? "#f8f8f8" : "#fff",
+                          }}
+                        >
+                          <TableCell>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                              }}
+                            >
+                              <Avatar sx={{ bgcolor: "transparent" }}>
+                                {txn.icon}
+                              </Avatar>
+                              {txn.category}
+                            </Box>
+                          </TableCell>
+                          <TableCell>{txn.description}</TableCell>
+                          <TableCell
+                            sx={{ fontWeight: "bold", color: "#0288D1" }}
+                          >
+                            {txn.amount}
+                          </TableCell>
+                          <TableCell
+                            sx={{ color: "#2E7D32", fontWeight: "bold" }}
+                          >
+                            {txn.dueDate}
+                          </TableCell>
+                          <TableCell
+                            sx={{ color: "#2E7D32", fontWeight: "bold" }}
+                          >
+                            <MuiTooltip title="Mark as Paid">
+                              <IconButton color="success">
+                                <CheckCircle />
+                              </IconButton>
+                            </MuiTooltip>
+                            <MuiTooltip title="Edit">
+                              <IconButton color="primary">
+                                <Edit />
+                              </IconButton>
+                            </MuiTooltip>
+                            <MuiTooltip title="Delete">
+                              <IconButton color="error">
+                                <Delete />
+                              </IconButton>
+                            </MuiTooltip>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
         </Grid>
       </Grid>
     </Box>
-    {/* )} */}
-    </>
   );
 };
 

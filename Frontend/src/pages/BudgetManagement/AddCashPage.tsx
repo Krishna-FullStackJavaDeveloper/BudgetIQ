@@ -638,7 +638,7 @@ const AddCashPage = () => {
                   fontWeight={600}
                   sx={{ color: "#2e7d32" }}
                 >
-                  ${filteredData.reduce((sum, item) => sum + item.amount, 0)}
+                  ${filteredData.reduce((sum, item) => sum + item.amount, 0).toFixed(2)}
                 </Typography>
                 <Typography sx={{ fontSize: 12, color: "#888" }}>
                   Last 30 days

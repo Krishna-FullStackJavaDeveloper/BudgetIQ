@@ -7,22 +7,25 @@ const Loader = () => {
   const [progress, setProgress] = useState(0);
   const [dataLoaded, setDataLoaded] = useState(false);
 
-  // Simulate data loading and animate the progress from 0% to 100% over 1500ms
   useEffect(() => {
+    const duration = 500; // Faster load duration
+    const steps = 10; // 10 updates
+    const intervalTime = duration / steps; // 50ms intervals
+    const increment = 100 / steps;
+
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(progressInterval);
-          return 100; // Ensure it stops at 100%
+          return 100;
         }
-        return prev + 100 / 15; // Progress increment per 100ms (1500ms / 15 intervals)
+        return prev + increment;
       });
-    }, 100); // Update every 100ms (1500ms / 15)
+    }, intervalTime);
 
-    // Simulate data loading completion after 1500ms
     setTimeout(() => {
       setDataLoaded(true);
-    }, 1500);
+    }, duration);
 
     return () => {
       clearInterval(progressInterval);
@@ -38,12 +41,10 @@ const Loader = () => {
         alignItems: "center",
       }}
     >
-      {/* Wallet and Coin Animation */}
       <Box sx={{ width: 120, height: 120, position: "relative" }}>
-        {/* Wallet Image */}
         <Box
           component="img"
-          src={wallet}// Replace with your wallet image path
+          src={wallet}
           alt="Wallet"
           sx={{
             width: "100%",
@@ -53,38 +54,20 @@ const Loader = () => {
             left: 0,
           }}
         />
-
-        {/* Coin Image */}
         <Box
           component="img"
-          src={coin} // Replace with your coin image path
+          src={coin}
           alt="Coin"
           sx={{
             position: "absolute",
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: "40px", // Adjust the coin size
+            width: "40px",
             height: "auto",
-            animation: `rotateCoin ${1.5}s infinite linear`,
+            animation: `rotateCoin 0.5s infinite linear`,
           }}
         />
-
-        {/* Progress Fill Animation */}
-        <Box
-          // sx={{
-          //   position: "absolute",
-          //   top: "25%",
-          //   left: "5%",
-          //   width: `${(progress / 100) * 90}%`,
-          //   height: "50%",
-          //   backgroundColor: "#3f51b5",
-          //   transition: "width 0.1s linear",
-          //   borderRadius: "5px",
-          // }}
-        />
-
-        {/* Progress Percentage Text */}
         <Box
           sx={{
             position: "absolute",
@@ -99,7 +82,7 @@ const Loader = () => {
           {progress.toFixed(0)}%
         </Box>
       </Box>
-      {/* Animation keyframes */}
+
       <style>
         {`
           @keyframes rotateCoin {
@@ -113,13 +96,12 @@ const Loader = () => {
         `}
       </style>
 
-      {/* Content displayed after the loader completes */}
-      {dataLoaded && (
+      {/* {dataLoaded && (
         <Box sx={{ marginTop: 3 }}>
           <h2>Your Data is Loaded!</h2>
           <p>Now you can display your app's content here.</p>
         </Box>
-      )}
+      )} */}
     </Box>
   );
 };

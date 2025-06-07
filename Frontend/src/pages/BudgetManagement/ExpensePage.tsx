@@ -734,7 +734,7 @@ const ExpensePage = () => {
                 fontWeight={600}
                 sx={{ color: "#D32F2F" }}
               >
-                ${filteredData.reduce((sum, item) => sum + item.amount, 0)}
+                ${filteredData.reduce((sum, item) => sum + item.amount, 0).toFixed(2)}
               </Typography>
               <Typography sx={{ fontSize: 12, color: "#888" }}>
                 Last 30 days
@@ -1048,8 +1048,6 @@ const ExpensePage = () => {
           <Button
             onClick={async () => {
               setOpenModal(false);
-              // await fetchExpenses();
-              // await fetchMonthlyExpenses();
               await handleExpenseAction();
               handleClear(); // Safe to clear here
             }}

@@ -23,14 +23,12 @@ import {
   DialogActions,
   Button,
   Slide,
-  Chip,
   TextField,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
   InputAdornment,
-  CircularProgress,
 } from "@mui/material";
 import {
   BarChart,
@@ -39,13 +37,8 @@ import {
   YAxis,
   Tooltip as RechartTooltip,
   CartesianGrid,
-  ReferenceLine,
   ResponsiveContainer,
-  Legend,
   LabelList,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
 import {
   Edit,
@@ -59,18 +52,14 @@ import {
   TrendingUp,
   CurrencyExchange,
   Close,
-  ShoppingCart,
-  School,
-  LocalGroceryStore,
-  Brush,
-  Fastfood,
+  PersonAdd,
+  Send,
 } from "@mui/icons-material";
 import dayjs, { Dayjs } from "dayjs";
 import { useNavigate } from "react-router-dom";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import UserAvatar from "../../components/common/UserAvatar";
 import Loader from "../../components/common/Loader";
 import { Expense } from "../../components/Interface/Expense";
 import { SummaryResponse } from "../../components/Interface/SummaryResponse";
@@ -79,52 +68,13 @@ import { fetchUserSummary } from "../../api/dashboard";
 import { getCurrencySymbol } from "../../hooks/currencyUtils";
 import { getAllCategories } from "../../api/category";
 import * as MuiIcons from "@mui/icons-material";
+import { getMyFamily } from "../../api/family";
+import { LinearProgress } from "@mui/joy";
+import GroupIcon from "@mui/icons-material/Group";
+
 const userID = localStorage.getItem("user") || "";
+const userRoles = JSON.parse(localStorage.getItem("roles") || "[]");
 
-const familyData = {
-  familyName: "Bhatt Family",
-  totalMembers: 5,
-  isAdmin: true,
-};
-
-const familyMemberData = [
-  { name: "Active", value: 3 },
-  { name: "Inactive", value: 1 },
-  { name: "Other", value: 1 },
-];
-
-// Colors for each slice
-const COLORS = ["#16A085", "#C0392B", "#D35400"];
-
-// Custom label function
-const renderCustomLabel = (props: {
-  cx: any;
-  cy: any;
-  midAngle: any;
-  innerRadius: any;
-  outerRadius: any;
-  value: any;
-  name: any;
-}) => {
-  const { cx, cy, midAngle, innerRadius, outerRadius, name } = props;
-  const RADIAN = Math.PI / 180;
-  const radius = outerRadius + (innerRadius - outerRadius) / 2;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-  return (
-    <text
-      x={x}
-      y={y}
-      fill="white"
-      textAnchor="middle"
-      dominantBaseline="central"
-      fontSize={12}
-    >
-      {`${name}`}
-    </text>
-  );
-};
 const recurringTransactions = [
   {
     category: "Rent",
@@ -152,7 +102,8 @@ const ModeratorDashboard = () => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [isFocused, setIsFocused] = useState(false);
-  const handleEditFamily = () => navigate(`/edit-family/${userID}`);
+  const handleEditFamily = () => navigate(`/my-family`);
+  const handleAddMember = () => navigate(`/create_user`);
   const [loading, setLoading] = useState(true);
 
   const [category, setCategory] = useState("");
@@ -163,6 +114,8 @@ const ModeratorDashboard = () => {
   const [selectedMonth, setSelectedMonth] = useState<dayjs.Dayjs>(dayjs());
 
   const [summary, setSummary] = useState<SummaryResponse | null>(null);
+  const [familyData, setFamilyData] = useState<any | null>(null);
+  const fetchedOnce = useRef(false);
 
   // Use currency this utility(hooks) in your components
   const currencySymbol = getCurrencySymbol(
@@ -221,16 +174,6 @@ const ModeratorDashboard = () => {
   const handleBlur = () => {
     setIsFocused(false);
   };
-
-  const handlePieClick = () => {
-    // Redirect to /manage-users
-    navigate("/manage-users");
-  };
-
-  const totalUsers = familyMemberData.reduce(
-    (acc, curr) => acc + curr.value,
-    0
-  );
 
   //  Function to get category details (color and icon) for each source
   const getCategoryDetails = (source: string) => {
@@ -305,11 +248,25 @@ const ModeratorDashboard = () => {
       setExpenseData([]);
     }
   };
+  const fetchFamily = async () => {
+    try {
+      let data;
+      const response = await getMyFamily();
+      data = response.data;
+      setFamilyData(data);
+    } catch (error) {
+      console.error("Failed to fetch family data", error);
+    }
+  };
 
   useEffect(() => {
     fetchCategories();
     fetchExpenses();
     SummaryComponent();
+    if (!fetchedOnce.current) {
+      fetchFamily();
+      fetchedOnce.current = true;
+    }
 
     const timer = setTimeout(() => {
       setLoading(false); // After 1.5 seconds, stop showing the loader
@@ -321,6 +278,13 @@ const ModeratorDashboard = () => {
   if (loading) {
     return <Loader />;
   }
+
+  const isDataMeaningful =
+    summary?.monthlyData &&
+    summary.monthlyData.length > 0 &&
+    summary.monthlyData.some(
+      (item) => item.income > 0 || item.expense > 0 || item.saving > 0
+    );
 
   type StatCardProps = {
     icon: React.ReactNode;
@@ -351,8 +315,15 @@ const ModeratorDashboard = () => {
     </Card>
   );
 
+  const maxSize = 5;
+  const userSize = familyData?.userSize;
+  const progressValue = (userSize / maxSize) * 100;
+
+  // To avoid 0% progress (invisible bar), set minimum visible value (e.g., 5%)
+  const visibleProgress = progressValue > 0 ? progressValue : 5;
+
   return (
-    <Box sx={{ p: 3 }}>
+    <>
       {/* Header with Avatar */}
       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
         <Avatar sx={{ bgcolor: "primary.main" }}>K</Avatar>
@@ -363,156 +334,211 @@ const ModeratorDashboard = () => {
           {dayjs().format("MMMM DD, YYYY")}
         </Typography>
       </Stack>
-      {/* Alerts */}
       <Grid container spacing={3}>
         {/* Moderator Card */}
-        {/* Family Details Section */}
-        <Grid item xs={12} md={6}>
-          <Card sx={{ p: 3, borderRadius: 3, boxShadow: 4 }}>
-            <Typography variant="h6" fontWeight={600} sx={{ mb: 3 }}>
-              Family Details
-            </Typography>
-            <Typography variant="body1" sx={{ mt: 1 }}>
-              Family Name: <strong>{familyData.familyName}</strong>
-            </Typography>
-            <Typography variant="body1" sx={{ mt: 1 }}>
-              Total Members: <strong>{familyData.totalMembers}</strong>
-            </Typography>
-            {familyData.isAdmin && (
-              <Typography variant="body2" color="success.main" sx={{ mt: 2 }}>
-                You are the Admin of this Family
-              </Typography>
-            )}
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<Edit />}
-              sx={{ mt: 4 }}
-              onClick={handleEditFamily}
-            >
-              Edit Family
-            </Button>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <Card sx={{ p: 3, borderRadius: 3, boxShadow: 4 }}>
-            {/* <Typography variant="h6" fontWeight={600}>User Status Distribution</Typography> */}
 
-            <ResponsiveContainer width="100%" height={196}>
-              <PieChart>
-                <Pie
-                  data={familyMemberData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius="100%"
-                  labelLine={false} // Disable the label line to avoid clutter
-                  label={renderCustomLabel} // Use custom label to display name and value
-                  onClick={handlePieClick}
-                >
-                  {familyMemberData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
-                <RechartTooltip
-                  content={({ payload, label }) => {
-                    if (!payload || payload.length === 0) return null;
-                    const { name, value } = payload[0].payload;
-                    return (
-                      <div
-                        style={{
-                          padding: "10px",
-                          background: "#333",
-                          color: "#fff",
-                          borderRadius: "8px",
-                          width: "100px",
-                          textAlign: "left",
-                          boxShadow: "0px 4px 10px rgba(0,0,0,0.2)",
-                        }}
-                      >
-                        <strong
-                          style={{
-                            display: "block",
-                            marginBottom: "5px",
-                            textAlign: "center",
-                          }}
-                        >
-                          {label}
-                        </strong>
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                          }}
-                        >
-                          <span>{name}:</span>
-                          <span
-                            style={{
-                              color:
-                                COLORS[
-                                  familyMemberData.findIndex(
-                                    (item) => item.name === name
-                                  )
-                                ],
-                            }}
-                          >
-                            {value}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-            <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-              Total Family Members: <strong>{totalUsers}</strong>
+        {/* Left: Family Details */}
+        <Grid item xs={12} md={4}>
+          <Card
+            sx={{
+              p: 3,
+              borderRadius: 3,
+              boxShadow: 4,
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+            }}
+          >
+            <Box>
+              <Typography
+                variant="h6"
+                fontWeight={600}
+                sx={{ display: "flex", alignItems: "center", gap: 1 }}
+              >
+                <GroupIcon color="primary" /> Family Details
+              </Typography>
+
+              {userRoles.includes("ROLE_MODERATOR") && (
+                <Typography variant="body2" color="success.main">
+                  You are the Admin of this Family
+                </Typography>
+              )}
+
+              <Typography variant="body2" sx={{ mt: 2 }}>
+                Family Name: <strong>{familyData?.familyName}</strong>
+              </Typography>
+              <Typography variant="body2" sx={{ mt: 1 }}>
+                Total Members: <strong>{familyData?.userSize}</strong>
+              </Typography>
+            </Box>
+
+            <Box sx={{ mt: 1 }}>
+              <Typography variant="caption" color="text.secondary">
+                Family Growth
+              </Typography>
+              <LinearProgress
+                determinate
+                value={visibleProgress}
+                style={{
+                  height: 8,
+                  borderRadius: 5,
+                  backgroundColor: "#ddd",
+                }}
+                color={
+                  visibleProgress === 0
+                    ? "neutral" // Color is neutral if the strength is 0
+                    : visibleProgress < 50
+                    ? "danger" // Color is danger if below 50
+                    : visibleProgress < 75
+                    ? "warning" // Color is warning if between 50 and 75
+                    : "success" // Color is success if above 75
+                }
+                size="md"
+                variant="soft"
+              />
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ mt: 0.5 }}
+              >
+                {familyData?.userSize} of 5 members
+              </Typography>
+            </Box>
+            <Box
+              sx={{
+                mt: 3,
+                display: "flex",
+                gap: 2,
+                flexWrap: "nowrap",
+                overflowX: "auto",
+              }}
+            >
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<Edit fontSize="small" />}
+                onClick={handleEditFamily}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                  boxShadow: "0 4px 10px rgb(25 118 210 / 0.3)",
+                  "&:hover": {
+                    boxShadow: "0 6px 14px rgb(25 118 210 / 0.5)",
+                  },
+                  px: 3,
+                  fontWeight: 600,
+                  fontSize: "0.9rem",
+                  whiteSpace: "nowrap",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+
+                  // Fix icon vertical alignment here:
+                  "& .MuiButton-startIcon": {
+                    display: "flex",
+                    alignItems: "center",
+                    verticalAlign: "middle",
+                    marginTop: 0,
+                  },
+                  "& .MuiSvgIcon-root": {
+                    verticalAlign: "middle",
+                  },
+                }}
+              >
+                Edit Family
+              </Button>
+
+              <Button
+                variant="outlined"
+                color="secondary"
+                startIcon={<PersonAdd fontSize="small" />}
+                onClick={handleAddMember}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                  px: 3,
+                  fontWeight: 600,
+                  fontSize: "0.9rem",
+                  borderWidth: 2,
+                  whiteSpace: "nowrap",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  "&:hover": {
+                    borderWidth: 2,
+                    backgroundColor: "rgba(220, 0, 78, 0.08)",
+                  },
+
+                  "& .MuiButton-startIcon": {
+                    display: "flex",
+                    alignItems: "center",
+                    verticalAlign: "middle",
+                    marginTop: 0,
+                  },
+                  "& .MuiSvgIcon-root": {
+                    verticalAlign: "middle",
+                  },
+                }}
+              >
+                Add Member
+              </Button>
+            </Box>
+
+            <Typography
+              variant="caption"
+              sx={{ mt: 3, fontStyle: "italic", color: "text.secondary" }}
+            >
+              "Family is not an important thing, it's everything."
             </Typography>
           </Card>
         </Grid>
-        {/* Income and Expense Summary */}
-        <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            icon={<MonetizationOn />}
-            // (${formattedMonth})
-            title={`Total Income `}
-            value={`${currencySymbol}  ${
-              currentMonthData?.income?.toLocaleString() || 0
-            }`}
-            color="success.main"
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            icon={<TrendingDown />}
-            title={`Total Expense`}
-            value={`${currencySymbol} ${
-              currentMonthData?.expense?.toLocaleString() || 0
-            }`}
-            color="error.main"
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            icon={<TrendingUp />}
-            title="Total Savings"
-            value={`${currencySymbol} ${
-              currentMonthData?.saving?.toLocaleString() || 0
-            }`}
-            color="primary.main"
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            icon={<CurrencyExchange />}
-            title="Currency"
-            value={`${currencyLabel} | ${currencySymbol}`}
-            color="warning.main"
-          />
+
+        {/* Right: Individual Stat Cards */}
+        <Grid item xs={12} md={8}>
+          <Grid container spacing={2}>
+            {[
+              {
+                icon: <MonetizationOn />,
+                title: "Total Income",
+                value: `${currencySymbol} ${
+                  currentMonthData?.income?.toLocaleString() || 0
+                }`,
+                color: "success.main",
+              },
+              {
+                icon: <TrendingDown />,
+                title: "Total Expense",
+                value: `${currencySymbol} ${
+                  currentMonthData?.expense?.toLocaleString() || 0
+                }`,
+                color: "error.main",
+              },
+              {
+                icon: <TrendingUp />,
+                title: "Total Savings",
+                value: `${currencySymbol} ${
+                  currentMonthData?.saving?.toLocaleString() || 0
+                }`,
+                color: "primary.main",
+              },
+              {
+                icon: <CurrencyExchange />,
+                title: "Currency",
+                value: `${currencyLabel} | ${currencySymbol}`,
+                color: "warning.main",
+              },
+            ].map(({ icon, title, value, color }) => (
+              <Grid item xs={12} sm={6} key={title}>
+                <StatCard
+                  icon={icon}
+                  title={title}
+                  value={value}
+                  color={color}
+                />
+              </Grid>
+            ))}
+          </Grid>
         </Grid>
         {/* Expenses Chart */}
         <Grid item xs={12} md={8}>
@@ -522,129 +548,144 @@ const ModeratorDashboard = () => {
                 Monthly Income & Expenses
               </Typography>
 
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart
-                  data={summary?.monthlyData || []}
-                  margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <RechartTooltip
-                    content={({ payload, label }) => {
-                      if (!payload || payload.length === 0) return null;
-                      const { income, expense, saving } = payload[0].payload;
-                      const formattedIncome = new Intl.NumberFormat().format(
-                        income
-                      );
-                      const formattedExpense = new Intl.NumberFormat().format(
-                        expense
-                      );
-                      const formattedSaving = new Intl.NumberFormat().format(
-                        saving
-                      );
-                      return (
-                        <div
-                          style={{
-                            padding: "10px",
-                            background: "#333",
-                            color: "#fff",
-                            borderRadius: "8px",
-                            width: "200px",
-                            textAlign: "left",
-                            boxShadow: "0px 4px 10px rgba(0,0,0,0.2)",
-                          }}
-                        >
-                          <strong
-                            style={{
-                              display: "block",
-                              marginBottom: "5px",
-                              textAlign: "center",
-                            }}
-                          >
-                            {label}
-                          </strong>
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                            }}
-                          >
-                            <span>Income:</span>
-                            <span style={{ color: "#82CA9D" }}>
-                              {currencySymbol} {formattedIncome}
-                            </span>
-                          </div>
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                            }}
-                          >
-                            <span>Expense:</span>
-                            <span style={{ color: "#FB7E41" }}>
-                              {currencySymbol} {formattedExpense}
-                            </span>
-                          </div>
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                            }}
-                          >
-                            <span>Saving:</span>
-                            <span style={{ color: "#8884D8" }}>
-                              {currencySymbol} {formattedSaving}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    }}
-                  />
-                  <Bar
-                    dataKey="income"
-                    fill="#82CA9D"
-                    radius={[10, 10, 0, 0]}
-                    name="Income"
+              {isDataMeaningful ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart
+                    data={summary?.monthlyData || []}
+                    margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
                   >
-                    <LabelList
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <RechartTooltip
+                      content={({ payload, label }) => {
+                        if (!payload || payload.length === 0) return null;
+                        const { income, expense, saving } = payload[0].payload;
+                        const formattedIncome = new Intl.NumberFormat().format(
+                          income
+                        );
+                        const formattedExpense = new Intl.NumberFormat().format(
+                          expense
+                        );
+                        const formattedSaving = new Intl.NumberFormat().format(
+                          saving
+                        );
+                        return (
+                          <div
+                            style={{
+                              padding: "10px",
+                              background: "#333",
+                              color: "#fff",
+                              borderRadius: "8px",
+                              width: "200px",
+                              textAlign: "left",
+                              boxShadow: "0px 4px 10px rgba(0,0,0,0.2)",
+                            }}
+                          >
+                            <strong
+                              style={{
+                                display: "block",
+                                marginBottom: "5px",
+                                textAlign: "center",
+                              }}
+                            >
+                              {label}
+                            </strong>
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <span>Income:</span>
+                              <span style={{ color: "#82CA9D" }}>
+                                {currencySymbol} {formattedIncome}
+                              </span>
+                            </div>
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <span>Expense:</span>
+                              <span style={{ color: "#FB7E41" }}>
+                                {currencySymbol} {formattedExpense}
+                              </span>
+                            </div>
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <span>Saving:</span>
+                              <span style={{ color: "#8884D8" }}>
+                                {currencySymbol} {formattedSaving}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      }}
+                    />
+                    <Bar
                       dataKey="income"
-                      position="top"
                       fill="#82CA9D"
-                      fontSize={12}
-                    />
-                  </Bar>
-                  <Bar
-                    dataKey="expense"
-                    fill="#FB7E41"
-                    radius={[10, 10, 0, 0]}
-                    name="Expense"
-                  >
-                    <LabelList
+                      radius={[10, 10, 0, 0]}
+                      name="Income"
+                    >
+                      <LabelList
+                        dataKey="income"
+                        position="top"
+                        fill="#82CA9D"
+                        fontSize={12}
+                      />
+                    </Bar>
+                    <Bar
                       dataKey="expense"
-                      position="top"
                       fill="#FB7E41"
-                      fontSize={12}
-                    />
-                  </Bar>
-                  <Bar
-                    dataKey="saving"
-                    fill="#8884D8"
-                    radius={[10, 10, 0, 0]}
-                    name="Saving"
-                  >
-                    <LabelList
+                      radius={[10, 10, 0, 0]}
+                      name="Expense"
+                    >
+                      <LabelList
+                        dataKey="expense"
+                        position="top"
+                        fill="#FB7E41"
+                        fontSize={12}
+                      />
+                    </Bar>
+                    <Bar
                       dataKey="saving"
-                      position="top"
                       fill="#8884D8"
-                      fontSize={12}
-                    />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+                      radius={[10, 10, 0, 0]}
+                      name="Saving"
+                    >
+                      <LabelList
+                        dataKey="saving"
+                        position="top"
+                        fill="#8884D8"
+                        fontSize={12}
+                      />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <Typography
+                  variant="body1"
+                  sx={{
+                    textAlign: "center",
+                    marginTop: 10,
+                    color: "text.secondary",
+                    fontWeight: "bold",
+                  }}
+                >
+                  No data found
+                </Typography>
+              )}
             </CardContent>
           </Card>
         </Grid>
+
         {/* Transactions List */}
         <Grid item xs={12} md={4}>
           <Card
@@ -660,49 +701,71 @@ const ModeratorDashboard = () => {
                 Recent Transactions
               </Typography>
 
-              {expenseData.map((tx) => {
-                const { color, icon } = getCategoryDetails(tx.category);
-                const IconComponent = getMuiIcon(icon); // Assumes a mapping utility for icons
+              {expenseData.length > 0 ? (
+                expenseData.map((tx) => {
+                  const { color, icon } = getCategoryDetails(tx.category);
+                  const IconComponent = getMuiIcon(icon); // Assumes a mapping utility for icons
 
-                return (
-                  <Box
-                    key={tx.id}
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      p: 1.7,
-                      borderRadius: "12px",
-                      background: "rgba(255, 255, 255, 0.7)",
-                      backdropFilter: "blur(8px)",
-                      borderLeft: `8px solid ${color}`,
-                      boxShadow: "0 4px 14px rgba(0, 0, 0, 0.06)",
-                      mb: 1.5,
-                    }}
-                  >
+                  return (
                     <Box
-                      sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
+                      key={tx.id}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        p: 1.7,
+                        borderRadius: "12px",
+                        background: "rgba(255, 255, 255, 0.7)",
+                        backdropFilter: "blur(8px)",
+                        borderLeft: `8px solid ${color}`,
+                        boxShadow: "0 4px 14px rgba(0, 0, 0, 0.06)",
+                        mb: 1.5,
+                      }}
                     >
-                      {IconComponent && (
-                        <IconComponent sx={{ color, fontSize: 22 }} />
-                      )}
-                      <Typography variant="body1" fontWeight="bold">
-                        {tx.category}
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
+                      >
+                        {IconComponent && (
+                          <IconComponent sx={{ color, fontSize: 22 }} />
+                        )}
+                        <Typography variant="body1" fontWeight="bold">
+                          {tx.category}
+                        </Typography>
+                      </Box>
+                      <Typography
+                        variant="body2"
+                        fontWeight="bold"
+                        // color="#3498DB"
+                        color="#263238"
+                      >
+                        {currencySymbol} {tx.amount.toFixed(2)}
                       </Typography>
                     </Box>
-                    <Typography
-                      variant="body2"
-                      fontWeight="bold"
-                      // color="#3498DB"
-                      color="#263238"
-                    >
-                      {currencySymbol} {tx.amount.toFixed(2)}
-                    </Typography>
-                  </Box>
-                );
-              })}
+                  );
+                })
+              ) : (
+                // No data found block with + sign
+                <Box
+                  sx={{
+                    height: 250,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    color: "text.secondary",
+                    fontWeight: "bold",
+                    gap: 1,
+                  }}
+                >
+                  <Fab color="primary" size="small" disabled>
+                    <Add />
+                  </Fab>
+                  <Typography variant="body1" fontWeight="bold">
+                    No data found
+                  </Typography>
+                </Box>
+              )}
             </CardContent>
-
             {/* Floating Add Button */}
             <Fab
               color="primary"
@@ -890,113 +953,112 @@ const ModeratorDashboard = () => {
           </Card>
         </Grid>
         {/* Recurring tansaction start */}
-        <Grid item xs={12} >
+        <Grid item xs={12}>
           <Card
-              sx={{
-                borderRadius: 4,
-                boxShadow: 4,
-                p: 2,
-                mb: 3,
-              }}
-            >
-              <CardContent>
-                <Typography
-                  variant="h5"
-                  sx={{
-                    fontWeight: "bold",
-                    color: "#333",
-                    mb: 2,
-                    textAlign: "center",
-                  }}
-                >
-                  {/* 🔁  */}
-                  Recurring Transactions
-                </Typography>
+            sx={{
+              borderRadius: 4,
+              boxShadow: 4,
+              p: 2,
+              mb: 9,
+            }}
+          >
+            <CardContent>
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: "bold",
+                  color: "#333",
+                  mb: 2,
+                  textAlign: "center",
+                }}
+              >
+                {/* 🔁  */}
+                Recurring Transactions
+              </Typography>
 
-                <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
-                  <Table>
-                    <TableHead>
-                      <TableRow sx={{ backgroundColor: "#8E44AD" }}>
-                        <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                          Category
+              <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
+                <Table>
+                  <TableHead>
+                    <TableRow sx={{ backgroundColor: "#8E44AD" }}>
+                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
+                        Category
+                      </TableCell>
+                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
+                        Description
+                      </TableCell>
+                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
+                        Amount
+                      </TableCell>
+                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
+                        Next Due
+                      </TableCell>
+                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
+                        Action
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {recurringTransactions.map((txn, index) => (
+                      <TableRow
+                        key={txn.category}
+                        sx={{
+                          backgroundColor: index % 2 === 0 ? "#f8f8f8" : "#fff",
+                        }}
+                      >
+                        <TableCell>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                            }}
+                          >
+                            <Avatar sx={{ bgcolor: "transparent" }}>
+                              {txn.icon}
+                            </Avatar>
+                            {txn.category}
+                          </Box>
                         </TableCell>
-                        <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                          Description
+                        <TableCell>{txn.description}</TableCell>
+                        <TableCell
+                          sx={{ fontWeight: "bold", color: "#0288D1" }}
+                        >
+                          {txn.amount}
                         </TableCell>
-                        <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                          Amount
+                        <TableCell
+                          sx={{ color: "#2E7D32", fontWeight: "bold" }}
+                        >
+                          {txn.dueDate}
                         </TableCell>
-                        <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                          Next Due
-                        </TableCell>
-                        <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                          Action
+                        <TableCell
+                          sx={{ color: "#2E7D32", fontWeight: "bold" }}
+                        >
+                          <MuiTooltip title="Mark as Paid">
+                            <IconButton color="success">
+                              <CheckCircle />
+                            </IconButton>
+                          </MuiTooltip>
+                          <MuiTooltip title="Edit">
+                            <IconButton color="primary">
+                              <Edit />
+                            </IconButton>
+                          </MuiTooltip>
+                          <MuiTooltip title="Delete">
+                            <IconButton color="error">
+                              <Delete />
+                            </IconButton>
+                          </MuiTooltip>
                         </TableCell>
                       </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {recurringTransactions.map((txn, index) => (
-                        <TableRow
-                          key={txn.category}
-                          sx={{
-                            backgroundColor:
-                              index % 2 === 0 ? "#f8f8f8" : "#fff",
-                          }}
-                        >
-                          <TableCell>
-                            <Box
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1,
-                              }}
-                            >
-                              <Avatar sx={{ bgcolor: "transparent" }}>
-                                {txn.icon}
-                              </Avatar>
-                              {txn.category}
-                            </Box>
-                          </TableCell>
-                          <TableCell>{txn.description}</TableCell>
-                          <TableCell
-                            sx={{ fontWeight: "bold", color: "#0288D1" }}
-                          >
-                            {txn.amount}
-                          </TableCell>
-                          <TableCell
-                            sx={{ color: "#2E7D32", fontWeight: "bold" }}
-                          >
-                            {txn.dueDate}
-                          </TableCell>
-                          <TableCell
-                            sx={{ color: "#2E7D32", fontWeight: "bold" }}
-                          >
-                            <MuiTooltip title="Mark as Paid">
-                              <IconButton color="success">
-                                <CheckCircle />
-                              </IconButton>
-                            </MuiTooltip>
-                            <MuiTooltip title="Edit">
-                              <IconButton color="primary">
-                                <Edit />
-                              </IconButton>
-                            </MuiTooltip>
-                            <MuiTooltip title="Delete">
-                              <IconButton color="error">
-                                <Delete />
-                              </IconButton>
-                            </MuiTooltip>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </CardContent>
-            </Card>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </CardContent>
+          </Card>
         </Grid>
       </Grid>
-    </Box>
+    </>
   );
 };
 

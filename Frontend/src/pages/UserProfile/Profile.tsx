@@ -44,14 +44,13 @@ const Profile = () => {
   // const loginUserId = localStorage.getItem("user");
   const token = localStorage.getItem("token");
   const { userId } = useParams();
-  const userRoles = JSON.parse(localStorage.getItem("roles") || "[]");
+  const [userRoles, setUserRoles] = useState<string[]>([]);
 
   const location = useLocation();
   const [isEditing, setIsEditing] = useState(location.state?.editMode || false);
   const [timezones, setTimezones] = useState<any[]>([]);
   const [isTimezoneFetched, setIsTimezoneFetched] = useState(false);
-
-  
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     if (!userId || !token || !LoginUserID) {
@@ -78,6 +77,9 @@ const Profile = () => {
       fetchUserDetails();
       prevUserIdRef.current = userId;
     }
+
+    const storedRoles = JSON.parse(localStorage.getItem("roles") || "[]");
+    setUserRoles(storedRoles);
   }, [userId, token, navigate, showNotification, LoginUserID]);
 
   useEffect(() => {
@@ -118,12 +120,30 @@ const Profile = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    let newValue = value;
+
+    if (name === "username") {
+      if (/\s/.test(value)) {
+        setErrors((prev) => ({
+          ...prev,
+          username: "Spaces are not allowed in username",
+        }));
+      } else {
+        setErrors((prev) => ({
+          ...prev,
+          username: "",
+        }));
+      }
+
+      // Remove all spaces (trim + remove in-between)
+      newValue = value.trim().replace(/\s+/g, "");
+    }
+
     setEditedDetails((prevDetails: any) => ({
       ...prevDetails,
-      [name]: value,
+      [name]: newValue,
     }));
   };
-
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
     setEditedDetails((prevDetails: any) => ({
@@ -153,6 +173,14 @@ const Profile = () => {
     return <Typography>No user data found</Typography>; // Display this message if no user data is found
   }
 
+  const selectedRole = editedDetails?.roles?.[0] || userDetails?.roles?.[0];
+  // ✅ Define allowed roles based on current user's role
+  let allowedRoles: string[] = [];
+  if (userRoles.includes("ROLE_ADMIN")) {
+    allowedRoles = ["ROLE_USER", "ROLE_ADMIN", "ROLE_MODERATOR"];
+  } else if (userRoles.includes("ROLE_MODERATOR")) {
+    allowedRoles = ["ROLE_MODERATOR", "ROLE_USER"];
+  }
   return (
     <>
       <Box sx={{ display: "flex", justifyContent: "center", mt: 4, mb: 6 }}>
@@ -218,6 +246,8 @@ const Profile = () => {
                     onChange={handleChange}
                     disabled={!isEditing}
                     variant="outlined"
+                    error={!!errors[field]}
+                    helperText={errors[field]}
                   />
                 </Grid>
               ))}
@@ -268,19 +298,27 @@ const Profile = () => {
                   }
                 >
                   <Select
-                    value={editedDetails?.roles?.[0] || userDetails?.roles?.[0]} // Ensure the selected role is updated during editing
+                    value={selectedRole}
                     onChange={(e) => {
                       const newRole = e.target.value;
                       setEditedDetails((prevDetails: any) => ({
                         ...prevDetails,
-                        roles: [newRole], // Update the role when the user selects a new one
+                        roles: [newRole],
                       }));
                     }}
+                    displayEmpty
                   >
-                    {/* Show available roles in the menu */}
-                    <MenuItem value="ROLE_USER">ROLE_USER</MenuItem>
-                    <MenuItem value="ROLE_ADMIN">ROLE_ADMIN</MenuItem>
-                    <MenuItem value="ROLE_MODERATOR">ROLE_MODERATOR</MenuItem>
+                    {/* ✅ Only add selected role manually if it's not in allowedRoles */}
+                    {!allowedRoles.includes(selectedRole) && (
+                      <MenuItem value={selectedRole}>{selectedRole}</MenuItem>
+                    )}
+
+                    {/* ✅ Render allowed role options */}
+                    {allowedRoles.map((role) => (
+                      <MenuItem key={role} value={role}>
+                        {role}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
               </Grid>

@@ -110,9 +110,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         user.setProfilePic(signUpRequest.getProfilePic());
 
         // ✅ Fetch timezone entity by ID
-        Timezone timezone = timezoneRepository.findByTimezone(signUpRequest.getTimezone())
-                .orElseThrow(() -> new ResourceNotFoundException("Timezone not found: " + signUpRequest.getTimezone()));
-        user.setTimezone(timezone);
+//        Timezone timezone = timezoneRepository.findByTimezone(signUpRequest.getTimezone())
+//                .orElseThrow(() -> new ResourceNotFoundException("Timezone not found: " + signUpRequest.getTimezone()));
+//        user.setTimezone(timezone);
 
         Set<Role> roles = getRolesFromRequest(signUpRequest.getRole());
         user.setRoles(roles);

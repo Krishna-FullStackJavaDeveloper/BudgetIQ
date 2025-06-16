@@ -40,7 +40,7 @@ const AppRoutes = () => {
       <Route path="/manage-users" element={<UserOrg />} />
       <Route path="/manage-users-test" element={<ManageUserTest />} />
       <Route path="/create_user" element={<Signup />} />
-      <Route path="/edit-family/:userId" element={<UpdateFamily />} />
+      <Route path="/my-family" element={<UpdateFamily />} />
       {/* Budget Management pages */}
       <Route path="/add_cash" element={<AddCashPage />} />
       <Route path="/add_Expense" element={<ExpensePage />} />

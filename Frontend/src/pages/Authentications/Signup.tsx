@@ -62,10 +62,10 @@ const Signup = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const location = useLocation();
   const role = localStorage.getItem("roles");
-  const parsedRoles = role ? JSON.parse(role) : [];  
+  const parsedRoles = role ? JSON.parse(role) : [];
 
-   // Check if we're on the 'create user' page to change the heading
-   useEffect(() => {
+  // Check if we're on the 'create user' page to change the heading
+  useEffect(() => {
     if (location.pathname === "/signup") {
       document.title = "Create User"; // Change page title
     }
@@ -74,8 +74,9 @@ const Signup = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
-     // Trim the username field before updating the state
-  const newValue = name === "username" ? value.trim() : value;
+    // Trim the username field before updating the state
+    const newValue =
+      name === "username" ? value.trim().replace(/\s+/g, "") : value;
 
     setFormData({
       ...formData,
@@ -169,6 +170,8 @@ const Signup = () => {
 
     if (!formData.username) {
       newErrors.username = "Username is required";
+    } else if (/\s/.test(formData.username)) {
+      newErrors.username = "Spaces are not allowed in username";
     }
     if (!formData.email) {
       newErrors.email = "Email is required";
@@ -276,7 +279,7 @@ const Signup = () => {
               mb: 2, // Adds margin below the text for spacing
             }}
           >
-           {location.pathname === "/create_user" ? "Create User" : "Sign Up"}
+            {location.pathname === "/create_user" ? "Create User" : "Sign Up"}
           </Typography>
           <form onSubmit={handleSubmit}>
             {[
@@ -312,7 +315,7 @@ const Signup = () => {
               </Grid>
             ))}
 
-            <Grid container spacing={2} alignItems="center" >
+            <Grid container spacing={2} alignItems="center">
               <Grid item xs={4}>
                 <Typography>Family Password</Typography>
               </Grid>
@@ -358,7 +361,9 @@ const Signup = () => {
                     <MenuItem value="" disabled>
                       Select Role
                     </MenuItem>
-                    {parsedRoles.includes("ROLE_ADMIN") && <MenuItem value="admin">Admin</MenuItem>}
+                    {parsedRoles.includes("ROLE_ADMIN") && (
+                      <MenuItem value="admin">Admin</MenuItem>
+                    )}
                     <MenuItem value="mod">Family Admin</MenuItem>
                     <MenuItem value="user">User</MenuItem>
                   </Select>

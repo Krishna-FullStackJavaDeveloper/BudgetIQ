@@ -3,22 +3,28 @@ package com.auth.serviceImpl;
 import com.auth.email.EmailService;
 import com.auth.entity.Family;
 import com.auth.entity.User;
+import com.auth.payload.request.FamilyRequest;
 import com.auth.payload.request.SignupRequest;
+import com.auth.payload.response.FamilyResponse;
 import com.auth.repository.FamilyRepository;
 import com.auth.repository.UserRepository;
+import com.auth.service.FamilyService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Hibernate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class FamilyService {
+public class FamilyServiceImpl implements FamilyService {
 
     private final FamilyRepository familyRepository;
     private final UserRepository userRepository;
@@ -100,4 +106,72 @@ public class FamilyService {
         emailService.sendLoginNotification(user.getEmail(), user.getFullName(), "register");
     }
 
+    // ✅ Get all families (admin/moderator)
+    public Page<FamilyResponse> getAllFamilies(Pageable pageable, UserDetailsImpl loggedInUser) {
+        return familyRepository.findAll(pageable).map(this::mapToResponse);
+    }
+
+    // ✅ Get single family by ID
+    public FamilyResponse getFamilyById(Long id, UserDetailsImpl loggedInUser) {
+        Family family = familyRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Family not found with id: " + id));
+        // Check if the logged-in user is a member of the family or has ADMIN role
+        boolean isMember = family.getUsers().stream()
+                .anyMatch(user -> user.getId().equals(loggedInUser.getId()));
+
+        boolean isAdmin = loggedInUser.getAuthorities().stream()
+                .anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!isMember && !isAdmin) {
+            throw new RuntimeException("Access denied: You are not authorized to view this family.");
+        }
+        return mapToResponse(family);
+    }
+
+    // ✅ Update family by ID
+    public FamilyResponse updateFamily(Long id, FamilyRequest request, UserDetailsImpl loggedInUser) {
+        Family family = familyRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Family not found with id: " + id));
+
+        // Check if the logged-in user is a member of the family or has ADMIN role
+        boolean isMember = family.getUsers().stream()
+                .anyMatch(user -> user.getId().equals(loggedInUser.getId()));
+
+        boolean isAdmin = loggedInUser.getAuthorities().stream()
+                .anyMatch(role -> role.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!isMember && !isAdmin) {
+            throw new RuntimeException("Access denied: You are not authorized to view this family.");
+        }
+
+        family.setFamilyName(request.getFamilyName());
+        if (request.getPasskey() != null && !request.getPasskey().isEmpty()) {
+            family.setPasskey(request.getPasskey());
+        }
+        familyRepository.save(family);
+
+        return mapToResponse(family);
+    }
+
+    public FamilyResponse getFamilyByUserId(Long userId) {
+        // Fetch the family of which this user is a member
+        Family family = familyRepository.findByUsers_Id(userId)
+                .orElseThrow(() -> new RuntimeException("No family found for the user"));
+
+        return mapToResponse(family);
+    }
+
+    // ✅ Private helper to convert entity to response DTO
+    private FamilyResponse mapToResponse(Family family) {
+        User moderator = family.getModerator();
+
+        return FamilyResponse.builder()
+                .id(family.getId())
+                .familyName(family.getFamilyName())
+                .userSize(family.getUserSize())
+                .createdAt(family.getCreatedAt())
+                .moderatorId(moderator != null ? moderator.getId() : null)
+                .moderatorUsername(moderator != null ? moderator.getUsername() : null)
+                .build();
+    }
 }

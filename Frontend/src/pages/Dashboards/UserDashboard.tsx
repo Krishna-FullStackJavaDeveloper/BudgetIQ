@@ -120,8 +120,9 @@ const UserDashboard = () => {
   const [summary, setSummary] = useState<SummaryResponse | null>(null);
 
   // Use currency this utility(hooks) in your components
-  const currencySymbol =
-  getCurrencySymbol(summary?.currencyCode || summary?.currencyName || "");
+  const currencySymbol = getCurrencySymbol(
+    summary?.currencyCode || summary?.currencyName || ""
+  );
   const timezoneLabel = summary?.timezone?.replace("_", " ") || "N/A";
   const currencyLabel = `${summary?.currencyCode || ""}`;
 
@@ -293,6 +294,13 @@ const UserDashboard = () => {
   if (loading) {
     return <Loader />;
   }
+  const hasData =
+    summary?.monthlyData &&
+    summary.monthlyData.length > 0 &&
+    summary.monthlyData.some(
+      (item) => item.income > 0 || item.expense > 0 || item.saving > 0
+    );
+
   return (
     <Box sx={{ p: 3 }}>
       {/* Header with Avatar */}
@@ -313,8 +321,10 @@ const UserDashboard = () => {
           <StatCard
             icon={<MonetizationOn />}
             // (${formattedMonth})
-            title={`Total Income `} 
-            value={`${currencySymbol}  ${currentMonthData?.income?.toLocaleString() || 0}`}
+            title={`Total Income `}
+            value={`${currencySymbol}  ${
+              currentMonthData?.income?.toLocaleString() || 0
+            }`}
             color="success.main"
           />
         </Grid>
@@ -322,7 +332,9 @@ const UserDashboard = () => {
           <StatCard
             icon={<TrendingDown />}
             title={`Total Expense`}
-            value={`${currencySymbol} ${currentMonthData?.expense?.toLocaleString() || 0}`}
+            value={`${currencySymbol} ${
+              currentMonthData?.expense?.toLocaleString() || 0
+            }`}
             color="error.main"
           />
         </Grid>
@@ -330,7 +342,9 @@ const UserDashboard = () => {
           <StatCard
             icon={<TrendingUp />}
             title="Total Savings"
-            value={`${currencySymbol} ${currentMonthData?.saving?.toLocaleString() || 0}`}
+            value={`${currencySymbol} ${
+              currentMonthData?.saving?.toLocaleString() || 0
+            }`}
             color="primary.main"
           />
         </Grid>
@@ -351,126 +365,140 @@ const UserDashboard = () => {
                 Monthly Income & Expenses
               </Typography>
 
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart
-                  data={summary?.monthlyData || []}
-                  margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <RechartTooltip
-                    content={({ payload, label }) => {
-                      if (!payload || payload.length === 0) return null;
-                      const { income, expense, saving } = payload[0].payload;
-                      const formattedIncome = new Intl.NumberFormat().format(
-                        income
-                      );
-                      const formattedExpense = new Intl.NumberFormat().format(
-                        expense
-                      );
-                      const formattedSaving = new Intl.NumberFormat().format(
-                        saving
-                      );
-                      return (
-                        <div
-                          style={{
-                            padding: "10px",
-                            background: "#333",
-                            color: "#fff",
-                            borderRadius: "8px",
-                            width: "200px",
-                            textAlign: "left",
-                            boxShadow: "0px 4px 10px rgba(0,0,0,0.2)",
-                          }}
-                        >
-                          <strong
-                            style={{
-                              display: "block",
-                              marginBottom: "5px",
-                              textAlign: "center",
-                            }}
-                          >
-                            {label}
-                          </strong>
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                            }}
-                          >
-                            <span>Income:</span>
-                            <span style={{ color: "#82CA9D" }}>
-                              {currencySymbol} {formattedIncome}
-                            </span>
-                          </div>
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                            }}
-                          >
-                            <span>Expense:</span>
-                            <span style={{ color: "#FB7E41" }}>
-                              {currencySymbol} {formattedExpense}
-                            </span>
-                          </div>
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                            }}
-                          >
-                            <span>Saving:</span>
-                            <span style={{ color: "#8884D8" }}>
-                              {currencySymbol} {formattedSaving}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    }}
-                  />
-                  <Bar
-                    dataKey="income"
-                    fill="#82CA9D"
-                    radius={[10, 10, 0, 0]}
-                    name="Income"
+              {hasData ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart
+                    data={summary!.monthlyData!}
+                    margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
                   >
-                    <LabelList
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <RechartTooltip
+                      content={({ payload, label }) => {
+                        if (!payload || payload.length === 0) return null;
+                        const { income, expense, saving } = payload[0].payload;
+                        const formattedIncome = new Intl.NumberFormat().format(
+                          income
+                        );
+                        const formattedExpense = new Intl.NumberFormat().format(
+                          expense
+                        );
+                        const formattedSaving = new Intl.NumberFormat().format(
+                          saving
+                        );
+                        return (
+                          <div
+                            style={{
+                              padding: "10px",
+                              background: "#333",
+                              color: "#fff",
+                              borderRadius: "8px",
+                              width: "200px",
+                              textAlign: "left",
+                              boxShadow: "0px 4px 10px rgba(0,0,0,0.2)",
+                            }}
+                          >
+                            <strong
+                              style={{
+                                display: "block",
+                                marginBottom: "5px",
+                                textAlign: "center",
+                              }}
+                            >
+                              {label}
+                            </strong>
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <span>Income:</span>
+                              <span style={{ color: "#82CA9D" }}>
+                                {currencySymbol} {formattedIncome}
+                              </span>
+                            </div>
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <span>Expense:</span>
+                              <span style={{ color: "#FB7E41" }}>
+                                {currencySymbol} {formattedExpense}
+                              </span>
+                            </div>
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <span>Saving:</span>
+                              <span style={{ color: "#8884D8" }}>
+                                {currencySymbol} {formattedSaving}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      }}
+                    />
+                    <Bar
                       dataKey="income"
-                      position="top"
                       fill="#82CA9D"
-                      fontSize={12}
-                    />
-                  </Bar>
-                  <Bar
-                    dataKey="expense"
-                    fill="#FB7E41"
-                    radius={[10, 10, 0, 0]}
-                    name="Expense"
-                  >
-                    <LabelList
+                      radius={[10, 10, 0, 0]}
+                      name="Income"
+                    >
+                      <LabelList
+                        dataKey="income"
+                        position="top"
+                        fill="#82CA9D"
+                        fontSize={12}
+                      />
+                    </Bar>
+                    <Bar
                       dataKey="expense"
-                      position="top"
                       fill="#FB7E41"
-                      fontSize={12}
-                    />
-                  </Bar>
-                  <Bar
-                    dataKey="saving"
-                    fill="#8884D8"
-                    radius={[10, 10, 0, 0]}
-                    name="Saving"
-                  >
-                    <LabelList
+                      radius={[10, 10, 0, 0]}
+                      name="Expense"
+                    >
+                      <LabelList
+                        dataKey="expense"
+                        position="top"
+                        fill="#FB7E41"
+                        fontSize={12}
+                      />
+                    </Bar>
+                    <Bar
                       dataKey="saving"
-                      position="top"
                       fill="#8884D8"
-                      fontSize={12}
-                    />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+                      radius={[10, 10, 0, 0]}
+                      name="Saving"
+                    >
+                      <LabelList
+                        dataKey="saving"
+                        position="top"
+                        fill="#8884D8"
+                        fontSize={12}
+                      />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <Typography
+                  variant="body1"
+                  sx={{
+                    textAlign: "center",
+                    marginTop: 10,
+                    color: "text.secondary",
+                    fontWeight: "bold",
+                  }}
+                >
+                  No data found
+                </Typography>
+              )}
             </CardContent>
           </Card>
         </Grid>
@@ -490,50 +518,73 @@ const UserDashboard = () => {
                 Recent Transactions
               </Typography>
 
-              {expenseData.map((tx) => {
-                const { color, icon } = getCategoryDetails(tx.category);
-                const IconComponent = getMuiIcon(icon); // Assumes a mapping utility for icons
+              {expenseData.length > 0 ? (
+                expenseData.map((tx) => {
+                  const { color, icon } = getCategoryDetails(tx.category);
+                  const IconComponent = getMuiIcon(icon); // Assumes a mapping utility for icons
 
-                return (
-                  <Box
-                    key={tx.id}
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      p: 1.7,
-                      borderRadius: "12px",
-                      background: "rgba(255, 255, 255, 0.7)",
-                      backdropFilter: "blur(8px)",
-                      borderLeft: `8px solid ${color}`,
-                      boxShadow: "0 4px 14px rgba(0, 0, 0, 0.06)",
-                      mb: 1.5,
-                    }}
-                  >
+                  return (
                     <Box
-                      sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
+                      key={tx.id}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        p: 1.7,
+                        borderRadius: "12px",
+                        background: "rgba(255, 255, 255, 0.7)",
+                        backdropFilter: "blur(8px)",
+                        borderLeft: `8px solid ${color}`,
+                        boxShadow: "0 4px 14px rgba(0, 0, 0, 0.06)",
+                        mb: 1.5,
+                      }}
                     >
-                      {IconComponent && (
-                        <IconComponent sx={{ color, fontSize: 22 }} />
-                      )}
-                      <Typography variant="body1" fontWeight="bold">
-                        {tx.category}
-                      </Typography>
-                      {/* <Typography variant="caption" color="text.secondary">
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
+                      >
+                        {IconComponent && (
+                          <IconComponent sx={{ color, fontSize: 22 }} />
+                        )}
+                        <Typography variant="body1" fontWeight="bold">
+                          {tx.category}
+                        </Typography>
+                        {/* <Typography variant="caption" color="text.secondary">
                         {dayjs(tx.date).format("MMM DD, YYYY")}
                       </Typography> */}
+                      </Box>
+                      <Typography
+                        variant="body2"
+                        fontWeight="bold"
+                        // color="#3498DB"
+                        color="#263238"
+                      >
+                        {currencySymbol} {tx.amount.toFixed(2)}
+                      </Typography>
                     </Box>
-                    <Typography
-                      variant="body2"
-                      fontWeight="bold"
-                      // color="#3498DB"
-                      color="#263238"
-                    >
-                      {currencySymbol} {tx.amount.toFixed(2)}
-                    </Typography>
-                  </Box>
-                );
-              })}
+                  );
+                })
+              ) : (
+                // No data found block with + sign
+                <Box
+                  sx={{
+                    height: 250,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    color: "text.secondary",
+                    fontWeight: "bold",
+                    gap: 1,
+                  }}
+                >
+                  <Fab color="primary" size="small" disabled>
+                    <Add />
+                  </Fab>
+                  <Typography variant="body1" fontWeight="bold">
+                    No data found
+                  </Typography>
+                </Box>
+              )}
             </CardContent>
 
             {/* Floating Add Button */}
@@ -591,7 +642,9 @@ const UserDashboard = () => {
                     InputProps={{
                       startAdornment:
                         isFocused || amount ? (
-                          <InputAdornment position="start">{currencySymbol}</InputAdornment>
+                          <InputAdornment position="start">
+                            {currencySymbol}
+                          </InputAdornment>
                         ) : null,
                     }}
                     onFocus={handleFocus}

@@ -13,6 +13,7 @@ import com.auth.payload.response.ApiResponse;
 import com.auth.payload.response.JwtResponse;
 import com.auth.repository.UserRepository;
 import com.auth.email.EmailService;
+import com.auth.service.FamilyService;
 import com.auth.serviceImpl.*;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;

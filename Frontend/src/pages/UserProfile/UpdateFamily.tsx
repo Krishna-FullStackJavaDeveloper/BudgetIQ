@@ -7,141 +7,101 @@ import {
   TextField,
   Grid,
   Button,
-  CircularProgress,
-  FormControlLabel,
-  MenuItem,
-  Select,
-  FormControl,
   Stack,
-  Avatar,
-  Checkbox,
-  RadioGroup,
-  Radio,
-  FormLabel,
 } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
-import { getUserDetails, updateUser } from "../../api/user";
-import EditIcon from "@mui/icons-material/Edit"; // To show edit button
-import SaveIcon from "@mui/icons-material/Save"; // For save button
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import EditIcon from "@mui/icons-material/Edit";
+import SaveIcon from "@mui/icons-material/Save";
 import { useLocation } from "react-router-dom";
-import RestoreIcon from '@mui/icons-material/Restore';
 import { useNotification } from "../../components/common/NotificationProvider";
+import { getFamilyById, getMyFamily, updateFamily } from "../../api/family";
+
+const formatDate = (dateStr: string) => {
+  const date = new Date(dateStr);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+};
 
 const UpdateFamily = () => {
-  const [userDetails, setUserDetails] = useState<any | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [editedDetails, setEditedDetails] = useState<any | null>(null); // For edited values
-  const navigate = useNavigate();
+  const [familyData, setFamilyData] = useState<any | null>(null);
+  const [editedDetails, setEditedDetails] = useState<any | null>(null);
   const { showNotification } = useNotification();
-  const prevUserIdRef = useRef<string | null>(null);
-  const LoginUserID = localStorage.getItem("user");
-  // const loginUserId = localStorage.getItem("user");
-  const token = localStorage.getItem("token");
-  const { userId } = useParams();
+  const userId = localStorage.getItem("userId");
   const userRoles = JSON.parse(localStorage.getItem("roles") || "[]");
-
   const location = useLocation();
   const [isEditing, setIsEditing] = useState(location.state?.editMode || false);
+  const fetchedOnce = useRef(false);
 
-  useEffect(() => {
-    if (!userId || !token || !LoginUserID) {
-      // console.error("Please login to access your profile");
-      showNotification("Please login to access your profile", "error");
-      navigate("/login");
-      return;
+  const fetchFamily = async () => {
+    try {
+      let data;
+      if (userRoles.includes("ROLE_ADMIN")) {
+        const response = await getFamilyById(Number(userId));
+        data = response.data;
+      } else {
+        const response = await getMyFamily();
+        data = response.data;
+      }
+      setFamilyData(data);
+      setEditedDetails(data); // Initialize editable copy
+    } catch (error) {
+      console.error("Failed to fetch family data", error);
     }
-
-    if (prevUserIdRef.current !== userId) {
-      const fetchUserDetails = async () => {
-        setLoading(true);
-        try {
-          const data = await getUserDetails(userId);
-          setUserDetails(data?.data); // Make sure to use the right path for your response data
-          setEditedDetails(data?.data); // Initialize the edited details with fetched data
-        } catch (error) {
-          showNotification("Error fetching user data", "error");
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchUserDetails();
-      prevUserIdRef.current = userId;
-    }
-  }, [userId, token, navigate, showNotification, LoginUserID]);
-
-  const handleEdit = () => {
-    setIsEditing(true);
   };
 
   const handleSave = async () => {
-    if (!token || !editedDetails || !LoginUserID || !userId) {
-      showNotification("Error: Missing details or authentication", "error");
-      return;
-    }
+  if (!editedDetails?.familyName) {
+    showNotification("Family Name is required", "warning");
+    return;
+  }
 
-    try {
-      const updatedUser = await updateUser(userId, LoginUserID, editedDetails);
-      setUserDetails(updatedUser);
-      showNotification("Profile updated successfully", "success");
-      setIsEditing(false); // Exit edit mode
+  const payload: { familyName: string; passkey?: string } = {
+    familyName: editedDetails.familyName.trim(),
+  };
 
-      // Re-fetch user details to show the latest data after update
-      const data = await getUserDetails(userId);
-      setUserDetails(data?.data); // Update with the latest data
-      setEditedDetails(data?.data); // Sync the edited details with the latest data
-    } catch (error) {
-      showNotification("Error updating profile", "error");
+  // Only include passkey if it's provided (i.e., user wants to change it)
+  if (editedDetails.passkey && editedDetails.passkey.trim() !== "") {
+    payload.passkey = editedDetails.passkey.trim();
+  }
+
+  try {
+    await updateFamily(familyData.id, payload);
+    showNotification("Family updated successfully", "success");
+    setFamilyData({ ...familyData, ...payload });
+    setIsEditing(false);
+  } catch (error) {
+    showNotification("Failed to update family", "error");
+    console.error("Error updating family:", error);
+  }
+};
+
+
+
+  useEffect(() => {
+    if (!fetchedOnce.current) {
+      fetchFamily();
+      fetchedOnce.current = true;
     }
+  }, []);
+
+  const handleEdit = () => setIsEditing(true);
+
+  const handleCancel = () => {
+    setEditedDetails(familyData);
+    setIsEditing(false);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setEditedDetails((prevDetails: any) => ({
-      ...prevDetails,
+    setEditedDetails((prev: any) => ({
+      ...prev,
       [name]: value,
     }));
   };
 
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
-    setEditedDetails((prevDetails: any) => ({
-      ...prevDetails,
-      [name]: checked,
-    }));
-  };
-
-  const handleAccountStatusChange = (event: { target: { value: any } }) => {
-    const { value } = event.target;
-    setEditedDetails((prev: any) => ({
-      ...prev,
-      accountStatus: value,
-    }));
-  };
-
-  const handleCancel = () => {
-    setEditedDetails(userDetails); // Reset editedDetails to the original data
-    setIsEditing(false); // Exit edit mode
-  };
-
-  if (loading) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-        <CircularProgress sx={{ display: "block", margin: "auto" }} />
-        <Typography
-          variant="body2"
-          color="textSecondary"
-          sx={{ textAlign: "center", mt: 2 }}
-        >
-          Fetching user details...
-        </Typography>
-      </Box>
-    );
-  }
-
-  if (!userDetails) {
-    return <Typography>No user data found</Typography>; // Display this message if no user data is found
+  if (!familyData) {
+    return <Typography>No family data found</Typography>;
   }
 
   return (
@@ -152,9 +112,9 @@ const UpdateFamily = () => {
             <Button
               variant="contained"
               color="primary"
-              onClick={handleSave}
               startIcon={<SaveIcon sx={{ mb: 1.4 }} />}
               sx={{ padding: "1px 12px", borderRadius: "10px" }}
+               onClick={handleSave}
             >
               Save
             </Button>
@@ -171,42 +131,17 @@ const UpdateFamily = () => {
           )}
         </Box>
 
-        <Card
-          sx={{ width: "100%", maxWidth: 600, boxShadow: 5, borderRadius: 3 }}
-        >
+        <Card sx={{ width: "100%", maxWidth: 600, boxShadow: 5, borderRadius: 3 }}>
           <CardContent>
             <Stack alignItems="center" spacing={2}>
               <Typography variant="h5" fontWeight={600}>
-                {userDetails?.username}
+                {familyData?.moderatorUsername}
               </Typography>
             </Stack>
 
             <Grid container spacing={2} mt={2}>
-              {["familyName", "passkey"].map(
-                (field) => (
-                  <Grid item xs={12} key={field}>
-                    <TextField
-                      fullWidth
-                      name={field}
-                      label={field
-                        .replace(/([A-Z])/g, " $1")
-                        .replace(/^./, (str) => str.toUpperCase())}
-                      value={
-                        isEditing
-                          ? editedDetails?.[field]
-                          : userDetails?.[field]
-                      }
-                      onChange={handleChange}
-                      disabled={!isEditing}
-                      variant="outlined"
-                    />
-                  </Grid>
-                )
-              )}
-              {/* Family Name Field (Non-Editable) */}
-             
-
-              {[ "updated At", "updated By"].map((field) => (
+              {/* Editable fields */}
+              {["familyName", "passkey"].map((field) => (
                 <Grid item xs={12} key={field}>
                   <TextField
                     fullWidth
@@ -214,19 +149,43 @@ const UpdateFamily = () => {
                     label={field
                       .replace(/([A-Z])/g, " $1")
                       .replace(/^./, (str) => str.toUpperCase())}
-                    value={userDetails?.[field]}
-                    disabled
+                    value={
+                      isEditing ? editedDetails?.[field] : familyData?.[field]
+                    }
+                    onChange={handleChange}
+                    disabled={!isEditing}
                     variant="outlined"
                   />
                 </Grid>
               ))}
+
+              {/* Non-editable fields */}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  name="createdAt"
+                  label="Created At"
+                  value={formatDate(familyData.createdAt)}
+                  disabled
+                  variant="outlined"
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  name="userSize"
+                  label="User Size"
+                  value={familyData.userSize}
+                  disabled
+                  variant="outlined"
+                />
+              </Grid>
             </Grid>
           </CardContent>
         </Card>
-        <Box
-          sx={{ display: "flex", justifyContent: "flex-start", mb: 4, mt: 4 }}
-        >
-          {isEditing && (
+
+        {isEditing && (
+          <Box sx={{ display: "flex", justifyContent: "flex-start", mt: 4 }}>
             <Button
               variant="outlined"
               color="primary"
@@ -235,8 +194,8 @@ const UpdateFamily = () => {
             >
               Cancel
             </Button>
-          )}
-        </Box>
+          </Box>
+        )}
       </Box>
     </>
   );

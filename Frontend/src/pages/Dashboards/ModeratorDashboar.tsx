@@ -71,6 +71,7 @@ import * as MuiIcons from "@mui/icons-material";
 import { getMyFamily } from "../../api/family";
 import { LinearProgress } from "@mui/joy";
 import GroupIcon from "@mui/icons-material/Group";
+import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 
 const userID = localStorage.getItem("user") || "";
 const userRoles = JSON.parse(localStorage.getItem("roles") || "[]");
@@ -96,14 +97,13 @@ const ModeratorDashboard = () => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
-  const [purpose, setPurpose] = useState("");
   const [date, setDate] = useState<Dayjs | null>(null);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [isFocused, setIsFocused] = useState(false);
   const handleEditFamily = () => navigate(`/my-family`);
-  const handleAddMember = () => navigate(`/create_user`);
+  const handleAddMember = () => navigate(`/manage-users`);
   const [loading, setLoading] = useState(true);
 
   const [category, setCategory] = useState("");
@@ -121,7 +121,6 @@ const ModeratorDashboard = () => {
   const currencySymbol = getCurrencySymbol(
     summary?.currencyCode || summary?.currencyName || ""
   );
-  const timezoneLabel = summary?.timezone?.replace("_", " ") || "N/A";
   const currencyLabel = `${summary?.currencyCode || ""}`;
 
   const SummaryComponent = () => {
@@ -315,12 +314,12 @@ const ModeratorDashboard = () => {
     </Card>
   );
 
-  const maxSize = 5;
+  const maxSize = 6;
   const userSize = familyData?.userSize;
   const progressValue = (userSize / maxSize) * 100;
 
   // To avoid 0% progress (invisible bar), set minimum visible value (e.g., 5%)
-  const visibleProgress = progressValue > 0 ? progressValue : 5;
+  const visibleProgress = progressValue > 0 ? progressValue : 6;
 
   return (
     <>
@@ -382,17 +381,17 @@ const ModeratorDashboard = () => {
                 value={visibleProgress}
                 style={{
                   height: 8,
-                  borderRadius: 5,
+                  borderRadius: 3,
                   backgroundColor: "#ddd",
                 }}
                 color={
                   visibleProgress === 0
                     ? "neutral" // Color is neutral if the strength is 0
                     : visibleProgress < 50
-                    ? "danger" // Color is danger if below 50
+                    ? "success" // Color is danger if below 50
                     : visibleProgress < 75
                     ? "warning" // Color is warning if between 50 and 75
-                    : "success" // Color is success if above 75
+                    : "danger" // Color is success if above 75
                 }
                 size="md"
                 variant="soft"
@@ -402,7 +401,7 @@ const ModeratorDashboard = () => {
                 color="text.secondary"
                 sx={{ mt: 0.5 }}
               >
-                {familyData?.userSize} of 5 members
+                {familyData?.userSize} of 6 members
               </Typography>
             </Box>
             <Box
@@ -420,7 +419,7 @@ const ModeratorDashboard = () => {
                 startIcon={<Edit fontSize="small" />}
                 onClick={handleEditFamily}
                 sx={{
-                  borderRadius: 2,
+                  borderRadius: 3,
                   textTransform: "none",
                   boxShadow: "0 4px 10px rgb(25 118 210 / 0.3)",
                   "&:hover": {
@@ -432,7 +431,7 @@ const ModeratorDashboard = () => {
                   whiteSpace: "nowrap",
                   display: "flex",
                   alignItems: "center",
-                  gap: 1,
+                  // gap: 1,
 
                   // Fix icon vertical alignment here:
                   "& .MuiButton-startIcon": {
@@ -452,10 +451,10 @@ const ModeratorDashboard = () => {
               <Button
                 variant="outlined"
                 color="secondary"
-                startIcon={<PersonAdd fontSize="small" />}
+                startIcon={<ManageAccountsIcon fontSize="small" />}
                 onClick={handleAddMember}
                 sx={{
-                  borderRadius: 2,
+                  borderRadius: 3,
                   textTransform: "none",
                   px: 3,
                   fontWeight: 600,
@@ -464,7 +463,7 @@ const ModeratorDashboard = () => {
                   whiteSpace: "nowrap",
                   display: "flex",
                   alignItems: "center",
-                  gap: 1,
+                  // gap: 0.3,
                   "&:hover": {
                     borderWidth: 2,
                     backgroundColor: "rgba(220, 0, 78, 0.08)",
@@ -481,7 +480,7 @@ const ModeratorDashboard = () => {
                   },
                 }}
               >
-                Add Member
+                Manage Member
               </Button>
             </Box>
 
@@ -576,7 +575,7 @@ const ModeratorDashboard = () => {
                               padding: "10px",
                               background: "#333",
                               color: "#fff",
-                              borderRadius: "8px",
+                              borderRadius: 3,
                               width: "200px",
                               textAlign: "left",
                               boxShadow: "0px 4px 10px rgba(0,0,0,0.2)",
@@ -714,7 +713,7 @@ const ModeratorDashboard = () => {
                         justifyContent: "space-between",
                         alignItems: "center",
                         p: 1.7,
-                        borderRadius: "12px",
+                        borderRadius: 3,
                         background: "rgba(255, 255, 255, 0.7)",
                         backdropFilter: "blur(8px)",
                         borderLeft: `8px solid ${color}`,
@@ -784,7 +783,7 @@ const ModeratorDashboard = () => {
               TransitionComponent={Slide}
               fullWidth
               PaperProps={{
-                sx: { borderRadius: 5 }, // Adjust the value as needed
+                sx: { borderRadius: 3 }, // Adjust the value as needed
               }}
             >
               <DialogTitle
@@ -830,9 +829,9 @@ const ModeratorDashboard = () => {
                     onBlur={handleBlur}
                     sx={{
                       mt: 2,
-                      borderRadius: "8px",
+                      borderRadius: 3,
                       "& .MuiOutlinedInput-root": {
-                        borderRadius: "8px",
+                        borderRadius: 3,
                         boxShadow: 2,
                       },
                     }}
@@ -846,9 +845,9 @@ const ModeratorDashboard = () => {
                       label="Category"
                       required
                       sx={{
-                        borderRadius: "8px",
+                        borderRadius: 3,
                         "& .MuiOutlinedInput-root": {
-                          borderRadius: "8px",
+                          borderRadius: 3,
                           boxShadow: 2,
                         },
                       }}
@@ -931,7 +930,7 @@ const ModeratorDashboard = () => {
                     handleAddExpense(); // Call your existing add expense function here
                   }}
                   color="primary"
-                  sx={{ borderRadius: "8px", padding: "6px 16px" }}
+                  sx={{ borderRadius: 3, padding: "6px 16px" }}
                 >
                   Add
                 </Button>
@@ -944,7 +943,7 @@ const ModeratorDashboard = () => {
                     setDate(null); // Reset the Date field
                   }}
                   color="secondary"
-                  sx={{ borderRadius: "8px", padding: "6px 16px" }}
+                  sx={{ borderRadius: 3, padding: "6px 16px" }}
                 >
                   Reset
                 </Button>
@@ -954,14 +953,14 @@ const ModeratorDashboard = () => {
         </Grid>
         {/* Recurring tansaction start */}
         <Grid item xs={12}>
-          <Card
+          {/* <Card
             sx={{
               borderRadius: 4,
               boxShadow: 4,
               p: 2,
               mb: 9,
             }}
-          >
+          > */}
             <CardContent>
               <Typography
                 variant="h5"
@@ -976,7 +975,7 @@ const ModeratorDashboard = () => {
                 Recurring Transactions
               </Typography>
 
-              <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
+              <TableContainer component={Paper} sx={{ borderRadius: 3 , mb: 4}}>
                 <Table>
                   <TableHead>
                     <TableRow sx={{ backgroundColor: "#8E44AD" }}>
@@ -1055,7 +1054,7 @@ const ModeratorDashboard = () => {
                 </Table>
               </TableContainer>
             </CardContent>
-          </Card>
+          {/* </Card> */}
         </Grid>
       </Grid>
     </>

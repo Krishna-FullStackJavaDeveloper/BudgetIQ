@@ -359,7 +359,7 @@ const UserDashboard = () => {
 
         {/* Expenses Chart */}
         <Grid item xs={12}>
-          <Card sx={{ boxShadow: 3, borderRadius: 2 }}>
+          <Card sx={{ boxShadow: 3, borderRadius: 3 }}>
             <CardContent>
               <Typography variant="h6" fontWeight={600} gutterBottom>
                 Monthly Income & Expenses
@@ -393,7 +393,7 @@ const UserDashboard = () => {
                               padding: "10px",
                               background: "#333",
                               color: "#fff",
-                              borderRadius: "8px",
+                              borderRadius: 3,
                               width: "200px",
                               textAlign: "left",
                               boxShadow: "0px 4px 10px rgba(0,0,0,0.2)",
@@ -531,7 +531,7 @@ const UserDashboard = () => {
                         justifyContent: "space-between",
                         alignItems: "center",
                         p: 1.7,
-                        borderRadius: "12px",
+                        borderRadius: 3,
                         background: "rgba(255, 255, 255, 0.7)",
                         backdropFilter: "blur(8px)",
                         borderLeft: `8px solid ${color}`,
@@ -605,7 +605,7 @@ const UserDashboard = () => {
               TransitionComponent={Slide}
               fullWidth
               PaperProps={{
-                sx: { borderRadius: 5 }, // Adjust the value as needed
+                sx: { borderRadius: 3 }, // Adjust the value as needed
               }}
             >
               <DialogTitle
@@ -651,9 +651,9 @@ const UserDashboard = () => {
                     onBlur={handleBlur}
                     sx={{
                       mt: 2,
-                      borderRadius: "8px",
+                      borderRadius: 3,
                       "& .MuiOutlinedInput-root": {
-                        borderRadius: "8px",
+                        borderRadius: 3,
                         boxShadow: 2,
                       },
                     }}
@@ -667,9 +667,9 @@ const UserDashboard = () => {
                       label="Category"
                       required
                       sx={{
-                        borderRadius: "8px",
+                        borderRadius: 3,
                         "& .MuiOutlinedInput-root": {
-                          borderRadius: "8px",
+                          borderRadius: 3,
                           boxShadow: 2,
                         },
                       }}
@@ -749,7 +749,7 @@ const UserDashboard = () => {
                     handleAddExpense(); // Call your existing add expense function here
                   }}
                   color="primary"
-                  sx={{ borderRadius: "8px", padding: "6px 16px" }}
+                  sx={{ borderRadius: 3, padding: "6px 16px" }}
                 >
                   Add
                 </Button>
@@ -762,7 +762,7 @@ const UserDashboard = () => {
                     setDate(null); // Reset the Date field
                   }}
                   color="secondary"
-                  sx={{ borderRadius: "8px", padding: "6px 16px" }}
+                  sx={{ borderRadius: 3, padding: "6px 16px" }}
                 >
                   Reset
                 </Button>
@@ -774,7 +774,7 @@ const UserDashboard = () => {
         <Grid item xs={12} md={8}>
           <Card
             sx={{
-              borderRadius: 4,
+              borderRadius: 3,
               boxShadow: 4,
               // p: 2,
               mb: 3,

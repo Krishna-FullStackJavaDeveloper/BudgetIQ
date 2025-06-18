@@ -1,5 +1,6 @@
 package com.auth.serviceImpl;
 
+import com.auth.eNum.AccountStatus;
 import com.auth.eNum.ERole;
 import com.auth.email.EmailService;
 import com.auth.entity.Family;
@@ -90,11 +91,23 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
 
         // Check if user has ROLE_MODERATOR
-        Set<String> roles = moderator.getRoles().stream()
-                .map(role -> role.getName().name())
-                .collect(Collectors.toSet());
+        boolean isModerator = moderator.getRoles().stream()
+                .map(Role::getName)  // Role::getName returns ERole
+                .anyMatch(roleName -> roleName == ERole.ROLE_MODERATOR);
 
-        if (!roles.contains("ROLE_MODERATOR")) {
+        ZoneId moderatorZoneId = getZoneId(isModerator, moderator);
+
+        // Fetch all users in the same family
+        Long familyId = moderator.getFamily().getId();
+        List<User> usersInFamily = userRepository.findAllByFamilyId(familyId);
+
+        // Return response with users and timezone
+        GetAllUsersResponse response = new GetAllUsersResponse(usersInFamily, moderatorZoneId);
+        return CompletableFuture.completedFuture(response);
+    }
+
+    private static ZoneId getZoneId(boolean isModerator, User moderator) {
+        if (!isModerator) {
             throw new IllegalArgumentException("User is not a moderator.");
         }
 
@@ -108,15 +121,7 @@ public class UserService {
                 ? moderator.getTimezone().getTimezone()
                 : "UTC";
 
-        ZoneId moderatorZoneId = ZoneId.of(moderatorTimeZoneString);
-
-        // Fetch all users in the same family
-        Long familyId = moderator.getFamily().getId();
-        List<User> usersInFamily = userRepository.findAllByFamilyId(familyId);
-
-        // Return response with users and timezone
-        GetAllUsersResponse response = new GetAllUsersResponse(usersInFamily, moderatorZoneId);
-        return CompletableFuture.completedFuture(response);
+        return ZoneId.of(moderatorTimeZoneString);
     }
 
 
@@ -135,8 +140,11 @@ public class UserService {
                 throw new UnauthorizedAccessException("You are not authorized to update this user's profile.");
             }
 
+            boolean isUser = loggedInUser.getRoles().stream()
+                    .anyMatch(role -> role.getName().equals(ERole.ROLE_USER));
+
             // Prevent users from updating their own role
-            if (loggedInUser.getRoles().contains(ERole.ROLE_USER)) {
+            if (isUser) {
                 Set<String> userRoles = userToUpdate.getRoles().stream()
                         .map(role -> role.getName().name())
                         .collect(Collectors.toSet());
@@ -176,7 +184,8 @@ public class UserService {
             throw ex; // Rethrow to let global exception handler handle it
         } catch (Exception e) {
             log.error("Error updating user with ID: {}", id, e);
-            throw new RuntimeException("Error updating user: " + e.getMessage(), e);
+            throw new RuntimeException(e.getMessage());
+//            throw new RuntimeException("Error updating user: " + e.getMessage(), e);
         }
     }
 
@@ -242,6 +251,28 @@ public class UserService {
             userToUpdate.setTwoFactorEnabled(request.getTwoFactorEnabled());
         }
         if (request.getAccountStatus() != null && !request.getAccountStatus().equals(userToUpdate.getAccountStatus())) {
+
+            // Only check if setting status to ACTIVE
+            if (request.getAccountStatus() == AccountStatus.ACTIVE) {
+                Family family = userToUpdate.getFamily();
+                if (family == null) {
+                    throw new RuntimeException("User's family is not assigned.");
+                }
+
+                // Count active users in the family except current user (if user currently inactive)
+                long activeUsersCount = family.getUsers().stream()
+                        .filter(user -> user.getAccountStatus() == AccountStatus.ACTIVE)
+                        .count();
+
+                // If user currently inactive, activating increases count by 1
+                boolean isCurrentlyInactive = userToUpdate.getAccountStatus() != AccountStatus.ACTIVE;
+
+                if (isCurrentlyInactive && activeUsersCount >= 6) {
+                    throw new RuntimeException("Family active user limit (6) reached. Cannot activate more users.");
+                }
+            }
+
+            // If limit not reached or status is not ACTIVE, allow update
             userToUpdate.setAccountStatus(request.getAccountStatus());
         }
         // Update Timezone
@@ -254,58 +285,155 @@ public class UserService {
 
     private void updateRoles(UpdateUserRequest request, User loggedInUser, User userToUpdate) {
         Set<Role> updatedRoles = new HashSet<>();
+
         for (String roleName : request.getRole()) {
             Role role = roleRepository.findByName(ERole.valueOf(roleName))
                     .orElseThrow(() -> new InvalidRoleException("Role " + roleName + " does not exist."));
             updatedRoles.add(role);
         }
 
-        if (loggedInUser.getRoles().contains(ERole.ROLE_ADMIN)) {
+        boolean isAdmin = loggedInUser.getRoles().stream()
+                .anyMatch(role -> role.getName().equals(ERole.ROLE_ADMIN));
+
+        boolean isModerator = loggedInUser.getRoles().stream()
+                .anyMatch(role -> role.getName().equals(ERole.ROLE_MODERATOR));
+
+        if (isAdmin) {
             updateAdminRoles(userToUpdate, updatedRoles, loggedInUser);
-        } else if (loggedInUser.getRoles().contains(ERole.ROLE_MODERATOR)) {
+        } else if (isModerator) {
             updateModeratorRoles(userToUpdate, updatedRoles, loggedInUser);
         }
     }
 
     private void updateAdminRoles(User userToUpdate, Set<Role> updatedRoles, User loggedInUser) {
+        Family family = userToUpdate.getFamily();
+        User existingModerator = family.getModerator();
+
+        // Count active users in the family
+        List<User> activeUsers = family.getUsers().stream()
+                .filter(user -> user.getAccountStatus() == AccountStatus.ACTIVE)
+                .toList();
+
+        long activeUsersCount = activeUsers.size();
+
+        boolean currentlyModerator = userToUpdate.getRoles().stream()
+                .anyMatch(role -> role.getName().equals(ERole.ROLE_MODERATOR));
+
+        boolean willBeModerator = updatedRoles.stream()
+                .anyMatch(role -> role.getName().equals(ERole.ROLE_MODERATOR));
+
+        // Block removing MODERATOR role if user is current mod and no other active users exist
+        if (currentlyModerator && !willBeModerator && activeUsersCount <= 1) {
+            throw new RuntimeException("Cannot remove moderator role because you are the only active user in your family.");
+        }
+
+        // Update roles
         userToUpdate.setRoles(updatedRoles);
 
-        if (updatedRoles.contains(ERole.ROLE_MODERATOR)) {
-            Family family = userToUpdate.getFamily();
-            User existingModerator = family.getModerator();
-
-            if (existingModerator != null) {
-                existingModerator.getRoles().clear();
-                existingModerator.setRoles(new HashSet<>(List.of(roleRepository.findByName(ERole.ROLE_USER).get())));
+        // If assigning moderator role
+        if (willBeModerator) {
+            if (existingModerator != null && !existingModerator.getId().equals(userToUpdate.getId())) {
+                existingModerator.setRoles(new HashSet<>(List.of(
+                        roleRepository.findByName(ERole.ROLE_USER).orElseThrow(() ->
+                                new RuntimeException("ROLE_USER not found")
+                        )
+                )));
                 existingModerator.setUpdatedBy(loggedInUser.getId());
                 userRepository.save(existingModerator);
+            }
+            family.setModerator(userToUpdate);
+            familyRepository.save(family);
+        }
 
-                family.setModerator(userToUpdate);
+        // If removing moderator role
+        if (currentlyModerator && !willBeModerator) {
+            // Assign moderator to another active user (excluding the one being updated)
+            User newModerator = activeUsers.stream()
+                    .filter(u -> !u.getId().equals(userToUpdate.getId()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (newModerator != null) {
+                // Assign MODERATOR role to this new user
+                Set<Role> newRoles = new HashSet<>(newModerator.getRoles());
+                newRoles.add(roleRepository.findByName(ERole.ROLE_MODERATOR)
+                        .orElseThrow(() -> new RuntimeException("ROLE_MODERATOR not found")));
+                newModerator.setRoles(newRoles);
+                newModerator.setUpdatedBy(loggedInUser.getId());
+                userRepository.save(newModerator);
+
+                // Set as family moderator
+                family.setModerator(newModerator);
                 familyRepository.save(family);
             }
         }
     }
+
+
 
     private void updateModeratorRoles(User userToUpdate, Set<Role> updatedRoles, User loggedInUser) {
         if (!loggedInUser.getFamily().getId().equals(userToUpdate.getFamily().getId())) {
             throw new UnauthorizedAccessException("You can only update family members.");
         }
 
+        Family family = loggedInUser.getFamily();
+
+        // Count active users in the family
+        List<User> activeUsers = family.getUsers().stream()
+                .filter(user -> user.getAccountStatus() == AccountStatus.ACTIVE)
+                .toList();
+
+        boolean currentlyModerator = userToUpdate.getRoles().stream()
+                .anyMatch(role -> role.getName().equals(ERole.ROLE_MODERATOR));
+
+        boolean willBeModerator = updatedRoles.stream()
+                .anyMatch(role -> role.getName().equals(ERole.ROLE_MODERATOR));
+
+        // Prevent removing moderator role if user is the only active user
+        if (currentlyModerator && !willBeModerator && activeUsers.size() <= 1) {
+            throw new RuntimeException("Cannot remove moderator role because you are the only active user in your family.");
+        }
+
+        // Update roles on userToUpdate
         userToUpdate.setRoles(updatedRoles);
 
-        if (updatedRoles.contains(ERole.ROLE_MODERATOR)) {
-            Family family = loggedInUser.getFamily();
+        if (willBeModerator) {
+            // Assign new moderator and downgrade existing if different user
             User existingModerator = family.getModerator();
 
-            if (existingModerator != null) {
-                existingModerator.getRoles().clear();
-                existingModerator.setRoles(new HashSet<>(List.of(roleRepository.findByName(ERole.ROLE_USER).get())));
+            if (existingModerator != null && !existingModerator.getId().equals(userToUpdate.getId())) {
+                existingModerator.setRoles(new HashSet<>(List.of(
+                        roleRepository.findByName(ERole.ROLE_USER).orElseThrow(() ->
+                                new RuntimeException("ROLE_USER not found")
+                        )
+                )));
                 existingModerator.setUpdatedBy(loggedInUser.getId());
                 userRepository.save(existingModerator);
-
-                family.setModerator(userToUpdate);
-                familyRepository.save(family);
             }
+
+            family.setModerator(userToUpdate);
+            familyRepository.save(family);
+
+        } else if (currentlyModerator && !willBeModerator) {
+            // Moderator role removed, assign new moderator from other active users (if any)
+            User newModerator = activeUsers.stream()
+                    .filter(u -> !u.getId().equals(userToUpdate.getId()))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("No other active user to assign as moderator."));
+
+            // Assign moderator role to new moderator
+            newModerator.setRoles(new HashSet<>(List.of(
+                    roleRepository.findByName(ERole.ROLE_MODERATOR).orElseThrow(() ->
+                            new RuntimeException("ROLE_MODERATOR not found")
+                    )
+            )));
+            newModerator.setUpdatedBy(loggedInUser.getId());
+            userRepository.save(newModerator);
+
+            // Update family moderator reference
+            family.setModerator(newModerator);
+            familyRepository.save(family);
         }
     }
+
 }

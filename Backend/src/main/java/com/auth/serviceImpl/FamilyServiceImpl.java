@@ -58,6 +58,7 @@ public class FamilyServiceImpl implements FamilyService {
         return family;
     }
 
+    @Transactional
     public User createFamilyUser(SignupRequest signUpRequest) throws Exception {
         String familyPass = signUpRequest.getPasskey();
 
@@ -82,10 +83,14 @@ public class FamilyServiceImpl implements FamilyService {
         }
 
         Hibernate.initialize(family.getUsers());
-        if (family.getUserSize() >= 6) {
+
+        long activeUserCount = family.getUsers().stream()
+                .filter(user -> user.getAccountStatus().name().equalsIgnoreCase("ACTIVE"))
+                .count();
+
+        if (activeUserCount >= 6) {
             throw new RuntimeException("Error: Family user size limit (6) reached.");
         }
-
         User user = userDetailsService.createNewUser(signUpRequest);
         user.setFamily(family);  // Assign user to family
 
@@ -154,11 +159,20 @@ public class FamilyServiceImpl implements FamilyService {
     }
 
     public FamilyResponse getFamilyByUserId(Long userId) {
-        // Fetch the family of which this user is a member
+        // Fetch the family the user belongs to
         Family family = familyRepository.findByUsers_Id(userId)
                 .orElseThrow(() -> new RuntimeException("No family found for the user"));
 
-        return mapToResponse(family);
+        // Get count of ACTIVE users in this family
+        long activeUserCount = familyRepository.countActiveUsersByFamilyId(family.getId());
+
+        // Log or return the active user size as needed
+        log.info("Active users in family '{}': {}", family.getFamilyName(), activeUserCount);
+
+        FamilyResponse response = mapToResponse(family);
+        response.setUserSize((int) activeUserCount); // update the response with active user count
+
+        return response;
     }
 
     // ✅ Private helper to convert entity to response DTO

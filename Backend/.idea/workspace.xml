@@ -5,12 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9ef1f0a6-0768-4427-ac2f-d3321830eed0" name="Changes" comment="create get user by userId for all roles.">
-      <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/Authentications/Signup.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/Authentications/Signup.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/components/layout/Sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/components/layout/Sidebar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/Dashboards/AdminDashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/Dashboards/AdminDashboard.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/Dashboards/ModeratorDashboar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/Dashboards/ModeratorDashboar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/Dashboards/UserDashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/Dashboards/UserDashboard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/UserProfile/Profile.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/UserProfile/Profile.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/UserProfile/UpdateFamily.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/UserProfile/UpdateFamily.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/src/routes/AppRoutes.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/routes/AppRoutes.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/UserProfile/ManageUser.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/UserProfile/ManageUser.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

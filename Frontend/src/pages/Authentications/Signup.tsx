@@ -64,6 +64,7 @@ const Signup = () => {
   const role = localStorage.getItem("roles");
   const parsedRoles = role ? JSON.parse(role) : [];
 
+  const isSignup = location.pathname === "/signup";
   // Check if we're on the 'create user' page to change the heading
   useEffect(() => {
     if (location.pathname === "/signup") {
@@ -203,24 +204,27 @@ const Signup = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+  e.preventDefault();
+  if (!validateForm()) return;
 
-    try {
-      const response = await signup(formData); // Ensure formData is properly formatted
-      showNotification(response.data.message, "success");
-      navigate("/login");
-    } catch (error) {
-      if (error instanceof AxiosError && error.response) {
-        showNotification(error.response.data.message, "error");
-      } else {
-        showNotification(
-          "An unexpected error occurred. Please try again.",
-          "error"
-        );
-      }
+  try {
+    const response = await signup(formData);
+    showNotification(response.data.message, "success");
+
+    if (isSignup) {
+      navigate("/login"); // Redirect to login if it's a sign up
+    } else {
+      navigate(-1); // Go back to the previous page (admin/mod page)
     }
-  };
+
+  } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      showNotification(error.response.data.message, "error");
+    } else {
+      showNotification("An unexpected error occurred. Please try again.", "error");
+    }
+  }
+};
 
   // Function to clear the form
   const clearForm = () => {
@@ -245,6 +249,7 @@ const Signup = () => {
 
   return (
     <>
+   
       {/* <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#f5f5f5' }}> */}
       <Card
         sx={{
@@ -268,7 +273,7 @@ const Signup = () => {
       >
         <CardContent>
           <Typography
-            variant="h4" // Make the font larger for better visibility
+            variant="h5" // Make the font larger for better visibility
             gutterBottom
             align="center"
             sx={{
@@ -279,7 +284,9 @@ const Signup = () => {
               mb: 2, // Adds margin below the text for spacing
             }}
           >
-            {location.pathname === "/create_user" ? "Create User" : "Sign Up"}
+             {/* <Typography variant="h5" gutterBottom> */}
+  {isSignup ? "Sign Up" : "Create New User"}
+{/* </Typography> */}
           </Typography>
           <form onSubmit={handleSubmit}>
             {[
@@ -479,14 +486,9 @@ const Signup = () => {
             </Grid>
             <Grid container spacing={2}>
               <Grid item xs={6}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  fullWidth
-                  sx={{ mt: 2 }}
-                >
-                  Submit
-                </Button>
+               <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
+  {isSignup ? "Sign Up" : "Create User"}
+</Button>
               </Grid>
               <Grid item xs={6}>
                 <Button

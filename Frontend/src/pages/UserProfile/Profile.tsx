@@ -173,7 +173,7 @@ const Profile = () => {
     return <Typography>No user data found</Typography>; // Display this message if no user data is found
   }
 
-  const selectedRole = editedDetails?.roles?.[0] || userDetails?.roles?.[0];
+  const selectedRole = editedDetails?.role?.[0] || userDetails?.roles?.[0];
   // ✅ Define allowed roles based on current user's role
   let allowedRoles: string[] = [];
   if (userRoles.includes("ROLE_ADMIN")) {
@@ -303,7 +303,7 @@ const Profile = () => {
                       const newRole = e.target.value;
                       setEditedDetails((prevDetails: any) => ({
                         ...prevDetails,
-                        roles: [newRole],
+                        role: [newRole],
                       }));
                     }}
                     displayEmpty

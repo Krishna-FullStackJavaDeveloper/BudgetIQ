@@ -52,12 +52,6 @@ const Sidebar: React.FC<SidebarProps> = ({
       { label: "Expense", path: "/add_Expense", icon: <LocalAtmIcon /> },
       { label: "Category", path: "/add_Category", icon: <CategoryIcon /> },
       // Admin Pages
-      {
-        label: "Create User",
-        path: "/create_user",
-        icon: <PersonAddAltIcon />,
-      },
-      { label: "Manage Users", path: "/manage-users", icon: <PeopleIcon /> },
       { label: "Reports", path: "/manage-users-test", icon: <ReportIcon /> },
       {
         label: "My Profile",

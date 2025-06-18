@@ -37,8 +37,12 @@ const UpdateFamily = () => {
     try {
       let data;
       if (userRoles.includes("ROLE_ADMIN")) {
-        const response = await getFamilyById(Number(userId));
-        data = response.data;
+         // 👇 Fetch familyId from localStorage
+      const familyId = localStorage.getItem("selectedFamilyId");
+      if (!familyId) return console.error("No familyId found");
+
+      const response = await getFamilyById(Number(familyId));
+      data = response.data;
       } else {
         const response = await getMyFamily();
         data = response.data;

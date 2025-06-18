@@ -411,7 +411,8 @@ const ExpensePage = () => {
           sx={{
             boxShadow: 4,
             borderRadius: 3,
-            background: "linear-gradient(135deg, #f0f4f8, #ffffff)",
+            background: "linear-gradient(135deg, #fff4f4, #fff)", // soft red/white blend
+            borderLeft: "6px solid #e74c3c", // accent border
             mb: 4,
           }}
         >
@@ -449,7 +450,7 @@ const ExpensePage = () => {
                     sx={{
                       width: "100%",
                       "& .MuiOutlinedInput-root": {
-                        borderRadius: "8px",
+                        borderRadius: 3,
                         backgroundColor: "#f9fafb",
                         boxShadow: 1,
                       },
@@ -468,8 +469,8 @@ const ExpensePage = () => {
             boxShadow: 4,
             borderRadius: 3,
             height: 420,
-            // background: "linear-gradient(135deg, #fefcea,rgb(204, 193, 107))",
-            background: "linear-gradient(135deg, #f0f4f8, #ffffff)",
+            background: "linear-gradient(135deg, #fff0f0, #ffffff)", // soft reddish blend
+            borderTop: "1px solid rgba(0, 150, 136, 0.15)", // top red accent
           }}
         >
           <CardContent sx={{ pb: 9 }}>
@@ -495,9 +496,9 @@ const ExpensePage = () => {
               sx={{
                 mt: 2,
                 mb: 2,
-                borderRadius: "8px",
+                borderRadius: 3,
                 "& .MuiOutlinedInput-root": {
-                  borderRadius: "8px",
+                  borderRadius: 3,
                   boxShadow: 2,
                 },
               }}
@@ -509,9 +510,9 @@ const ExpensePage = () => {
                 label="Category"
                 required
                 sx={{
-                  borderRadius: "8px",
+                  borderRadius: 3,
                   "& .MuiOutlinedInput-root": {
-                    borderRadius: "8px",
+                    borderRadius: 3,
                     boxShadow: 2,
                   },
                 }}
@@ -581,9 +582,9 @@ const ExpensePage = () => {
               onBlur={() => setIsFocused(false)}
               sx={{
                 mb: 2,
-                borderRadius: "8px",
+                borderRadius: 3,
                 "& .MuiOutlinedInput-root": {
-                  borderRadius: "8px",
+                  borderRadius: 3,
                   boxShadow: 2,
                 },
               }}
@@ -600,9 +601,9 @@ const ExpensePage = () => {
                   }}
                   sx={{
                     mb: 2,
-                    borderRadius: "8px",
+                    borderRadius: 3,
                     "& .MuiOutlinedInput-root": {
-                      borderRadius: "8px",
+                      borderRadius: 3,
                       boxShadow: 2,
                     },
                   }}
@@ -610,6 +611,7 @@ const ExpensePage = () => {
               </Box>
             </LocalizationProvider>
 
+            {/* Buttons */}
             <Box
               sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}
             >
@@ -705,7 +707,7 @@ const ExpensePage = () => {
         <Card
           sx={{
             ml: 1,
-            borderRadius: 4,
+            borderRadius: 3,
             position: "relative",
             height: 220,
             display: "flex",
@@ -734,7 +736,10 @@ const ExpensePage = () => {
                 fontWeight={600}
                 sx={{ color: "#D32F2F" }}
               >
-                ${filteredData.reduce((sum, item) => sum + item.amount, 0).toFixed(2)}
+                $
+                {filteredData
+                  .reduce((sum, item) => sum + item.amount, 0)
+                  .toFixed(2)}
               </Typography>
               <Typography sx={{ fontSize: 12, color: "#888" }}>
                 Last 30 days
@@ -747,7 +752,7 @@ const ExpensePage = () => {
               size="small"
               sx={{
                 fontSize: 12,
-                borderRadius: "8px",
+                borderRadius: 3,
                 px: 1.5,
                 //
                 backgroundColor: isPositive ? "#ffebee" : "#e8f5e9",
@@ -797,7 +802,7 @@ const ExpensePage = () => {
                         padding: "10px",
                         background: "#333",
                         color: "#fff",
-                        borderRadius: "8px",
+                        borderRadius: 3,
                         minWidth: "120px",
                         textAlign: "left",
                         boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
@@ -856,7 +861,7 @@ const ExpensePage = () => {
 
       {/* Pie Chart Grid Item */}
       <Grid item xs={12} sm={8} md={4}>
-        <Card sx={{ borderRadius: 4, boxShadow: 4, mt: 2, mb: 4 }}>
+        <Card sx={{ borderRadius: 3, boxShadow: 4, mt: 2, mb: 4 }}>
           <CardContent>
             <Box width="100%" display="flex" justifyContent="center">
               <div style={{ width: "250px", height: "403px" }}>
@@ -899,7 +904,7 @@ const ExpensePage = () => {
         <Card
           sx={{
             mt: 2,
-            borderRadius: 4,
+            borderRadius: 3,
             boxShadow: 4,
             background: "#ffffff",
             overflow: "auto",
@@ -914,11 +919,12 @@ const ExpensePage = () => {
             <TableContainer component={Paper} sx={{ boxShadow: 0 }}>
               <Table size="small" aria-label="expense table">
                 <TableHead>
-                  <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-                    <TableCell>
+                  <TableRow>
+                    <TableCell sx={{ borderBottom: "2px solid  #F08080" }}>
                       <strong>Sr.</strong>
                     </TableCell>
                     <TableCell
+                      sx={{ borderBottom: "2px solid  #F08080" }}
                       sortDirection={orderBy === "date" ? order : false}
                     >
                       <TableSortLabel
@@ -931,6 +937,7 @@ const ExpensePage = () => {
                     </TableCell>
 
                     <TableCell
+                      sx={{ borderBottom: "2px solid  #F08080" }}
                       sortDirection={orderBy === "category" ? order : false}
                     >
                       <TableSortLabel
@@ -942,6 +949,7 @@ const ExpensePage = () => {
                       </TableSortLabel>
                     </TableCell>
                     <TableCell
+                      sx={{ borderBottom: "2px solid  #F08080" }}
                       sortDirection={orderBy === "amount" ? order : false}
                     >
                       <TableSortLabel
@@ -953,7 +961,10 @@ const ExpensePage = () => {
                       </TableSortLabel>
                     </TableCell>
                     {/* New Actions Column */}
-                    <TableCell align="center">
+                    <TableCell
+                      align="center"
+                      sx={{ borderBottom: "2px solid  #F08080" }}
+                    >
                       <strong>Actions</strong>
                     </TableCell>
                   </TableRow>
@@ -974,7 +985,7 @@ const ExpensePage = () => {
                               display: "flex",
                               alignItems: "center",
                               backgroundColor: color, // Background color of the category
-                              borderRadius: "12px",
+                              borderRadius: 3,
                               padding: "4px 12px",
                               color: "#fff",
                               fontWeight: "600",

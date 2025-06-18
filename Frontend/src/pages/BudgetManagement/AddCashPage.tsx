@@ -377,26 +377,33 @@ const AddCashPage = () => {
             sx={{
               boxShadow: 4,
               borderRadius: 3,
-              background: "linear-gradient(135deg, #f0f4f8, #ffffff)",
+              background: "linear-gradient(135deg, #e0f2f1, #ffffff)", // soft green gradient
               mb: 4,
+              border: "1px solid rgba(0, 150, 136, 0.15)", // teal accent border
             }}
           >
             <CardContent>
               <Grid container spacing={2} alignItems="center">
                 {/* Title */}
                 <Grid item xs={12} sm={4}>
-                  <Typography variant="h6" fontWeight="bold">
+                  <Typography
+                    variant="h6"
+                    fontWeight="bold"
+                    sx={{ color: "#00695c" }} // deep teal
+                  >
                     Income Tracker
                   </Typography>
                 </Grid>
-
                 {/* Selected Month Display */}
                 <Grid item xs={12} sm={4}>
                   <Box>
-                    <Typography variant="body2" sx={{ mb: 0.5 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ mb: 0.5, color: "#004d40" }}
+                    >
                       Showing income for:
                     </Typography>
-                    <Typography variant="subtitle1" color="primary">
+                    <Typography variant="subtitle1" sx={{ color: "#00796b" }}>
                       {selectedMonth?.format("MMMM YYYY")}
                     </Typography>
                   </Box>
@@ -406,17 +413,17 @@ const AddCashPage = () => {
                 <Grid item xs={12} sm={4}>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      views={["month", "year"]} // Allow both month and year views
+                      views={["month", "year"]}
                       label="Select Month"
                       value={selectedMonth}
                       onChange={(newValue) =>
                         setSelectedMonth(newValue ?? dayjs())
-                      } // Update selected month
+                      }
                       sx={{
                         width: "100%",
                         "& .MuiOutlinedInput-root": {
                           borderRadius: "8px",
-                          backgroundColor: "#f9fafb",
+                          backgroundColor: "#f1f8f6",
                           boxShadow: 1,
                         },
                       }}
@@ -434,7 +441,8 @@ const AddCashPage = () => {
               boxShadow: 4,
               borderRadius: 3,
               height: 420,
-              background: "linear-gradient(135deg, #f0f4f8, #ffffff)",
+              background: "linear-gradient(135deg, #e0f2f1, #ffffff)", // green-tinted gradient
+              border: "1px solid rgba(0, 150, 136, 0.15)",
             }}
           >
             <CardContent sx={{ pb: 9 }}>
@@ -443,9 +451,10 @@ const AddCashPage = () => {
                 fontWeight={800}
                 gutterBottom
                 textAlign="center"
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
+                sx={{
+                  color: "#00695c",
+                  mb: 2,
+                }}
               >
                 <Box component="span" sx={{ mx: 1 }}>
                   {editingId ? "Edit Income" : "Add Income"}
@@ -518,7 +527,12 @@ const AddCashPage = () => {
               </LocalizationProvider>
 
               <Box
-                sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}
+                sx={{
+                  display: "flex",
+                  gap: 2, // cleaner spacing instead of manual margin
+                  mt: 3,
+                  flexDirection: { xs: "column", sm: "row" },
+                }}
               >
                 {editingId ? (
                   <>
@@ -527,7 +541,7 @@ const AddCashPage = () => {
                       color="primary"
                       onClick={handleUpdate}
                       fullWidth
-                      sx={{ mr: 1 }}
+                      sx={{ mr: 1, minHeight: 44 }}
                     >
                       Update
                     </Button>
@@ -536,6 +550,7 @@ const AddCashPage = () => {
                       color="secondary"
                       onClick={handleClear}
                       fullWidth
+                      sx={{ minHeight: 44 }}
                     >
                       Clear
                     </Button>
@@ -547,7 +562,7 @@ const AddCashPage = () => {
                       color="success"
                       onClick={handleSubmit}
                       fullWidth
-                      sx={{ mr: 1 }}
+                      sx={{ mr: 1, minHeight: 44 }}
                     >
                       Submit
                     </Button>
@@ -556,6 +571,7 @@ const AddCashPage = () => {
                       color="secondary"
                       onClick={handleClear}
                       fullWidth
+                      sx={{ minHeight: 44 }}
                     >
                       Clear
                     </Button>
@@ -582,6 +598,7 @@ const AddCashPage = () => {
               alignItems: "center",
               textAlign: "center",
               padding: 2,
+              transition: "transform 0.3s ease, box-shadow 0.3s ease",
             }}
           >
             <CreditCard sx={{ fontSize: 50, mb: 1 }} />
@@ -638,7 +655,10 @@ const AddCashPage = () => {
                   fontWeight={600}
                   sx={{ color: "#2e7d32" }}
                 >
-                  ${filteredData.reduce((sum, item) => sum + item.amount, 0).toFixed(2)}
+                  $
+                  {filteredData
+                    .reduce((sum, item) => sum + item.amount, 0)
+                    .toFixed(2)}
                 </Typography>
                 <Typography sx={{ fontSize: 12, color: "#888" }}>
                   Last 30 days
@@ -759,7 +779,16 @@ const AddCashPage = () => {
 
         {/* Pie Chart Grid Item */}
         <Grid item xs={12} sm={8} md={4}>
-          <Card sx={{ borderRadius: 4, boxShadow: 4, mt: 2, mb: 4 }}>
+          <Card
+            sx={{
+              borderRadius: 3,
+              boxShadow: 4,
+              mt: 2,
+              mb: 4,
+             
+              border: "1px solid rgba(0, 150, 136, 0.15)",
+            }}
+          >
             <CardContent>
               <Box width="100%" display="flex" justifyContent="center">
                 <div style={{ width: "250px", height: "403px" }}>
@@ -802,11 +831,13 @@ const AddCashPage = () => {
           <Card
             sx={{
               mt: 2,
-              borderRadius: 4,
+              borderRadius: 3,
               boxShadow: 4,
               background: "#ffffff",
               overflow: "auto",
               mb: 4,
+              // borderLeft: "5px solid #1abc9c", // subtle green theme accent
+              transition: "box-shadow 0.3s ease",
             }}
           >
             <CardContent>
@@ -817,11 +848,12 @@ const AddCashPage = () => {
               <TableContainer component={Paper} sx={{ boxShadow: 0 }}>
                 <Table size="small" aria-label="income table">
                   <TableHead>
-                    <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-                      <TableCell>
+                    <TableRow>
+                      <TableCell sx={{ borderBottom: "2px solid #1abc9c" }}>
                         <strong>Sr.</strong>
                       </TableCell>
                       <TableCell
+                        sx={{ borderBottom: "2px solid #1abc9c" }}
                         sortDirection={orderBy === "date" ? order : false}
                       >
                         <TableSortLabel
@@ -834,6 +866,7 @@ const AddCashPage = () => {
                       </TableCell>
 
                       <TableCell
+                        sx={{ borderBottom: "2px solid #1abc9c" }}
                         sortDirection={orderBy === "source" ? order : false}
                       >
                         <TableSortLabel
@@ -845,6 +878,7 @@ const AddCashPage = () => {
                         </TableSortLabel>
                       </TableCell>
                       <TableCell
+                        sx={{ borderBottom: "2px solid #1abc9c" }}
                         sortDirection={orderBy === "amount" ? order : false}
                       >
                         <TableSortLabel
@@ -856,7 +890,10 @@ const AddCashPage = () => {
                         </TableSortLabel>
                       </TableCell>
                       {/* New Actions Column */}
-                      <TableCell align="center">
+                      <TableCell
+                        align="center"
+                        sx={{ borderBottom: "2px solid #1abc9c" }}
+                      >
                         <strong>Actions</strong>
                       </TableCell>
                     </TableRow>
@@ -877,7 +914,7 @@ const AddCashPage = () => {
                               gap: 1,
                               px: 1.5,
                               py: 0.5,
-                              borderRadius: "20px",
+                              borderRadius: "12px",
                               backgroundColor: alpha(
                                 sourceColors[getSourceGroup(item.source)],
                                 0.15

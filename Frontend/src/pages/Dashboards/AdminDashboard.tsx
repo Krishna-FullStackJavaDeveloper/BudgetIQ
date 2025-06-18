@@ -23,7 +23,6 @@ import {
   DialogActions,
   Button,
   Slide,
-  Chip,
   TextField,
   FormControl,
   InputLabel,
@@ -38,13 +37,11 @@ import {
   YAxis,
   Tooltip as RechartTooltip,
   CartesianGrid,
-  ReferenceLine,
   ResponsiveContainer,
-  Legend,
   LabelList,
-  PieChart,
-  Pie,
-  Cell,
+  LineChart,
+  Tooltip,
+  Line,
 } from "recharts";
 import {
   Edit,
@@ -73,6 +70,21 @@ import { fetchUserSummary } from "../../api/dashboard";
 import { createExpense, getAllExpenses } from "../../api/expense";
 import { getAllCategories } from "../../api/category";
 import * as MuiIcons from "@mui/icons-material";
+import AddIcon from "@mui/icons-material/PersonAddAlt1";
+import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+
+const glassCardStyle = {
+  p: 3,
+  borderRadius: "20px",
+  background:
+    "linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.15))",
+  boxShadow: "0 8px 30px rgba(0,0,0,0.2)",
+  backdropFilter: "blur(18px)",
+  border: "1px solid rgba(255,255,255,0.3)",
+  color: "#1a1a1a", // deep dark gray for contrast
+  transition: "all 0.3s ease-in-out",
+};
 
 const AdminData = {
   totalFamily: 3,
@@ -330,26 +342,48 @@ const AdminDashboard = () => {
     icon: React.ReactNode;
     title: string;
     value: string;
-    color: string;
+    // new props for glass effect colors:
+    bgColor: string; // e.g. "rgba(255, 206, 150, 0.2)"
+    borderColor: string; // e.g. "rgba(255, 206, 150, 0.3)"
+    textColor: string; // e.g. "#b36f00"
+    iconBgColor: string; // e.g. "#b36f00"
   };
 
-  const StatCard: React.FC<StatCardProps> = ({ icon, title, value, color }) => (
+  const StatCard: React.FC<StatCardProps> = ({
+    icon,
+    title,
+    value,
+    bgColor,
+    borderColor,
+    textColor,
+    iconBgColor,
+  }) => (
     <Card
       sx={{
-        borderRadius: 3,
-        boxShadow: 3,
-        p: 2,
+        p: 3,
+        borderRadius: "20px",
+        backdropFilter: "blur(14px)",
+        background: bgColor,
+        border: `1px solid ${borderColor}`,
+        boxShadow: `0 5px 10px ${borderColor}`,
+        color: textColor,
         textAlign: "center",
-        bgcolor: "background.paper",
+        transition: "transform 0.3s ease, box-shadow 0.3s ease",
+        "&:hover": {
+          transform: "translateY(-5px)",
+          boxShadow: `0 10px 10px ${borderColor}`,
+        },
       }}
     >
       <Box display="flex" justifyContent="center" alignItems="center" mb={1}>
-        <Avatar sx={{ bgcolor: color, width: 48, height: 48 }}>{icon}</Avatar>
+        <Avatar sx={{ bgcolor: iconBgColor, width: 48, height: 48 }}>
+          {icon}
+        </Avatar>
       </Box>
-      <Typography variant="h6" color="textSecondary">
+      <Typography variant="h6" sx={{ color: textColor, letterSpacing: 1 }}>
         {title}
       </Typography>
-      <Typography variant="h4" color={color}>
+      <Typography variant="h4" sx={{ color: textColor, fontWeight: 700 }}>
         {value}
       </Typography>
     </Card>
@@ -357,92 +391,198 @@ const AdminDashboard = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Header with Avatar */}
-      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
-        <Avatar sx={{ bgcolor: "primary.main" }}>K</Avatar>
-        <Typography variant="h5" fontWeight={600}>
-          Welcome Back, {summary?.name}!
-        </Typography>
-        <Typography variant="subtitle2" color="textSecondary">
-          {dayjs().format("MMMM DD, YYYY")}
-        </Typography>
-      </Stack>
-
       {/* Admin Card */}
       <Grid container spacing={3}>
-        {/* Family Details Section */}
-        <Grid item xs={12} md={3}>
-          <Card sx={{ p: 3, borderRadius: 3, boxShadow: 4 }}>
-            <Typography
-              variant="body2"
-              color="success.main"
-              sx={{ mt: 1, mb: 3 }}
-            >
-              Welcome, {summary?.name}! You have full control over this Family's
-              settings and management.
-            </Typography>
-            <Typography variant="body1" sx={{ mt: 1 }}>
-              Total Family: <strong>{AdminData.totalFamily}</strong>
-            </Typography>
-            <Typography variant="body1" sx={{ mt: 1 }}>
-              Total Members: <strong>{AdminData.totalMembers}</strong>
-            </Typography>
-            <Typography variant="body1" sx={{ mt: 1 }}>
-              Currenly Active Members: <strong>{AdminData.activeUsers}</strong>
-            </Typography>
-            <Typography variant="body1" sx={{ mt: 1, mb: 1 }}>
-              Family Admin: <strong>{AdminData.familyAdmin}</strong>
-            </Typography>
-          </Card>
-        
+        {/* Glass Admin Panel */}
+        <Grid item xs={12} md={5}>
           <Card
-            sx={{ p: 3, borderRadius: 3, boxShadow: 4, mt: 2.5 }}
-            onClick={handleCardClick}
-            style={{ cursor: "pointer" }}
+            sx={{
+              p: 3,
+              borderRadius: "20px",
+              backdropFilter: "blur(14px)",
+              background: "rgba(255, 206, 150, 0.2)", // soft warm glass color like ref
+              border: "1px solid rgba(255, 206, 150, 0.3)",
+              boxShadow: "0 10px 40px rgba(255, 206, 150, 0.25)",
+              color: "#b36f00", // warm deep gold text color for headings
+              transition: "transform 0.3s ease, box-shadow 0.3s ease",
+            }}
           >
             <Typography
-              variant="body2"
-              color="#4527A0"
-              sx={{ display: "flex", alignItems: "center" }}
+              variant="h6"
+              fontWeight={600}
+              gutterBottom
+              sx={{ letterSpacing: 1 }}
             >
-              <QueryStats sx={{ mr: 1 }} /> {/* Icon */}
-              View Income {/* Label */}
+              👋 Welcome, {summary?.name}
             </Typography>
+            <Typography variant="body2" sx={{ mb: 2, color: "#8a5e00" }}>
+              You have full control over all families, users, and budgets, including family-admin assignments.
+            </Typography>
+
+            <Typography variant="body1" sx={{ my: 1, fontWeight: 600, mt: 4 }}>
+              👨‍👩‍👧 Total Families: <strong>{AdminData.totalFamily}</strong>
+            </Typography>
+            <Typography variant="body1" sx={{ my: 1, fontWeight: 600 }}>
+              👥 Total Members: <strong>{AdminData.totalMembers}</strong>
+            </Typography>
+            <Typography variant="body1" sx={{ my: 1, fontWeight: 600 }}>
+              ✅ Active Members: <strong>{AdminData.activeUsers}</strong>
+            </Typography>
+            <Typography variant="body1" sx={{ my: 1, fontWeight: 600 }}>
+              🔐 Admin: <strong>{AdminData.familyAdmin}</strong>
+            </Typography>
+
+            {/* Action Buttons */}
+            <Grid
+              container
+              spacing={1.5}
+              sx={{
+                mt: 3,
+                flexDirection: { xs: "column", sm: "row" },
+                justifyContent: "space-between",
+                mb: 2,
+              }}
+            >
+              <Grid item xs={12} sm={4}>
+                <Button
+                  fullWidth
+                  startIcon={
+                    <AddIcon sx={{ fontSize: 20, color: "#b36f00" }} />
+                  }
+                  onClick={() => navigate("/create_user")}
+                  variant="outlined"
+                  sx={{
+                    borderRadius: 2.5,
+                    fontWeight: 600,
+                    fontSize: "0.95rem",
+                    py: 1.2,
+                    px: 2,
+                    color: "#b36f00",
+                    borderColor: "rgba(179, 111, 0, 0.6)",
+                    textTransform: "none",
+                    transition: "all 0.3s ease-in-out",
+                    "&:hover": {
+                      bgcolor: "rgba(179, 111, 0, 0.1)",
+                      borderColor: "#b36f00",
+                      boxShadow: "0 0 8px rgba(179, 111, 0, 0.7)",
+                      transform: "translateY(-2px)",
+                    },
+                  }}
+                >
+                  Add Member
+                </Button>
+              </Grid>
+
+              <Grid item xs={12} sm={4}>
+                <Button
+                  fullWidth
+                  startIcon={
+                    <ManageAccountsIcon
+                      sx={{ fontSize: 20, color: "#7c3aed" }}
+                    />
+                  }
+                  onClick={() => navigate("/manage-users")}
+                  variant="outlined"
+                  sx={{
+                    borderRadius: 2.5,
+                    fontWeight: 600,
+                    fontSize: "0.95rem",
+                    py: 1.2,
+                    px: 2,
+                    color: "#7c3aed",
+                    borderColor: "rgba(124, 58, 237, 0.6)",
+                    textTransform: "none",
+                    transition: "all 0.3s ease-in-out",
+                    "&:hover": {
+                      bgcolor: "rgba(124, 58, 237, 0.1)",
+                      borderColor: "#7c3aed",
+                      boxShadow: "0 0 8px rgba(124, 58, 237, 0.7)",
+                      transform: "translateY(-2px)",
+                    },
+                  }}
+                >
+                  Manage Users
+                </Button>
+              </Grid>
+
+              <Grid item xs={12} sm={4}>
+                <Button
+                  fullWidth
+                  startIcon={
+                    <AttachMoneyIcon sx={{ fontSize: 20, color: "#d97706" }} />
+                  }
+                  onClick={handleCardClick}
+                  variant="outlined"
+                  sx={{
+                    borderRadius: 2.5,
+                    fontWeight: 600,
+                    fontSize: "0.95rem",
+                    py: 1.2,
+                    px: 2,
+                    color: "#d97706",
+                    borderColor: "rgba(217, 119, 6, 0.6)",
+                    textTransform: "none",
+                    transition: "all 0.3s ease-in-out",
+                    "&:hover": {
+                      bgcolor: "rgba(217, 119, 6, 0.1)",
+                      borderColor: "#d97706",
+                      boxShadow: "0 0 8px rgba(217, 119, 6, 0.7)",
+                      transform: "translateY(-2px)",
+                    },
+                  }}
+                >
+                  View Income
+                </Button>
+              </Grid>
+            </Grid>
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={9}>
-          <Card sx={{ p: 3, borderRadius: 3, boxShadow: 4 }}>
-            <Typography variant="h6" fontWeight={600}>
-              User Analisys
+        {/* User Analytics Graph */}
+        <Grid item xs={12} md={7}>
+          <Card sx={{ ...glassCardStyle, height: "100%" }}>
+            <Typography variant="h6" fontWeight={600} gutterBottom>
+              📈 User Activity Analysis
             </Typography>
-
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={familyMemberData} onClick={handlePieClick}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="familyName" />
-                <YAxis />
-                <RechartTooltip
+              <LineChart data={familyMemberData}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="rgba(255,255,255,0.2)"
+                />
+                <XAxis
+                  dataKey="familyName"
+                  stroke="#a0c4ff"
+                  tick={{ fill: "#a0c4ff", fontSize: 14 }}
+                />
+                <YAxis
+                  stroke="#a0c4ff"
+                  tick={{ fill: "#a0c4ff", fontSize: 14 }}
+                />
+                <Tooltip
                   content={({ payload, label }) => {
                     if (!payload || payload.length === 0) return null;
 
-                    const {
-                      activeUsers,
-                      inactiveUser,
-                      suspendedUser,
-                      totalSize,
-                    } = payload[0].payload;
+                    const activeUsers =
+                      payload.find((p) => p.dataKey === "activeUsers")?.value ??
+                      0;
+                    const inactiveUser =
+                      payload.find((p) => p.dataKey === "inactiveUser")
+                        ?.value ?? 0;
+                    const suspendedUser =
+                      payload.find((p) => p.dataKey === "suspendedUser")
+                        ?.value ?? 0;
 
                     return (
                       <div
                         style={{
-                          padding: "12px",
+                          padding: "10px",
                           background: "#333",
                           color: "#fff",
                           borderRadius: "8px",
                           width: "200px",
                           textAlign: "left",
-                          boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+                          boxShadow: "0px 4px 10px rgba(0,0,0,0.2)",
                         }}
                       >
                         <strong
@@ -454,33 +594,28 @@ const AdminDashboard = () => {
                         >
                           {label}
                         </strong>
-
                         <div
                           style={{
                             display: "flex",
                             justifyContent: "space-between",
-                            marginBottom: "5px",
                           }}
                         >
                           <span>Active Users:</span>
-                          <span style={{ color: COLORS.active }}>
+                          <span style={{ color: "#81c784" }}>
                             {activeUsers}
                           </span>
                         </div>
-
                         <div
                           style={{
                             display: "flex",
                             justifyContent: "space-between",
-                            marginBottom: "5px",
                           }}
                         >
                           <span>Inactive Users:</span>
-                          <span style={{ color: COLORS.inactive }}>
+                          <span style={{ color: "#ffb74d" }}>
                             {inactiveUser}
                           </span>
                         </div>
-
                         <div
                           style={{
                             display: "flex",
@@ -488,7 +623,7 @@ const AdminDashboard = () => {
                           }}
                         >
                           <span>Suspended Users:</span>
-                          <span style={{ color: COLORS.suspended }}>
+                          <span style={{ color: "#e57373" }}>
                             {suspendedUser}
                           </span>
                         </div>
@@ -496,66 +631,45 @@ const AdminDashboard = () => {
                     );
                   }}
                 />
-
-                {/* Active Users Bar */}
-                <Bar
+                <Line
+                  type="monotone"
                   dataKey="activeUsers"
-                  stackId="a"
-                  fill={COLORS.active}
+                  stroke="#81c784"
+                  strokeWidth={3}
                   name="Active Users"
-                >
-                  <LabelList
-                    dataKey="totalSize"
-                    position="top"
-                    fill="#43A047"
-                    fontSize={12}
-                  />
-                </Bar>
-
-                {/* Inactive Users Bar */}
-                <Bar
+                />
+                <Line
+                  type="monotone"
                   dataKey="inactiveUser"
-                  stackId="a"
-                  fill={COLORS.inactive}
+                  stroke="#ffb74d"
+                  strokeWidth={3}
                   name="Inactive Users"
-                >
-                  <LabelList
-                    dataKey="totalSize"
-                    position="top"
-                    fill="#43A047"
-                    fontSize={12}
-                  />
-                </Bar>
-
-                {/* Suspended Users Bar */}
-                <Bar
+                />
+                <Line
+                  type="monotone"
                   dataKey="suspendedUser"
-                  stackId="a"
-                  fill={COLORS.suspended}
+                  stroke="#e57373"
+                  strokeWidth={3}
                   name="Suspended Users"
-                >
-                  <LabelList
-                    dataKey="totalSize"
-                    position="top"
-                    fill="#43A047"
-                    fontSize={12}
-                  />
-                </Bar>
-              </BarChart>
+                />
+              </LineChart>
             </ResponsiveContainer>
           </Card>
         </Grid>
 
         {/* Financial Summary */}
+        {/* <Grid container spacing={3}> */}
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             icon={<MonetizationOn />}
-            // (${formattedMonth})
-            title={`Total Income `}
-            value={`${currencySymbol}  ${
+            title={`Total Income`}
+            value={`${currencySymbol} ${
               currentMonthData?.income?.toLocaleString() || 0
             }`}
-            color="success.main"
+            bgColor="rgba(72, 187, 120, 0.15)" // greenish glass
+            borderColor="rgba(72, 187, 120, 0.3)"
+            textColor="#22863a"
+            iconBgColor="#2c974b"
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -565,7 +679,10 @@ const AdminDashboard = () => {
             value={`${currencySymbol} ${
               currentMonthData?.expense?.toLocaleString() || 0
             }`}
-            color="error.main"
+            bgColor="rgba(220, 53, 69, 0.15)" // redish glass
+            borderColor="rgba(220, 53, 69, 0.3)"
+            textColor="#a71d2a"
+            iconBgColor="#d6336c"
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -575,7 +692,10 @@ const AdminDashboard = () => {
             value={`${currencySymbol} ${
               currentMonthData?.saving?.toLocaleString() || 0
             }`}
-            color="primary.main"
+            bgColor="rgba(13, 110, 253, 0.15)" // blue glass
+            borderColor="rgba(13, 110, 253, 0.3)"
+            textColor="#084298"
+            iconBgColor="#0d6efd"
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -583,13 +703,17 @@ const AdminDashboard = () => {
             icon={<CurrencyExchange />}
             title="Currency"
             value={`${currencyLabel} | ${currencySymbol}`}
-            color="warning.main"
+            bgColor="rgba(255, 193, 7, 0.15)" // yellow glass
+            borderColor="rgba(255, 193, 7, 0.3)"
+            textColor="#664d03"
+            iconBgColor="#ffc107"
           />
         </Grid>
+        {/* </Grid> */}
 
         {/* Expenses Chart */}
         <Grid item xs={12} md={8}>
-          <Card sx={{ boxShadow: 3, borderRadius: 3 }}>
+          <Card sx={{ ...glassCardStyle, height: "100%" }}>
             <CardContent>
               <Typography variant="h6" fontWeight={600} gutterBottom>
                 Monthly Income & Expenses
@@ -723,10 +847,16 @@ const AdminDashboard = () => {
         <Grid item xs={12} md={4}>
           <Card
             sx={{
-              boxShadow: 4,
-              borderRadius: 3,
+              p: 3,
+              borderRadius: "20px",
+              backdropFilter: "blur(14px)",
+              background: "rgba(255, 206, 150, 0.2)", // warm soft glass background
+              border: "1px solid rgba(255, 206, 150, 0.3)",
+              boxShadow: "0 10px 40px rgba(255, 206, 150, 0.25)",
+              color: "#b36f00", // warm deep gold text
+              height: 430,
               position: "relative",
-              height: 380,
+              transition: "transform 0.3s ease, box-shadow 0.3s ease",
             }}
           >
             <CardContent sx={{ pb: 9 }}>
@@ -778,8 +908,17 @@ const AdminDashboard = () => {
 
             {/* Floating Add Button */}
             <Fab
-              color="primary"
-              sx={{ position: "absolute", bottom: 20, right: 20, zIndex: 0 }}
+              sx={{
+                position: "absolute",
+                bottom: 20,
+                right: 20,
+                zIndex: 1,
+                backgroundColor: "#ffc878", // soft amber color
+                color: "#5c3b00", // dark brown icon color
+                "&:hover": {
+                  backgroundColor: "#ffb347", // deeper warm amber on hover
+                },
+              }}
               onClick={handleOpen}
               aria-label="Add Expense"
             >
@@ -963,64 +1102,98 @@ const AdminDashboard = () => {
           </Card>
         </Grid>
         {/* Recurring tansaction start */}
+
         <Grid item xs={12}>
-          <Card
+          {/* <Card
             sx={{
               borderRadius: 4,
-              boxShadow: 4,
+              boxShadow: "0 12px 40px rgba(0, 0, 0, 0.1)",
+              background: "transparent",
               p: 2,
-              mb: 3,
-              // background: "linear-gradient(135deg, #f5f7fa 30%, #c3cfe2 100%)",
+              mb: 4,
             }}
-          >
+          > */}
             <CardContent>
               <Typography
                 variant="h5"
                 sx={{
                   fontWeight: "bold",
-                  color: "#333",
+                  color: "#1e293b",
                   mb: 2,
                   textAlign: "center",
                 }}
               >
-                {/* 🔁  */}
-                Recurring Transactions
+                 Recurring Transactions
               </Typography>
 
-              <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
+              <TableContainer
+                component={Paper}
+                sx={{
+                  borderRadius: "20px",
+                  backdropFilter: "blur(14px)",
+                  background: "rgba(255, 255, 255, 0.15)",
+                  border: "1px solid rgba(255, 255, 255, 0.3)",
+                  boxShadow: "0 12px 40px rgba(0, 0, 0, 0.15)",
+                  transition: "transform 0.4s ease, box-shadow 0.4s ease",
+                  maxHeight: 480,
+                  overflowY: "auto",
+                }}
+              >
                 <Table>
-                  <TableHead>
-                    <TableRow sx={{ backgroundColor: "#8E44AD" }}>
-                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                        Category
-                      </TableCell>
-                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                        Description
-                      </TableCell>
-                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                        Amount
-                      </TableCell>
-                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                        Next Due
-                      </TableCell>
-                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                        Action
-                      </TableCell>
+                  <TableHead
+                    sx={{
+                      background:
+                        "linear-gradient(135deg, rgba(174, 148, 243, 0.15), rgba(142, 68, 173, 0.15))",
+                      "& th": {
+                        color: "#1e293b",
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                        fontSize: 13,
+                        borderBottom: "2px solid rgba(255,255,255,0.3)",
+                        backdropFilter: "blur(8px)",
+                        textAlign: "center",
+                      },
+                    }}
+                  >
+                    <TableRow>
+                      <TableCell>Category</TableCell>
+                      <TableCell>Description</TableCell>
+                      <TableCell>Amount</TableCell>
+                      <TableCell>Next Due</TableCell>
+                      <TableCell>Action</TableCell>
                     </TableRow>
                   </TableHead>
-                  <TableBody>
+
+                  <TableBody
+                    sx={{
+                      "& tr:hover": {
+                        backgroundColor: "transparent",
+                        boxShadow: "inset 0 0 8px rgba(142, 68, 173, 0.1)",
+                        transform: "translateY(-1px)",
+                        transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                        cursor: "pointer",
+                      },
+                      "& td": {
+                        fontSize: 14,
+                        color: "#334155",
+                        paddingY: 1.5,
+                        paddingX: 2,
+                        verticalAlign: "middle",
+                        borderBottom: "1px solid rgba(255, 255, 255, 0.15)",
+                        backdropFilter: "blur(8px)",
+                        textAlign: "center",
+                      },
+                    }}
+                  >
                     {recurringTransactions.map((txn, index) => (
-                      <TableRow
-                        key={txn.category}
-                        sx={{
-                          backgroundColor: index % 2 === 0 ? "#f8f8f8" : "#fff",
-                        }}
-                      >
+                      <TableRow key={txn.category}>
                         <TableCell>
                           <Box
                             sx={{
                               display: "flex",
                               alignItems: "center",
+                              justifyContent: "center",
                               gap: 1,
                             }}
                           >
@@ -1032,7 +1205,7 @@ const AdminDashboard = () => {
                         </TableCell>
                         <TableCell>{txn.description}</TableCell>
                         <TableCell
-                          sx={{ fontWeight: "bold", color: "#0288D1" }}
+                          sx={{ fontWeight: "bold", color: "#6C5CE7" }}
                         >
                           {txn.amount}
                         </TableCell>
@@ -1041,9 +1214,7 @@ const AdminDashboard = () => {
                         >
                           {txn.dueDate}
                         </TableCell>
-                        <TableCell
-                          sx={{ color: "#2E7D32", fontWeight: "bold" }}
-                        >
+                        <TableCell>
                           <MuiTooltip title="Mark as Paid">
                             <IconButton color="success">
                               <CheckCircle />
@@ -1066,7 +1237,7 @@ const AdminDashboard = () => {
                 </Table>
               </TableContainer>
             </CardContent>
-          </Card>
+          {/* </Card> */}
         </Grid>
       </Grid>
     </Box>

@@ -24,10 +24,6 @@ import {
   TableBody,
   TableSortLabel,
   TablePagination,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormControl,
   IconButton,
 } from "@mui/material";
 import { XAxis, YAxis, Tooltip, LineChart, Line } from "recharts";
@@ -37,13 +33,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs, { Dayjs } from "dayjs";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import {
-  AccountBalanceWallet,
-  CreditCard,
-  Home,
-  Subscriptions,
-} from "@mui/icons-material";
-import LocalAtmIcon from "@mui/icons-material/LocalAtm";
+import { CreditCard } from "@mui/icons-material";
 import {
   Chart as ChartJS,
   Title,
@@ -785,7 +775,7 @@ const AddCashPage = () => {
               boxShadow: 4,
               mt: 2,
               mb: 4,
-             
+
               border: "1px solid rgba(0, 150, 136, 0.15)",
             }}
           >

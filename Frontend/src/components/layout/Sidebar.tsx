@@ -58,6 +58,12 @@ const Sidebar: React.FC<SidebarProps> = ({
         path: `/edit-user/${userId}`,
         icon: <PersonIcon />,
       },
+      // Recurring Transaction
+      {
+        label: "Recurring Tansaction",
+        path: "/recurring_transaction",
+        icon: <LocalAtmIcon />,
+      },
     ],
     moderator: [
        //Category wise Tracking

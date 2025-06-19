@@ -16,6 +16,7 @@ import AddCashPage from "../pages/BudgetManagement/AddCashPage";
 import UpdateFamily from "../pages/UserProfile/UpdateFamily";
 import ExpensePage from "../pages/BudgetManagement/ExpensePage";
 import AddCategory from "../pages/BudgetManagement/AddCategory";
+import RecurringTransactions from "../pages/RecurringTransaction/RecurringTransactions";
 
 const AppRoutes = () => {
   return (
@@ -45,6 +46,8 @@ const AppRoutes = () => {
       <Route path="/add_cash" element={<AddCashPage />} />
       <Route path="/add_Expense" element={<ExpensePage />} />
       <Route path="/add_Category" element={<AddCategory />} />
+      {/* Recurring Transaction */}
+      <Route path="/recurring_transaction" element={<RecurringTransactions />} />
       </Routes>
   );
 };

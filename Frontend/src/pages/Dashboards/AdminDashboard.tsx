@@ -515,11 +515,19 @@ const AdminDashboard = () => {
         {/* User Analytics Graph */}
         <Grid item xs={12} md={7}>
           <Card sx={{ ...glassCardStyle, height: "100%" }}>
-            <Typography variant="h6" fontWeight={600} gutterBottom sx={{marginLeft: 1}}>
+            <Typography
+              variant="h6"
+              fontWeight={600}
+              gutterBottom
+              sx={{ marginLeft: 1 }}
+            >
               📈 User Activity Analysis
             </Typography>
             <ResponsiveContainer width="100%" height={340}>
-              <LineChart data={chartData} margin={{ top: 20, right: 40, left: 0, bottom: 0 }}>
+              <LineChart
+                data={chartData}
+                margin={{ top: 20, right: 40, left: 0, bottom: 0 }}
+              >
                 <CartesianGrid
                   strokeDasharray="3 3"
                   stroke="rgba(255,255,255,0.2)"
@@ -586,7 +594,8 @@ const AdminDashboard = () => {
                           }}
                         >
                           <span>Inactive Users:</span>
-                          <span style={{ color: "#ffb74d" }}>
+                          <span style={{ color: "#e57373" }}> 
+                            {/* ffb74d */}
                             {inactiveUser}
                           </span>
                         </div>
@@ -597,7 +606,7 @@ const AdminDashboard = () => {
                           }}
                         >
                           <span>Total Users:</span>
-                          <span style={{ color: "#e57373" }}>{totalUsers}</span>
+                          <span style={{ color: "#ffb74d" }}>{totalUsers}</span>
                         </div>
                       </div>
                     );
@@ -613,48 +622,69 @@ const AdminDashboard = () => {
                 <Line
                   type="monotone"
                   dataKey="inactiveUser"
-                  stroke="#ffb74d"
+                  stroke="#e57373"
                   strokeWidth={3}
                   name="Inactive Users"
                 />
                 <Line
                   type="monotone"
                   dataKey="totalUsers"
-                  stroke="#e57373"
+                  stroke="#ffb74d"
                   strokeWidth={3}
                   name="Total Users"
                 />
               </LineChart>
             </ResponsiveContainer>
-             {/* 🟨 Custom Horizontal Legend */}
-  <Box
-    sx={{
-      display: "flex",
-      justifyContent: "center",
-      gap: 4,
-      mt: 2,
-      flexWrap: "wrap",
-    }}
-  >
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-      <Box sx={{ width: 20, height: 4, bgcolor: "#81c784", borderRadius: 2 }} />
-      <Typography variant="body2" color="text.secondary">
-        Active Users
-      </Typography>
-    </Box>
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-      <Box sx={{ width: 20, height: 4, bgcolor: "#ffb74d", borderRadius: 2 }} />
-      <Typography variant="body2" color="text.secondary">
-        Inactive Users
-      </Typography>
-    </Box>
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-      <Box sx={{ width: 20, height: 4, bgcolor: "#e57373", borderRadius: 2 }} />
-      <Typography variant="body2" color="text.secondary">
-        Total Users
-      </Typography>
-    </Box>
-  </Box>
+            {/* 🟨 Custom Horizontal Legend */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                gap: 4,
+                mt: 2,
+                flexWrap: "wrap",
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Box
+                  sx={{
+                    width: 20,
+                    height: 4,
+                    bgcolor: "#81c784",
+                    borderRadius: 2,
+                  }}
+                />
+                <Typography variant="body2" color="text.secondary">
+                  Active Users
+                </Typography>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Box
+                  sx={{
+                    width: 20,
+                    height: 4,
+                    bgcolor: "#e57373",
+                    borderRadius: 2,
+                  }}
+                />
+                <Typography variant="body2" color="text.secondary">
+                  Inactive Users
+                </Typography>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Box
+                  sx={{
+                    width: 20,
+                    height: 4,
+                    bgcolor: "#ffb74d",
+                    borderRadius: 2,
+                  }}
+                />
+                <Typography variant="body2" color="text.secondary">
+                  Total Users
+                </Typography>
+              </Box>
+            </Box>
           </Card>
         </Grid>
 
@@ -861,7 +891,12 @@ const AdminDashboard = () => {
             }}
           >
             <CardContent sx={{ pb: 9 }}>
-              <Typography variant="h6" fontWeight={600} gutterBottom sx={{mb: 2}}>
+              <Typography
+                variant="h6"
+                fontWeight={600}
+                gutterBottom
+                sx={{ mb: 2 }}
+              >
                 Recent Transactions
               </Typography>
 

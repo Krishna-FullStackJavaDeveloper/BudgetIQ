@@ -1,25 +1,27 @@
 package com.auth.serviceImpl;
 
+import com.auth.eNum.AccountStatus;
 import com.auth.email.EmailService;
 import com.auth.entity.Family;
 import com.auth.entity.User;
 import com.auth.payload.request.FamilyRequest;
 import com.auth.payload.request.SignupRequest;
 import com.auth.payload.response.FamilyResponse;
+import com.auth.payload.response.FamilySummaryResponse;
 import com.auth.repository.FamilyRepository;
 import com.auth.repository.UserRepository;
 import com.auth.service.FamilyService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Hibernate;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 @Service
 @Slf4j
@@ -111,11 +113,6 @@ public class FamilyServiceImpl implements FamilyService {
         emailService.sendLoginNotification(user.getEmail(), user.getFullName(), "register");
     }
 
-    // ✅ Get all families (admin/moderator)
-    public Page<FamilyResponse> getAllFamilies(Pageable pageable, UserDetailsImpl loggedInUser) {
-        return familyRepository.findAll(pageable).map(this::mapToResponse);
-    }
-
     // ✅ Get single family by ID
     public FamilyResponse getFamilyById(Long id, UserDetailsImpl loggedInUser) {
         Family family = familyRepository.findById(id)
@@ -186,6 +183,56 @@ public class FamilyServiceImpl implements FamilyService {
                 .createdAt(family.getCreatedAt())
                 .moderatorId(moderator != null ? moderator.getId() : null)
                 .moderatorUsername(moderator != null ? moderator.getUsername() : null)
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public FamilySummaryResponse getFamilySummaryData() {
+        List<Family> families = familyRepository.findAll();
+        List<User> allUsers = userRepository.findAll(); // Make sure userRepository is available
+
+        long totalFamilies = families.size();
+        long totalMembers = allUsers.size();
+        long totalActiveUsers = allUsers.stream().filter(user -> user.getAccountStatus() == AccountStatus.ACTIVE).count();
+        long totalOtherStatusUsers = totalMembers - totalActiveUsers;
+
+        long totalFamilyAdmins = allUsers.stream().filter(user ->
+                user.getRoles().stream().anyMatch(role -> role.getName().name().equals("ROLE_MODERATOR"))
+        ).count();
+
+        long totalAdmins = allUsers.stream().filter(user ->
+                user.getRoles().stream().anyMatch(role -> role.getName().name().equals("ROLE_ADMIN"))
+        ).count();
+
+        Map<String, FamilySummaryResponse.FamilyDetail> familyDetailMap = new HashMap<>();
+
+        for (Family family : families) {
+            List<User> usersInFamily = family.getUsers();
+
+            long activeCount = usersInFamily.stream()
+                    .filter(user -> user.getAccountStatus() == AccountStatus.ACTIVE).count();
+
+            long otherStatusCount = usersInFamily.size() - activeCount;
+
+            FamilySummaryResponse.FamilyDetail detail = FamilySummaryResponse.FamilyDetail.builder()
+                    .familyId(family.getId())
+                    .totalMembers(usersInFamily.size())
+                    .activeMembers(activeCount)
+                    .otherStatusMembers(otherStatusCount)
+                    .build();
+
+            familyDetailMap.put(family.getFamilyName(), detail);
+        }
+
+        return FamilySummaryResponse.builder()
+                .totalFamilies(totalFamilies)
+                .totalMembers(totalMembers)
+                .totalActiveUsers(totalActiveUsers)
+                .totalOtherStatusUsers(totalOtherStatusUsers)
+                .totalFamilyAdmins(totalFamilyAdmins)
+                .totalAdmins(totalAdmins)
+                .familyDetails(familyDetailMap)
                 .build();
     }
 }

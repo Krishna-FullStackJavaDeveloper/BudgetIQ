@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9ef1f0a6-0768-4427-ac2f-d3321830eed0" name="Changes" comment="create get user by userId for all roles.">
-      <change beforePath="$PROJECT_DIR$/../Frontend/src/components/layout/Sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/components/layout/Sidebar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/Dashboards/AdminDashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/Dashboards/AdminDashboard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/Dashboards/ModeratorDashboar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/Dashboards/ModeratorDashboar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/UserProfile/ManageUser.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/UserProfile/ManageUser.tsx" afterDir="false" />
-    </list>
+    <list default="true" id="9ef1f0a6-0768-4427-ac2f-d3321830eed0" name="Changes" comment="create get user by userId for all roles." />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -21,8 +16,8 @@
         <option value="Enum" />
         <option value="Exception" />
         <option value="AnnotationType" />
-        <option value="Class" />
         <option value="Interface" />
+        <option value="Class" />
       </list>
     </option>
   </component>

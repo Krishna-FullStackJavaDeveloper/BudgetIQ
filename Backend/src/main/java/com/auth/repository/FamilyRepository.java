@@ -16,16 +16,9 @@ public interface FamilyRepository extends JpaRepository<Family, Long> {
     // Find a family by family ID
     Optional<Family> findById(Long id);
 
-    // Find a family by moderator ID
-    Optional<Family> findByModeratorId(Long moderatorId);
-
-    // Find a family by the moderator (which should return the family the moderator belongs to)
-    Optional<Family> findByModeratorUsername(String moderatorUsername);
-
     Optional<Family> findByFamilyName(String familyName);
     boolean existsByFamilyName(String familyName);
 
-    Page<Family> findAll(Pageable pageable);
     Optional<Family> findByUsers_Id(Long userId);
 
     @Query("SELECT COUNT(u) FROM User u WHERE u.family.id = ?1 AND u.accountStatus = com.auth.eNum.AccountStatus.ACTIVE")

@@ -5,16 +5,13 @@ import com.auth.annotation.CurrentUser;
 import com.auth.payload.request.FamilyRequest;
 import com.auth.payload.response.ApiResponse;
 import com.auth.payload.response.FamilyResponse;
+import com.auth.payload.response.FamilySummaryResponse;
 import com.auth.service.FamilyService;
 import com.auth.serviceImpl.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/families")
@@ -23,17 +20,16 @@ public class FamilyController {
 
     private final FamilyService familyService;
 
-    // List all families with paging (ADMIN and MODERATOR allowed)
-    @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<ApiResponse<Page<FamilyResponse>>> getAllFamilies(Pageable pageable,
-                                                                            @CurrentUser UserDetailsImpl loggedInUser) {
-        Page<FamilyResponse> families = familyService.getAllFamilies(pageable, loggedInUser);
+    @GetMapping("/admin/summary")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<FamilySummaryResponse>> getFamilySummary(@CurrentUser UserDetailsImpl loggedInUser) {
+        FamilySummaryResponse summary = familyService.getFamilySummaryData();
 
-        ApiResponse<Page<FamilyResponse>> response = new ApiResponse<>(
-                "Families fetched successfully",
-                families,
-                200);
+        ApiResponse<FamilySummaryResponse> response = new ApiResponse<>(
+                "Admin family summary fetched successfully",
+                summary,
+                200
+        );
 
         return ResponseEntity.ok(response);
     }

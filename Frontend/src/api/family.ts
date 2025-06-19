@@ -8,18 +8,18 @@ const getAuthToken = () => {
     return localStorage.getItem("token");  // Update this based on where you store the token
   };
 
-// ✅ Fetch all families (admin only)
-export const getAllFamilies = async (page: number, size: number, sort: string) => {
+// ✅ Fetch admin family summary (admin only)
+export const getAdminFamilySummary = async () => {
   try {
     const token = getAuthToken();
-    const response = await axios.get(`${API_URL}?page=${page}&size=${size}&sort=${sort}`, {
+    const response = await axios.get(`${API_URL}/admin/summary`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
     });
     return response.data;
   } catch (error) {
-    console.error("Error fetching families:", error);
+    console.error("Error fetching admin family summary:", error);
     throw error;
   }
 };

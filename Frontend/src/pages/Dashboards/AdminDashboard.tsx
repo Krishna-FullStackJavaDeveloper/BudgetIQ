@@ -73,6 +73,8 @@ import * as MuiIcons from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/PersonAddAlt1";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import { getAdminFamilySummary } from "../../api/family";
+import { AdminSummary } from "../../components/Interface/AdminSummary";
 
 const glassCardStyle = {
   p: 3,
@@ -85,61 +87,6 @@ const glassCardStyle = {
   color: "#1a1a1a", // deep dark gray for contrast
   transition: "all 0.3s ease-in-out",
 };
-
-const AdminData = {
-  totalFamily: 3,
-  totalMembers: 20,
-  familyAdmin: 3,
-  activeUsers: 14,
-};
-
-const familyMemberData = [
-  {
-    familyName: "Bhatt Family",
-    totalSize: 8,
-    activeUsers: 5,
-    inactiveUser: 2,
-    suspendedUser: 1,
-  },
-  {
-    familyName: "Family 2",
-    totalSize: 10,
-    activeUsers: 4,
-    inactiveUser: 4,
-    suspendedUser: 2,
-  },
-  {
-    familyName: "Pandya Family",
-    totalSize: 7,
-    activeUsers: 5,
-    inactiveUser: 2,
-    suspendedUser: 0,
-  },
-  {
-    familyName: "Family 3",
-    totalSize: 8,
-    activeUsers: 5,
-    inactiveUser: 2,
-    suspendedUser: 1,
-  },
-  {
-    familyName: "Dave Family",
-    totalSize: 7,
-    activeUsers: 5,
-    inactiveUser: 2,
-    suspendedUser: 0,
-  },
-  {
-    familyName: "Family 4",
-    totalSize: 10,
-    activeUsers: 4,
-    inactiveUser: 4,
-    suspendedUser: 2,
-  },
-];
-
-// Colors for each slice
-const COLORS = { active: "#9FA8DA", inactive: "#CE93D8", suspended: "#F48FB1" };
 
 const recurringTransactions = [
   {
@@ -162,13 +109,11 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
-  const [purpose, setPurpose] = useState("");
   const [date, setDate] = useState<Dayjs | null>(null); // Set state to Dayjs or null
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [isFocused, setIsFocused] = useState(false);
-  const handleEditFamily = () => navigate("/edit-family");
   const [loading, setLoading] = useState(true);
 
   const [category, setCategory] = useState("");
@@ -177,8 +122,8 @@ const AdminDashboard = () => {
   const [expenseData, setExpenseData] = useState<Expense[]>([]);
   const [openModal, setOpenModal] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<dayjs.Dayjs>(dayjs());
-
   const [summary, setSummary] = useState<SummaryResponse | null>(null);
+  const [AdminData, setAdminData] = useState<AdminSummary | null>(null);
 
   // Use currency this utility(hooks) in your components
   const currencySymbol = getCurrencySymbol(
@@ -198,6 +143,23 @@ const AdminDashboard = () => {
     };
     getSummary();
   };
+
+  const fetchSummary = async () => {
+    try {
+      const result = await getAdminFamilySummary();
+      setAdminData(result.data); // Store full summary data
+    } catch (err) {
+      console.error("Failed to fetch summary data", err);
+    }
+  };
+  const chartData = Object.entries(AdminData?.familyDetails || {}).map(
+    ([familyName, details]) => ({
+      familyName,
+      activeUsers: details.activeMembers,
+      inactiveUser: details.otherStatusMembers,
+      totalUsers: details.totalMembers,
+    })
+  );
 
   const handleAddExpense = async () => {
     if (!amount || !category || !date) {
@@ -316,6 +278,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     fetchCategories();
     fetchExpenses();
+    fetchSummary();
     SummaryComponent();
 
     const timer = setTimeout(() => {
@@ -416,22 +379,33 @@ const AdminDashboard = () => {
               👋 Welcome, {summary?.name}
             </Typography>
             <Typography variant="body2" sx={{ mb: 2, color: "#8a5e00" }}>
-              You have full control over all families, users, and budgets, including family-admin assignments.
+              You have full control over all families, users, and budgets,
+              including family-admin assignments.
             </Typography>
 
             <Typography variant="body1" sx={{ my: 1, fontWeight: 600, mt: 4 }}>
-              👨‍👩‍👧 Total Families: <strong>{AdminData.totalFamily}</strong>
+              👨‍👩‍👧 Total Families:{" "}
+              <strong>{AdminData?.totalFamilies ?? "-"}</strong>
             </Typography>
             <Typography variant="body1" sx={{ my: 1, fontWeight: 600 }}>
-              👥 Total Members: <strong>{AdminData.totalMembers}</strong>
+              👥 Total Members:{" "}
+              <strong>{AdminData?.totalMembers ?? "-"}</strong>
             </Typography>
             <Typography variant="body1" sx={{ my: 1, fontWeight: 600 }}>
-              ✅ Active Members: <strong>{AdminData.activeUsers}</strong>
+              ✅ Active Members:{" "}
+              <strong>{AdminData?.totalActiveUsers ?? "-"}</strong>
             </Typography>
             <Typography variant="body1" sx={{ my: 1, fontWeight: 600 }}>
-              🔐 Admin: <strong>{AdminData.familyAdmin}</strong>
+              ⚠️ Inactive Members:{" "}
+              <strong>{AdminData?.totalOtherStatusUsers ?? "-"}</strong>
             </Typography>
-
+            <Typography variant="body1" sx={{ my: 1, fontWeight: 600 }}>
+              🔐 Family Admins:{" "}
+              <strong>{AdminData?.totalFamilyAdmins ?? "-"}</strong>
+            </Typography>
+            <Typography variant="body1" sx={{ my: 1, fontWeight: 600 }}>
+              🛡️ Total Admins: <strong>{AdminData?.totalAdmins ?? "-"}</strong>
+            </Typography>
             {/* Action Buttons */}
             <Grid
               container
@@ -541,11 +515,11 @@ const AdminDashboard = () => {
         {/* User Analytics Graph */}
         <Grid item xs={12} md={7}>
           <Card sx={{ ...glassCardStyle, height: "100%" }}>
-            <Typography variant="h6" fontWeight={600} gutterBottom>
+            <Typography variant="h6" fontWeight={600} gutterBottom sx={{marginLeft: 1}}>
               📈 User Activity Analysis
             </Typography>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={familyMemberData}>
+            <ResponsiveContainer width="100%" height={340}>
+              <LineChart data={chartData} margin={{ top: 20, right: 40, left: 0, bottom: 0 }}>
                 <CartesianGrid
                   strokeDasharray="3 3"
                   stroke="rgba(255,255,255,0.2)"
@@ -569,9 +543,9 @@ const AdminDashboard = () => {
                     const inactiveUser =
                       payload.find((p) => p.dataKey === "inactiveUser")
                         ?.value ?? 0;
-                    const suspendedUser =
-                      payload.find((p) => p.dataKey === "suspendedUser")
-                        ?.value ?? 0;
+                    const totalUsers =
+                      payload.find((p) => p.dataKey === "totalUsers")?.value ??
+                      0;
 
                     return (
                       <div
@@ -622,10 +596,8 @@ const AdminDashboard = () => {
                             justifyContent: "space-between",
                           }}
                         >
-                          <span>Suspended Users:</span>
-                          <span style={{ color: "#e57373" }}>
-                            {suspendedUser}
-                          </span>
+                          <span>Total Users:</span>
+                          <span style={{ color: "#e57373" }}>{totalUsers}</span>
                         </div>
                       </div>
                     );
@@ -647,13 +619,42 @@ const AdminDashboard = () => {
                 />
                 <Line
                   type="monotone"
-                  dataKey="suspendedUser"
+                  dataKey="totalUsers"
                   stroke="#e57373"
                   strokeWidth={3}
-                  name="Suspended Users"
+                  name="Total Users"
                 />
               </LineChart>
             </ResponsiveContainer>
+             {/* 🟨 Custom Horizontal Legend */}
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: "center",
+      gap: 4,
+      mt: 2,
+      flexWrap: "wrap",
+    }}
+  >
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <Box sx={{ width: 20, height: 4, bgcolor: "#81c784", borderRadius: 2 }} />
+      <Typography variant="body2" color="text.secondary">
+        Active Users
+      </Typography>
+    </Box>
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <Box sx={{ width: 20, height: 4, bgcolor: "#ffb74d", borderRadius: 2 }} />
+      <Typography variant="body2" color="text.secondary">
+        Inactive Users
+      </Typography>
+    </Box>
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <Box sx={{ width: 20, height: 4, bgcolor: "#e57373", borderRadius: 2 }} />
+      <Typography variant="body2" color="text.secondary">
+        Total Users
+      </Typography>
+    </Box>
+  </Box>
           </Card>
         </Grid>
 
@@ -847,7 +848,7 @@ const AdminDashboard = () => {
         <Grid item xs={12} md={4}>
           <Card
             sx={{
-              p: 3,
+              p: 2,
               borderRadius: "20px",
               backdropFilter: "blur(14px)",
               background: "rgba(255, 206, 150, 0.2)", // warm soft glass background
@@ -860,7 +861,7 @@ const AdminDashboard = () => {
             }}
           >
             <CardContent sx={{ pb: 9 }}>
-              <Typography variant="h6" fontWeight={600} gutterBottom>
+              <Typography variant="h6" fontWeight={600} gutterBottom sx={{mb: 2}}>
                 Recent Transactions
               </Typography>
 
@@ -910,8 +911,8 @@ const AdminDashboard = () => {
             <Fab
               sx={{
                 position: "absolute",
-                bottom: 20,
-                right: 20,
+                bottom: 35,
+                right: 30,
                 zIndex: 1,
                 backgroundColor: "#ffc878", // soft amber color
                 color: "#5c3b00", // dark brown icon color
@@ -1113,130 +1114,126 @@ const AdminDashboard = () => {
               mb: 4,
             }}
           > */}
-            <CardContent>
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: "bold",
-                  color: "#1e293b",
-                  mb: 2,
-                  textAlign: "center",
-                }}
-              >
-                 Recurring Transactions
-              </Typography>
+          <CardContent>
+            <Typography
+              variant="h5"
+              sx={{
+                fontWeight: "bold",
+                color: "#1e293b",
+                mb: 2,
+                textAlign: "center",
+              }}
+            >
+              Recurring Transactions
+            </Typography>
 
-              <TableContainer
-                component={Paper}
-                sx={{
-                  borderRadius: "20px",
-                  backdropFilter: "blur(14px)",
-                  background: "rgba(255, 255, 255, 0.15)",
-                  border: "1px solid rgba(255, 255, 255, 0.3)",
-                  boxShadow: "0 12px 40px rgba(0, 0, 0, 0.15)",
-                  transition: "transform 0.4s ease, box-shadow 0.4s ease",
-                  maxHeight: 480,
-                  overflowY: "auto",
-                }}
-              >
-                <Table>
-                  <TableHead
-                    sx={{
-                      background:
-                        "linear-gradient(135deg, rgba(174, 148, 243, 0.15), rgba(142, 68, 173, 0.15))",
-                      "& th": {
-                        color: "#1e293b",
-                        fontWeight: 700,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em",
-                        fontSize: 13,
-                        borderBottom: "2px solid rgba(255,255,255,0.3)",
-                        backdropFilter: "blur(8px)",
-                        textAlign: "center",
-                      },
-                    }}
-                  >
-                    <TableRow>
-                      <TableCell>Category</TableCell>
-                      <TableCell>Description</TableCell>
-                      <TableCell>Amount</TableCell>
-                      <TableCell>Next Due</TableCell>
-                      <TableCell>Action</TableCell>
+            <TableContainer
+              component={Paper}
+              sx={{
+                borderRadius: "20px",
+                backdropFilter: "blur(14px)",
+                background: "rgba(255, 255, 255, 0.15)",
+                border: "1px solid rgba(255, 255, 255, 0.3)",
+                boxShadow: "0 12px 40px rgba(0, 0, 0, 0.15)",
+                transition: "transform 0.4s ease, box-shadow 0.4s ease",
+                maxHeight: 480,
+                overflowY: "auto",
+              }}
+            >
+              <Table>
+                <TableHead
+                  sx={{
+                    background:
+                      "linear-gradient(135deg, rgba(174, 148, 243, 0.15), rgba(142, 68, 173, 0.15))",
+                    "& th": {
+                      color: "#1e293b",
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      fontSize: 13,
+                      borderBottom: "2px solid rgba(255,255,255,0.3)",
+                      backdropFilter: "blur(8px)",
+                      textAlign: "center",
+                    },
+                  }}
+                >
+                  <TableRow>
+                    <TableCell>Category</TableCell>
+                    <TableCell>Description</TableCell>
+                    <TableCell>Amount</TableCell>
+                    <TableCell>Next Due</TableCell>
+                    <TableCell>Action</TableCell>
+                  </TableRow>
+                </TableHead>
+
+                <TableBody
+                  sx={{
+                    "& tr:hover": {
+                      backgroundColor: "transparent",
+                      boxShadow: "inset 0 0 8px rgba(142, 68, 173, 0.1)",
+                      transform: "translateY(-1px)",
+                      transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                      cursor: "pointer",
+                    },
+                    "& td": {
+                      fontSize: 14,
+                      color: "#334155",
+                      paddingY: 1.5,
+                      paddingX: 2,
+                      verticalAlign: "middle",
+                      borderBottom: "1px solid rgba(255, 255, 255, 0.15)",
+                      backdropFilter: "blur(8px)",
+                      textAlign: "center",
+                    },
+                  }}
+                >
+                  {recurringTransactions.map((txn, index) => (
+                    <TableRow key={txn.category}>
+                      <TableCell>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: 1,
+                          }}
+                        >
+                          <Avatar sx={{ bgcolor: "transparent" }}>
+                            {txn.icon}
+                          </Avatar>
+                          {txn.category}
+                        </Box>
+                      </TableCell>
+                      <TableCell>{txn.description}</TableCell>
+                      <TableCell sx={{ fontWeight: "bold", color: "#6C5CE7" }}>
+                        {txn.amount}
+                      </TableCell>
+                      <TableCell sx={{ color: "#2E7D32", fontWeight: "bold" }}>
+                        {txn.dueDate}
+                      </TableCell>
+                      <TableCell>
+                        <MuiTooltip title="Mark as Paid">
+                          <IconButton color="success">
+                            <CheckCircle />
+                          </IconButton>
+                        </MuiTooltip>
+                        <MuiTooltip title="Edit">
+                          <IconButton color="primary">
+                            <Edit />
+                          </IconButton>
+                        </MuiTooltip>
+                        <MuiTooltip title="Delete">
+                          <IconButton color="error">
+                            <Delete />
+                          </IconButton>
+                        </MuiTooltip>
+                      </TableCell>
                     </TableRow>
-                  </TableHead>
-
-                  <TableBody
-                    sx={{
-                      "& tr:hover": {
-                        backgroundColor: "transparent",
-                        boxShadow: "inset 0 0 8px rgba(142, 68, 173, 0.1)",
-                        transform: "translateY(-1px)",
-                        transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                        cursor: "pointer",
-                      },
-                      "& td": {
-                        fontSize: 14,
-                        color: "#334155",
-                        paddingY: 1.5,
-                        paddingX: 2,
-                        verticalAlign: "middle",
-                        borderBottom: "1px solid rgba(255, 255, 255, 0.15)",
-                        backdropFilter: "blur(8px)",
-                        textAlign: "center",
-                      },
-                    }}
-                  >
-                    {recurringTransactions.map((txn, index) => (
-                      <TableRow key={txn.category}>
-                        <TableCell>
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              gap: 1,
-                            }}
-                          >
-                            <Avatar sx={{ bgcolor: "transparent" }}>
-                              {txn.icon}
-                            </Avatar>
-                            {txn.category}
-                          </Box>
-                        </TableCell>
-                        <TableCell>{txn.description}</TableCell>
-                        <TableCell
-                          sx={{ fontWeight: "bold", color: "#6C5CE7" }}
-                        >
-                          {txn.amount}
-                        </TableCell>
-                        <TableCell
-                          sx={{ color: "#2E7D32", fontWeight: "bold" }}
-                        >
-                          {txn.dueDate}
-                        </TableCell>
-                        <TableCell>
-                          <MuiTooltip title="Mark as Paid">
-                            <IconButton color="success">
-                              <CheckCircle />
-                            </IconButton>
-                          </MuiTooltip>
-                          <MuiTooltip title="Edit">
-                            <IconButton color="primary">
-                              <Edit />
-                            </IconButton>
-                          </MuiTooltip>
-                          <MuiTooltip title="Delete">
-                            <IconButton color="error">
-                              <Delete />
-                            </IconButton>
-                          </MuiTooltip>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </CardContent>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </CardContent>
           {/* </Card> */}
         </Grid>
       </Grid>

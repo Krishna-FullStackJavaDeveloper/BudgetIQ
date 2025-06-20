@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Grid,
@@ -16,6 +16,7 @@ import {
   TableRow,
   Paper,
   TablePagination,
+  TableSortLabel,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -27,27 +28,43 @@ import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
 import BackspaceIcon from "@mui/icons-material/Backspace";
+import {
+  addRecurringTransaction,
+  deleteRecurringTransaction,
+  getAllRecurringByUser,
+  updateRecurringTransaction,
+} from "../../api/recurringTransactionApi";
+import { RecurringTransactionForm } from "../../components/Interface/RecurringTransactionForm";
 
 const repeatOptions = [
-  { label: "Daily", value: "daily" },
-  { label: "Weekly", value: "weekly" },
-  { label: "Monthly", value: "monthly" },
-  { label: "Yearly", value: "yearly" },
+  { label: "Daily", value: "DAILY" },
+  { label: "Weekly", value: "WEEKLY" },
+  { label: "Monthly", value: "MONTHLY" },
+  { label: "Yearly", value: "YEARLY" },
 ];
 
 const transactionTypes = [
-  { label: "Income", value: "income" },
-  { label: "Expense", value: "expense" },
+  { label: "Income", value: "INCOME" },
+  { label: "Expense", value: "EXPENSE" },
 ];
 
+function parseCustomDate(dateStr: string | undefined): string {
+  if (!dateStr || dateStr === "N/A") return ""; // no date
+  // Extract only the date part before comma, e.g. "01-06-2025"
+  const datePart = dateStr.split(",")[0].trim();
+  // Parse with dayjs using the format "DD-MM-YYYY"
+  const parsed = dayjs(datePart, "DD-MM-YYYY");
+  return parsed.isValid() ? parsed.format("YYYY-MM-DD") : "";
+}
+
 const RecurringTransactions = () => {
-  const [form, setForm] = useState({
-    type: "expense",
+  const [form, setForm] = useState<RecurringTransactionForm>({
+    type: "EXPENSE",
     title: "",
     amount: "",
     category: "",
     startDate: "",
-    repeatCycle: "monthly",
+    repeatCycle: "MONTHLY",
     repeatDay: "",
     endDate: "",
   });
@@ -55,99 +72,200 @@ const RecurringTransactions = () => {
   const [data, setData] = useState<any[]>([]);
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [selectedMonth, setSelectedMonth] = useState(dayjs());
+  const [rowsPerPage, setRowsPerPage] = useState(4);
+  const [totalRows, setTotalRows] = useState(0);
+  const [sort, setSort] = useState("createdAt,desc");
+  const didFetchRef = useRef(false);
 
+  const fetchRecurringTransactions = async (
+    pageNumber: number = 0,
+    pageSize: number = rowsPerPage,
+    sort: string = "createdAt,desc"
+  ) => {
+    try {
+      const res = await getAllRecurringByUser({
+        page: pageNumber,
+        size: pageSize,
+        sort,
+      });
+      if (res && res.data && Array.isArray(res.data.content)) {
+        setData(res.data.content);
+        setTotalRows(res.data.page.totalElements); // <-- fix here to get total elements
+        setPage(res.data.page.number); // <-- sync current page from backend
+        setRowsPerPage(res.data.page.size); // <-- sync page size from backend
+      }
+    } catch (error) {
+      console.error("Failed to fetch recurring transactions", error);
+    }
+  };
+
+  // Fetch data on mount
   useEffect(() => {
-    // TODO: Fetch from API
-    const dummyData = [
-      {
-        id: 1,
-        type: "expense",
-        title: "Netflix",
-        amount: 15,
-        category: "Subscription",
-        startDate: "2025-07-01",
-        repeatCycle: "monthly",
-        repeatDay: "1",
-        endDate: "",
-      },
-    ];
-    setData(dummyData);
+    if (!didFetchRef.current) {
+      fetchRecurringTransactions(0, rowsPerPage, sort);
+      didFetchRef.current = true;
+    }
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    // For title field: max 20 characters
+    if (name === "title" && value.length > 20) return;
+
+    setForm((prevForm) => ({
+      ...prevForm,
+      [name]: value,
+    }));
   };
 
-  const handleSubmit = () => {
-    if (editIndex !== null) {
-      const updated = [...data];
-      updated[editIndex] = { ...form, id: updated[editIndex].id };
-      setData(updated);
-      setEditIndex(null);
-    } else {
-      setData([...data, { ...form, id: Date.now() }]);
-    }
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+    try {
+      if (editIndex !== null) {
+        // Update existing
+        const itemToUpdate = data[editIndex];
+        await updateRecurringTransaction(itemToUpdate.id, {
+          ...form,
+          amount: parseFloat(form.amount),
+          // repeatDay: parseInt(form.repeatDay),
+          startDate: form.startDate || null,
+          endDate: form.endDate || null,
+        });
+        // Refresh list
+        await fetchRecurringTransactions();
+        setEditIndex(null);
+      } else {
+        // Add new
+        await addRecurringTransaction({
+          ...form,
+          amount: parseFloat(form.amount),
+          // repeatDay: parseInt(form.repeatDay),
+          startDate: form.startDate || null,
+          endDate: form.endDate || null,
+        });
+        // Refresh list
+        await fetchRecurringTransactions();
+      }
 
-    setForm({
-      type: "expense",
-      title: "",
-      amount: "",
-      category: "",
-      startDate: "",
-      repeatCycle: "monthly",
-      repeatDay: "",
-      endDate: "",
-    });
+      setForm({
+        type: "EXPENSE",
+        title: "",
+        amount: "",
+        category: "",
+        startDate: "",
+        repeatCycle: "MONTHLY",
+        repeatDay: "",
+        endDate: "",
+      });
+    } catch (error) {
+      console.error("Error saving recurring transaction:", error);
+    }
   };
 
   const handleCancel = () => {
-    // Reset form fields
     setForm({
-      type: "expense",
+      type: "EXPENSE",
       title: "",
       amount: "",
       category: "",
       startDate: "",
-      repeatCycle: "monthly",
+      repeatCycle: "MONTHLY",
       repeatDay: "",
       endDate: "",
     });
-
-    // Reset edit mode
     setEditIndex(null);
+    clearErrors();
   };
 
   const handleEdit = (index: number) => {
-    setForm(data[index]);
+    const item = data[index];
+    setForm({
+      type: item.type,
+      title: item.title,
+      amount: item.amount.toString(),
+      category: item.category,
+      startDate: parseCustomDate(item.startDate),
+      repeatCycle: item.repeatCycle,
+      repeatDay: item.repeatDay ? item.repeatDay.toString() : "",
+      endDate: parseCustomDate(item.endDate),
+    });
     setEditIndex(index);
   };
 
-  const handleDelete = (index: number) => {
-    const updated = [...data];
-    updated.splice(index, 1);
-    setData(updated);
+  const handleDelete = async (index: number) => {
+    try {
+      const item = data[index];
+      await deleteRecurringTransaction(item.id);
+      await fetchRecurringTransactions();
+      if (editIndex === index) {
+        handleCancel();
+      }
+    } catch (error) {
+      console.error("Error deleting recurring transaction:", error);
+    }
   };
 
-  // Handle page change
+  // Pagination handlers
   const handleChangePage = (_: unknown, newPage: number) => {
-    setPage(newPage);
+    fetchRecurringTransactions(newPage, rowsPerPage);
   };
 
-  // Handle rows per page change
   const handleChangeRowsPerPage = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+    const newSize = parseInt(event.target.value, 10);
+    fetchRecurringTransactions(0, newSize);
   };
 
-  // Paginated data
-  const paginatedData = data.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
+  // Example: handle column header click
+  const handleSortChange = (field: string) => {
+    // toggle asc/desc
+    let direction = "asc";
+    if (sort.startsWith(field) && sort.endsWith("asc")) direction = "desc";
+    setSort(`${field},${direction}`);
+    fetchRecurringTransactions(page, rowsPerPage, `${field},${direction}`);
+  };
+
+  const [errors, setErrors] = useState({
+    title: "",
+    amount: "",
+    startDate: "",
+    repeatDay: "",
+  });
+  const clearErrors = () => {
+    setErrors({
+      title: "",
+      amount: "",
+      startDate: "",
+      repeatDay: "",
+    });
+  };
+
+  const validateForm = () => {
+    const newErrors: any = {};
+
+    if (!form.title.trim()) {
+      newErrors.title = "Title is required";
+    } else if (form.title.length > 20) {
+      newErrors.title = "Only 20 characters allowed";
+    }
+
+    if (!form.amount.trim()) {
+      newErrors.amount = "Amount is required";
+    }
+
+    if (!form.startDate.trim()) {
+      newErrors.startDate = "Start date is required";
+    }
+    // Only require repeatDay if repeatCycle is NOT 'daily'
+    if (form.repeatCycle !== "DAILY" && !form.repeatDay.trim()) {
+      newErrors.repeatDay = "Repeat Day is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   return (
     <Box sx={{ p: 3 }}>
@@ -193,6 +311,8 @@ const RecurringTransactions = () => {
               value={form.title}
               onChange={handleChange}
               fullWidth
+              error={!!errors.title}
+              helperText={errors.title}
             />
 
             <TextField
@@ -202,6 +322,8 @@ const RecurringTransactions = () => {
               onChange={handleChange}
               fullWidth
               type="number"
+              error={!!errors.amount}
+              helperText={errors.amount}
             />
 
             <TextField
@@ -219,10 +341,19 @@ const RecurringTransactions = () => {
                 onChange={(newValue) => {
                   setForm({
                     ...form,
-                    startDate: newValue ? newValue.format("YYYY-MM-DD") : "",
+                    startDate:
+                      newValue && newValue.isValid()
+                        ? newValue.format("YYYY-MM-DD")
+                        : "",
                   });
                 }}
-                slotProps={{ textField: { fullWidth: true } }}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    error: !!errors.startDate,
+                    helperText: errors.startDate,
+                  },
+                }}
               />
             </LocalizationProvider>
 
@@ -242,13 +373,20 @@ const RecurringTransactions = () => {
             </TextField>
 
             <TextField
-              label="Repeat Day (1-31 or Monday)"
+              label={
+                form.repeatCycle === "WEEKLY"
+                  ? "Repeat Day (e.g. Monday)"
+                  : "Repeat Day (1-31)"
+              }
               name="repeatDay"
               value={form.repeatDay}
               onChange={handleChange}
               fullWidth
+              type={form.repeatCycle === "WEEKLY" ? "text" : "number"}
+              error={!!errors.repeatDay}
+              helperText={errors.repeatDay}
+              disabled={form.repeatCycle === "DAILY"}
             />
-
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DatePicker
                 label="End Date (optional)"
@@ -262,7 +400,7 @@ const RecurringTransactions = () => {
                 slotProps={{ textField: { fullWidth: true } }}
               />
             </LocalizationProvider>
-            {/* Button */}
+
             <Box
               sx={{
                 mt: 2,
@@ -358,7 +496,6 @@ const RecurringTransactions = () => {
                   border: "1px dashed rgba(150, 206, 255, 0.4)",
                   boxShadow: "0 10px 40px rgba(150, 206, 255, 0.25)",
                   color: "#004080",
-                  // maxWidth: 400,
                   mx: "auto",
                   mb: 3,
                   maxHeight: 450,
@@ -372,73 +509,122 @@ const RecurringTransactions = () => {
                   fontSize="0.95rem"
                   sx={{ color: "#336699", marginLeft: 4 }}
                 >
-                  - You can edit or delete entries any time.
-                  <br />
+                  {/* - You can edit or delete entries any time.
+                  <br /> */}
                   - Use categories wisely to track spending habits.
                   <br />- Keep an eye on overlapping subscriptions to avoid
                   surprises.
+                  <br />
+                  - "Repeat Cycle" and "Repeat Day" work together:
+                  <br /> &nbsp;&nbsp;• Weekly + Monday means the event repeats
+                  every Monday.
+                  <br /> &nbsp;&nbsp;• Daily means it repeats every day, so
+                  "Repeat Day" is ignored.
+                  <br /> &nbsp;&nbsp;• Monthly + 20 means it repeats on the 20th
+                  <br /> &nbsp;&nbsp;• Yearly repeats on the "repeat day" of the
+                  month from the start date every year.{" "}
+                  <strong>For example,</strong> if start date is June 1 and
+                  repeat day is 20, it repeats on June 20 each year.
                 </Typography>
               </Card>
             </Box>
 
-            <Card
-              sx={{
-                p: 3,
-                borderRadius: "20px",
-                background: "rgba(150, 206, 255, 0.1)",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(150, 206, 255, 0.2)",
-                boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
-                color: "#003366",
-              }}
+            <Typography
+              variant="h6"
+              fontWeight={600}
+              mb={2}
+              sx={{ color: "#004080" }}
             >
-              <Typography
-                variant="h6"
-                fontWeight={600}
-                mb={2}
-                sx={{ color: "#004080" }}
-              >
-                📋 Recurring Transactions
-              </Typography>
-              <TableContainer
-                component={Paper}
-                sx={{ background: "transparent" }}
-              >
-                <Table>
-                  <TableHead
-                    sx={{ backgroundColor: "rgba(150, 206, 255, 0.25)" }}
-                  >
+              📋 Recurring Transactions
+            </Typography>
+            <TableContainer
+              component={Paper}
+              sx={{ background: "transparent" }}
+            >
+              <Table>
+                <TableHead
+                  sx={{ backgroundColor: "rgba(150, 206, 255, 0.25)" }}
+                >
+                  <TableRow>
+                    {[
+                      { id: "title", label: "Title" },
+                      { id: "type", label: "Type" },
+                      { id: "amount", label: "Amount" },
+                      // { id: "category", label: "Category" },
+                      { id: "repeatCycle", label: "Repeat Cycle" },
+                      { id: "actions", label: "Actions", sortable: false },
+                    ].map((col) => (
+                      <TableCell
+                        key={col.id}
+                        sx={{
+                          fontWeight: 600,
+                          color: "#004080",
+                          cursor:
+                            col.sortable !== false ? "pointer" : "default",
+                        }}
+                        onClick={() => {
+                          if (col.sortable !== false) handleSortChange(col.id);
+                        }}
+                      >
+                        {col.sortable === false ? (
+                          col.label
+                        ) : (
+                          <TableSortLabel
+                            active={sort.startsWith(col.id)}
+                            direction={sort.endsWith("asc") ? "asc" : "desc"}
+                          >
+                            {col.label}
+                          </TableSortLabel>
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {data.length === 0 ? (
                     <TableRow>
-                      <TableCell sx={{ fontWeight: 600, color: "#004080" }}>
-                        Title
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: "#004080" }}>
-                        Type
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: "#004080" }}>
-                        Amount
-                      </TableCell>
-                      {/* <TableCell sx={{ fontWeight: 600, color: "#004080" }}>
-                        Repeat
-                      </TableCell> */}
-                      <TableCell sx={{ fontWeight: 600, color: "#004080" }}>
-                        Start
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: "#004080" }}>
-                        Actions
+                      <TableCell colSpan={6} align="center">
+                        No records found
                       </TableCell>
                     </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {paginatedData.map((item, idx) => (
+                  ) : (
+                    data.map((item, idx) => (
                       <TableRow key={item.id}>
                         <TableCell>{item.title}</TableCell>
-                        <TableCell>{item.type}</TableCell>
+                        <TableCell>
+                          <Box
+                            component="span"
+                            sx={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              borderRadius: "999px",
+                              px: 2,
+                              py: 0.5,
+                              fontSize: "0.75rem",
+                              fontWeight: "bold",
+                              textTransform: "capitalize",
+                              boxShadow: "0 2px 5px rgba(0, 0, 0, 0.08)",
+                              transition: "all 0.3s ease-in-out",
+                              cursor: "default",
+                              bgcolor:
+                                item.type === "INCOME" ? "#e6f4ea" : "#fdecea",
+                              color:
+                                item.type === "INCOME" ? "#2e7d32" : "#c62828",
+                              border: "1px solid",
+                              borderColor:
+                                item.type === "INCOME" ? "#81c784" : "#ef9a9a",
+                              "&:hover": {
+                                transform: "scale(1.05)",
+                              },
+                            }}
+                          >
+                            {item.type === "INCOME" ? "Income" : "Expense"}
+                          </Box>
+                        </TableCell>
                         <TableCell>${item.amount}</TableCell>
-                        {/* <TableCell>
-                          {item.repeatCycle} / {item.repeatDay}
-                        </TableCell> */}
-                        <TableCell>{item.startDate}</TableCell>
+                        {/* <TableCell>{item.category}</TableCell> */}
+                         <TableCell>{item.repeatCycle} | {item.repeatDay && item.repeatDay.trim() ? item.repeatDay : 'N/A'} </TableCell>
                         <TableCell>
                           <IconButton
                             onClick={() => handleEdit(idx + page * rowsPerPage)}
@@ -456,28 +642,21 @@ const RecurringTransactions = () => {
                           </IconButton>
                         </TableCell>
                       </TableRow>
-                    ))}
-                    {paginatedData.length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={6} align="center">
-                          No records found
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
 
-                <TablePagination
-                  rowsPerPageOptions={[5, 10, 25]}
-                  component="div"
-                  count={data.length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-                />
-              </TableContainer>
-            </Card>
+              <TablePagination
+                rowsPerPageOptions={[3, 4, 5, 10, 25]}
+                component="div"
+                count={totalRows}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+              />
+            </TableContainer>
           </Grid>
         </Grid>
       </Grid>

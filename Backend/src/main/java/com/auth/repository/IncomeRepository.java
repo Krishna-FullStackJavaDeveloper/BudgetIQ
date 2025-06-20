@@ -40,4 +40,12 @@ public interface IncomeRepository extends JpaRepository<Income, Long>{
 
     @Query("SELECT SUM(i.amount) FROM Income i WHERE i.user.id = :userId AND i.date BETWEEN :start AND :end AND i.deleted = false")
     Optional<BigDecimal> sumByUserAndDateRange(@Param("userId") Long userId, @Param("start") Instant start, @Param("end") Instant end);
+
+    @Query("SELECT CASE WHEN COUNT(i) > 0 THEN true ELSE false END FROM Income i " +
+            "WHERE i.user = :user AND i.source = :source AND i.date BETWEEN :start AND :end")
+    boolean existsByUserAndSourceAndDateBetween(@Param("user") User user,
+                                                @Param("source") String source,
+                                                @Param("start") Instant start,
+                                                @Param("end") Instant end);
+
 }

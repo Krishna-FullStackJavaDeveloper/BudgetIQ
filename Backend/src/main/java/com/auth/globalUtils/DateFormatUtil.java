@@ -1,6 +1,7 @@
 package com.auth.globalUtils;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -25,11 +26,10 @@ public class DateFormatUtil {
                 .format(DateTimeFormatter.ofPattern("dd-MM-yyyy, EEEE | h:mm a"));
     }
 
-//    public static void main(String[] args) {
-//        Instant now = Instant.now();
-//        System.out.println("Formatted UTC Instant: " + formatDate(now));
-//
-//        LocalDateTime legacy = LocalDateTime.of(2025, 3, 12, 14, 56, 5);
-//        System.out.println("Formatted LocalDateTime: " + formatDate(legacy));
-//    }
+    public static String formatLocalDate(LocalDate localDate, ZoneId zoneId) {
+        if (localDate == null) return "N/A";
+        return localDate.atStartOfDay(zoneId)
+                .format(DateTimeFormatter.ofPattern("dd-MM-yyyy, EEEE"));
+    }
+
 }

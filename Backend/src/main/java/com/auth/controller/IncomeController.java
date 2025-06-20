@@ -3,7 +3,6 @@ package com.auth.controller;
 import com.auth.annotation.CurrentUser;
 import com.auth.payload.request.IncomeRequest;
 import com.auth.payload.response.ApiResponse;
-import com.auth.payload.response.ExpenseResponse;
 import com.auth.payload.response.IncomeResponse;
 import com.auth.service.IncomeService;
 import com.auth.serviceImpl.UserDetailsImpl;

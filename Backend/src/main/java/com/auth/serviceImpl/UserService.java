@@ -14,10 +14,7 @@ import com.auth.globalException.UnauthorizedAccessException;
 import com.auth.payload.request.UpdateUserRequest;
 import com.auth.payload.response.GetAllUsersResponse;
 import com.auth.payload.response.MessageResponse;
-import com.auth.repository.FamilyRepository;
-import com.auth.repository.RoleRepository;
-import com.auth.repository.TimezoneRepository;
-import com.auth.repository.UserRepository;
+import com.auth.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -48,7 +45,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final TimezoneRepository timezoneRepository;
-
+    private final RecurringTransactionRepository recurringTransactionRepository;
     @Transactional
     public User getUserById(Long id) {
         // Fetching the user using the repository method
@@ -274,6 +271,11 @@ public class UserService {
 
             // If limit not reached or status is not ACTIVE, allow update
             userToUpdate.setAccountStatus(request.getAccountStatus());
+
+            // Update all recurring transactions
+            boolean enableTxns = request.getAccountStatus() == AccountStatus.ACTIVE;
+
+            recurringTransactionRepository.updateEnabledForUser(userToUpdate.getId(), enableTxns);
         }
         // Update Timezone
         if (request.getTimezone() != null) {

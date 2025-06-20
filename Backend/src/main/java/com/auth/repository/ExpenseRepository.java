@@ -39,4 +39,11 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 
     @Query("SELECT SUM(i.amount) FROM Expense i WHERE i.user.id = :userId AND i.date BETWEEN :start AND :end AND i.deleted = false")
     Optional<BigDecimal> sumByUserAndDateRange(@Param("userId") Long userId, @Param("start") Instant start, @Param("end") Instant end);
+
+    @Query("SELECT CASE WHEN COUNT(e) > 0 THEN true ELSE false END FROM Expense e " +
+            "WHERE e.user = :user AND e.category = :category AND e.date BETWEEN :start AND :end")
+    boolean existsByUserAndCategoryAndDateBetween(@Param("user") User user,
+                                                  @Param("category") String category,
+                                                  @Param("start") Instant start,
+                                                  @Param("end") Instant end);
 }

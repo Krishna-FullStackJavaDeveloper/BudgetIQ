@@ -1,6 +1,8 @@
 package com.auth.scheduler;
 
 import com.auth.eNum.TransactionType;
+import com.auth.email.EmailService;
+import com.auth.email.SendNotificationEmail;
 import com.auth.entity.Expense;
 import com.auth.entity.Income;
 import com.auth.entity.RecurringTransaction;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Component;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 @RequiredArgsConstructor
@@ -24,9 +27,9 @@ public class RecurringTransactionScheduler {
     private final RecurringTransactionRepository recurringTransactionRepository;
     private final IncomeRepository incomeRepository;
     private final ExpenseRepository expenseRepository;
-
-//    @Scheduled(cron = "0 0 15 * * ?") // Every day at 1 AM UTC
-        @Scheduled(fixedRate = 60000 , zone = "UTC")// Runs every hour
+    private final SendNotificationEmail sendNotificationEmail;
+    @Scheduled(cron = "0 0 15 * * ?") // Every day at 3 PM UTC
+//        @Scheduled(fixedRate = 60000  , zone = "UTC")// Runs every minute
     public void processRecurringTransactions() {
             log.info("Running recurring transaction scheduler");
 
@@ -47,24 +50,38 @@ public class RecurringTransactionScheduler {
                 ZoneId userZone = TimezoneUtil.getUserZone(txn.getUser());
                 LocalDate todayInUserZone = LocalDate.now(userZone);
 
-                // Check if today in user's zone matches their schedule
-                if (shouldRunToday(txn, todayInUserZone) && !isWeekend(todayInUserZone) && !isHoliday(todayInUserZone)) {
-                    if (!transactionExists(txn, todayInUserZone)) {
-                        createTransaction(txn, nowUtc);
-                        log.info("Created {} txn for {} on {}", txn.getType(), txn.getTitle(), todayInUserZone);
+                // Check if transaction should run on the scheduled date (not adjusted date)
+                if (shouldRunToday(txn, todayInUserZone)) {
+
+                    LocalDate adjustedDate = moveToNextWorkingDay(todayInUserZone);
+                    // Duplicate check based on scheduled date (original recurring day)
+                    if (!transactionExists(txn, adjustedDate)) {
+                        // Create transaction with adjusted posting date
+                        createTransaction(txn, adjustedDate.atStartOfDay(userZone).toInstant());
+                        log.info("Created {} txn for {} scheduled on {} but posted on {}",
+                                txn.getType(), txn.getTitle(), todayInUserZone, adjustedDate);
+
+                        // ✅ Notify the user
+                        sendNotificationEmail.sendTransactionNotification(txn, todayInUserZone, adjustedDate);
                     } else {
                         log.info("Skipping duplicate transaction for {} on {}", txn.getTitle(), todayInUserZone);
                     }
-
-
                     log.info("Checking if transaction already exists for {}, date: {}", txn.getTitle(), todayInUserZone);
                 }
             }
         }
 
+    private LocalDate moveToNextWorkingDay(LocalDate date) {
+        LocalDate adjusted = date;
+        while (isWeekend(adjusted) || isHoliday(adjusted)) {
+            adjusted = adjusted.plusDays(1);
+        }
+        return adjusted;
+    }
+
 //        Skipping weekends/holidays
     private boolean isWeekend(LocalDate date) {
-        return date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY;
+      return date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY;
     }
 
     private boolean isHoliday(LocalDate date) {
@@ -83,11 +100,12 @@ public class RecurringTransactionScheduler {
                     txn.getUser(), txn.getTitle(), startOfDay, endOfDay);
         } else {
             return expenseRepository.existsByUserAndCategoryAndDateBetween(
-                    txn.getUser(), txn.getCategory(), startOfDay, endOfDay);
+                    txn.getUser(), txn.getTitle(), startOfDay, endOfDay);
         }
     }
 
     private boolean shouldRunToday(RecurringTransaction txn, LocalDate today) {
+        // This method just verifies if the scheduled date matches the repeat pattern
         return switch (txn.getRepeatCycle()) {
             case DAILY -> true;
 
@@ -132,7 +150,7 @@ public class RecurringTransactionScheduler {
         } else {
             expenseRepository.save(Expense.builder()
                     .user(txn.getUser())
-                    .category(txn.getCategory())
+                    .category(txn.getTitle())
                     .amount(txn.getAmount())
                     .date(nowUtc)
                     .createdAt(nowUtc)

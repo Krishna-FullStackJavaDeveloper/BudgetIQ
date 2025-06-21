@@ -11,10 +11,11 @@ import java.util.UUID;
 public interface RecurringTransactionService {
 
     RecurringTransactionResponse addRecurringTransaction(RecurringTransactionRequest request, Long userId);
-     Page<RecurringTransactionResponse> getAllByUserPaged(Long userId, Pageable pageable);
-
+    Page<RecurringTransactionResponse> getAllByUserPaged(Long userId, Pageable pageable);
     RecurringTransactionResponse getById(UUID id);
     void updateRecurring(UUID id, RecurringTransactionRequest request);
     void softDelete(UUID id);
+
+    void updateEnabledForUser(Long userId, boolean enabled);
 
 }

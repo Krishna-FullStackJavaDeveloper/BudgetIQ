@@ -28,7 +28,7 @@ public interface RecurringTransactionRepository extends JpaRepository<RecurringT
     List<RecurringTransaction> findAllActiveWithUser(@Param("date") LocalDate date);
 
     @Modifying
-    @Query("UPDATE RecurringTransaction rt SET rt.enabled = :enabled WHERE rt.user.id = :userId")
+    @Query("UPDATE RecurringTransaction rt SET rt.enabled = ?2 WHERE rt.user.id = ?1")
     void updateEnabledForUser(@Param("userId") Long userId, @Param("enabled") boolean enabled);
 }
 

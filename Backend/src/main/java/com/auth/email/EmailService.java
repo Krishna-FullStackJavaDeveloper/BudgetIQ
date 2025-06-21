@@ -11,14 +11,10 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import java.time.format.DateTimeFormatter;
-import java.time.ZonedDateTime;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -147,6 +143,30 @@ public class EmailService {
                 log.info("Password reset email sent to {}", recipientEmail);
             } catch (MessagingException e) {
                 log.error("Failed to send password reset email to {}: {}", recipientEmail, e.getMessage());
+            }
+        });
+    }
+
+
+    public void sendDynamicNotification(String recipientEmail, String userSubject, String htmlBody) {
+        executorService.submit(() -> {
+            try {
+                emailTemplateService.loadTemplates("notification-email-templates.properties");
+
+                MimeMessage message = emailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(message, true); // true = multipart
+
+                helper.setFrom("BudgetIQ <" + senderEmail + ">");
+                helper.setTo(recipientEmail);
+                helper.setReplyTo("no-reply@gmail.com");
+                helper.setSubject(userSubject);
+                helper.setText(htmlBody, true); // ✅ Send as HTML
+
+                emailSender.send(message);
+                log.info("Recurring transaction notification sent to {}", recipientEmail);
+
+            } catch (Exception e) {
+                log.error("Failed to send recurring transaction notification to {}: {}", recipientEmail, e.getMessage());
             }
         });
     }

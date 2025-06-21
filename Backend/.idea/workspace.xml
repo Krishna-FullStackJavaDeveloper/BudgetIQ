@@ -310,6 +310,33 @@
     <option name="LAST_COMMIT_MESSAGE" value="create get user by userId for all roles." />
   </component>
   <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-method">
+          <url>file://$PROJECT_DIR$/src/main/java/com/auth/repository/RecurringTransactionRepository.java</url>
+          <line>31</line>
+          <properties class="com.auth.repository.RecurringTransactionRepository" method="updateEnabledForUser">
+            <option name="EMULATED" value="true" />
+            <option name="WATCH_EXIT" value="false" />
+          </properties>
+          <option name="timeStamp" value="13" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-method">
+          <url>file://$PROJECT_DIR$/src/main/java/com/auth/email/EmailService.java</url>
+          <line>111</line>
+          <properties class="com.auth.email.EmailService" method="sendPasswordResetEmail">
+            <option name="EMULATED" value="true" />
+            <option name="WATCH_EXIT" value="false" />
+          </properties>
+          <option name="timeStamp" value="41" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/auth/email/EmailService.java</url>
+          <line>112</line>
+          <option name="timeStamp" value="42" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
     <pin-to-top-manager>
       <pinned-members>
         <PinnedItemInfo parentTag="com.auth.entity.User" memberName="roles" />

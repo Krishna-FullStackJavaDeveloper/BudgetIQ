@@ -72,7 +72,7 @@ const RecurringTransactions = () => {
   const [data, setData] = useState<any[]>([]);
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(4);
+  const [rowsPerPage, setRowsPerPage] = useState(2);
   const [totalRows, setTotalRows] = useState(0);
   const [sort, setSort] = useState("createdAt,desc");
   const didFetchRef = useRef(false);
@@ -514,6 +514,8 @@ const RecurringTransactions = () => {
                   - Use categories wisely to track spending habits.
                   <br />- Keep an eye on overlapping subscriptions to avoid
                   surprises.
+                  <br />- If a scheduled repeat date falls on a weekend or
+                  holiday, it will automatically move to the next working day.
                   <br />
                   - "Repeat Cycle" and "Repeat Day" work together:
                   <br /> &nbsp;&nbsp;• Weekly + Monday means the event repeats
@@ -624,7 +626,12 @@ const RecurringTransactions = () => {
                         </TableCell>
                         <TableCell>${item.amount}</TableCell>
                         {/* <TableCell>{item.category}</TableCell> */}
-                         <TableCell>{item.repeatCycle} | {item.repeatDay && item.repeatDay.trim() ? item.repeatDay : 'N/A'} </TableCell>
+                        <TableCell>
+                          {item.repeatCycle} |{" "}
+                          {item.repeatDay && item.repeatDay.trim()
+                            ? item.repeatDay
+                            : "N/A"}{" "}
+                        </TableCell>
                         <TableCell>
                           <IconButton
                             onClick={() => handleEdit(idx + page * rowsPerPage)}
@@ -648,7 +655,7 @@ const RecurringTransactions = () => {
               </Table>
 
               <TablePagination
-                rowsPerPageOptions={[3, 4, 5, 10, 25]}
+                rowsPerPageOptions={[2, 4, 5, 10, 25]}
                 component="div"
                 count={totalRows}
                 rowsPerPage={rowsPerPage}

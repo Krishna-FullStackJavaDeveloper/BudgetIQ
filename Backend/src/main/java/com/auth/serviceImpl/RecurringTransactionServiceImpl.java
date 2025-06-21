@@ -10,6 +10,7 @@ import com.auth.payload.response.RecurringTransactionResponse;
 import com.auth.repository.RecurringTransactionRepository;
 import com.auth.repository.UserRepository;
 import com.auth.service.RecurringTransactionService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -132,6 +133,10 @@ public class RecurringTransactionServiceImpl implements RecurringTransactionServ
         recurringTransactionRepository.save(txn);
     }
 
+    @Transactional
+    public void updateEnabledForUser(Long userId, boolean enabled) {
+        recurringTransactionRepository.updateEnabledForUser(userId, enabled);
+    }
 
     private RecurringTransaction getRecurringTransaction(RecurringTransactionRequest request, User user) {
         RecurringTransaction recurring = new RecurringTransaction();

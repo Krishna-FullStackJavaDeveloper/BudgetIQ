@@ -15,6 +15,7 @@ import com.auth.payload.request.UpdateUserRequest;
 import com.auth.payload.response.GetAllUsersResponse;
 import com.auth.payload.response.MessageResponse;
 import com.auth.repository.*;
+import com.auth.service.RecurringTransactionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -45,7 +46,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final TimezoneRepository timezoneRepository;
-    private final RecurringTransactionRepository recurringTransactionRepository;
+    private final RecurringTransactionService recurringTransactionService;
     @Transactional
     public User getUserById(Long id) {
         // Fetching the user using the repository method
@@ -272,10 +273,11 @@ public class UserService {
             // If limit not reached or status is not ACTIVE, allow update
             userToUpdate.setAccountStatus(request.getAccountStatus());
 
-            // Update all recurring transactions
-            boolean enableTxns = request.getAccountStatus() == AccountStatus.ACTIVE;
+            // Update all recurring transactions (inactive) (active== false)
+            boolean enableStatus = request.getAccountStatus() == AccountStatus.ACTIVE;
+            log.info("Updating recurring transactions for user: {} to enabled: {}", userToUpdate.getId(), enableStatus);
+                recurringTransactionService.updateEnabledForUser(userToUpdate.getId(), enableStatus);
 
-            recurringTransactionRepository.updateEnabledForUser(userToUpdate.getId(), enableTxns);
         }
         // Update Timezone
         if (request.getTimezone() != null) {

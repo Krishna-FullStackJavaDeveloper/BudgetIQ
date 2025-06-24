@@ -1,7 +1,6 @@
 package com.auth.scheduler;
 
 import com.auth.eNum.TransactionType;
-import com.auth.email.EmailService;
 import com.auth.email.SendNotificationEmail;
 import com.auth.entity.Expense;
 import com.auth.entity.Income;
@@ -12,13 +11,13 @@ import com.auth.repository.IncomeRepository;
 import com.auth.repository.RecurringTransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.*;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @Component
 @RequiredArgsConstructor
@@ -28,8 +27,8 @@ public class RecurringTransactionScheduler {
     private final IncomeRepository incomeRepository;
     private final ExpenseRepository expenseRepository;
     private final SendNotificationEmail sendNotificationEmail;
+
     @Scheduled(cron = "0 0 15 * * ?") // Every day at 3 PM UTC
-//        @Scheduled(fixedRate = 60000  , zone = "UTC")// Runs every minute
     public void processRecurringTransactions() {
             log.info("Running recurring transaction scheduler");
 
@@ -159,4 +158,11 @@ public class RecurringTransactionScheduler {
                     .build());
         }
     }
+
+    @EventListener(ApplicationReadyEvent.class) // Runs when app fully starts
+    public void runOnStartup() {
+        log.info("Running recurring transaction check on application startup");
+        processRecurringTransactions();
+    }
+
 }

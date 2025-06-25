@@ -11,8 +11,8 @@ import com.auth.serviceImpl.UserDetailsImpl;
 public interface FamilyService {
     Family createFamilyByAdmin(User admin, SignupRequest signupRequest) throws Exception;
     User createFamilyUser(SignupRequest signUpRequest) throws Exception;
-    public FamilySummaryResponse getFamilySummaryData();
+    FamilySummaryResponse getFamilySummaryData();
     FamilyResponse getFamilyById(Long id, UserDetailsImpl loggedInUser);
     FamilyResponse updateFamily(Long id, FamilyRequest request, UserDetailsImpl loggedInUser);
-    public FamilyResponse getFamilyByUserId(Long userId);
+    FamilyResponse getFamilyByUserId(Long userId);
 }

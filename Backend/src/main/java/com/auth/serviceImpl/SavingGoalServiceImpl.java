@@ -2,15 +2,21 @@ package com.auth.serviceImpl;
 
 import com.auth.entity.GoalTransaction;
 import com.auth.entity.SavingGoal;
+import com.auth.payload.request.GoalSearchFilter;
 import com.auth.payload.request.GoalTransactionRequest;
 import com.auth.payload.request.SavingGoalRequest;
 import com.auth.payload.response.GoalTransactionResponse;
+import com.auth.payload.response.MonthlyProgressResponse;
 import com.auth.payload.response.SavingGoalResponse;
 import com.auth.repository.GoalTransactionRepository;
 import com.auth.repository.SavingGoalRepository;
 import com.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import com.auth.service.SavingGoalService;
 
@@ -101,6 +107,78 @@ public class SavingGoalServiceImpl implements SavingGoalService{
         return mapToResponse(goal, goal.getUser());
     }
 
+    @Override
+    public Page<SavingGoalResponse> searchGoals(Long userId, GoalSearchFilter filter) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Sort sort = Sort.by(Sort.Direction.fromString(filter.getDirection()), filter.getSortBy());
+        Pageable pageable = PageRequest.of(filter.getPage(), filter.getSize(), sort);
+
+        Page<SavingGoal> page = goalRepo.searchByTitleAndUser(filter.getKeyword(), user, pageable);
+
+        return page.map(goal -> mapToResponse(goal, user));
+    }
+
+    @Override
+    public SavingGoalResponse updateGoal(Long goalId, Long userId, SavingGoalRequest request) {
+        SavingGoal goal = goalRepo.findById(goalId)
+                .orElseThrow(() -> new ResourceNotFoundException("Saving Goal not found"));
+
+        if (!goal.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Unauthorized access to update");
+        }
+
+        goal.setTitle(request.getTitle());
+        goal.setTargetAmount(request.getTargetAmount());
+        goal.setStartDate(request.getStartDate());
+        goal.setEndDate(request.getEndDate());
+        goal.setPriority(request.getPriority());
+        goal.setSourceCategory(request.getSourceCategory());
+        goal.setUpdatedAt(Instant.now());
+
+        goal = goalRepo.save(goal);
+
+        return mapToResponse(goal, goal.getUser());
+    }
+
+    @Override
+    public void softDelete(Long goalId, Long userId) {
+        SavingGoal goal = goalRepo.findById(goalId)
+                .orElseThrow(() -> new ResourceNotFoundException("Goal not found"));
+
+        if (!goal.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Unauthorized");
+        }
+
+        goal.setActive(false);
+        goal.setUpdatedAt(Instant.now());
+
+        goalRepo.save(goal);
+    }
+
+    @Override
+    public List<MonthlyProgressResponse> getMonthlyProgress(Long goalId, Long userId) {
+        SavingGoal goal = goalRepo.findById(goalId)
+                .orElseThrow(() -> new ResourceNotFoundException("Goal not found"));
+
+        if (!goal.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Unauthorized access");
+        }
+
+        // Pass the goal ID here, not the goal object
+        List<Object[]> results = txnRepo.getMonthlyProgress(goal.getId());
+
+        // Map Object[] to MonthlyProgressResponse DTO
+        return results.stream()
+                .map(row -> new MonthlyProgressResponse(
+                        (String) row[0],               // month (String)
+                        ((Number) row[1]).doubleValue() // totalSaved (double)
+                ))
+                .collect(Collectors.toList());
+    }
+
+
     private SavingGoalResponse mapToResponse(SavingGoal goal, User user) {
         ZoneId zoneId = TimezoneUtil.getUserZone(user);
 
@@ -140,4 +218,6 @@ public class SavingGoalServiceImpl implements SavingGoalService{
 
         return res;
     }
+
+
 }

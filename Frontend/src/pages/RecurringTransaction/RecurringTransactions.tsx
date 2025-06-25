@@ -179,19 +179,24 @@ const RecurringTransactions = () => {
   };
 
   const handleEdit = (index: number) => {
-    const item = data[index];
-    setForm({
-      type: item.type,
-      title: item.title,
-      amount: item.amount.toString(),
-      category: item.category,
-      startDate: parseCustomDate(item.startDate),
-      repeatCycle: item.repeatCycle,
-      repeatDay: item.repeatDay ? item.repeatDay.toString() : "",
-      endDate: parseCustomDate(item.endDate),
-    });
-    setEditIndex(index);
-  };
+  const item = data[index];
+
+  if (!item) {
+    console.error(`No item found at index ${index}`);
+    return;
+  }
+  setForm({
+    type: item.type,
+    title: item.title,
+    amount: item.amount.toString(),
+    category: item.category,
+    startDate: parseCustomDate(item.startDate),
+    repeatCycle: item.repeatCycle,
+    repeatDay: item.repeatDay ? item.repeatDay.toString() : "",
+    endDate: parseCustomDate(item.endDate),
+  });
+  setEditIndex(index);
+};
 
   const handleDelete = async (index: number) => {
     try {
@@ -634,14 +639,14 @@ const RecurringTransactions = () => {
                         </TableCell>
                         <TableCell>
                           <IconButton
-                            onClick={() => handleEdit(idx + page * rowsPerPage)}
+                            onClick={() => handleEdit(idx)}
                             color="primary"
                           >
                             <EditIcon />
                           </IconButton>
                           <IconButton
                             onClick={() =>
-                              handleDelete(idx + page * rowsPerPage)
+                              handleDelete(idx)
                             }
                             color="error"
                           >

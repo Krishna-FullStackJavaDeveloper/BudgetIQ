@@ -8,8 +8,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9ef1f0a6-0768-4427-ac2f-d3321830eed0" name="Changes" comment="create get user by userId for all roles.">
-      <change beforePath="$PROJECT_DIR$/../.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/components/layout/Sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/components/layout/Sidebar.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/RecurringTransaction/RecurringTransactions.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/RecurringTransaction/RecurringTransactions.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/routes/AppRoutes.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/routes/AppRoutes.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -335,15 +336,6 @@
             <option name="WATCH_EXIT" value="false" />
           </properties>
           <option name="timeStamp" value="41" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-method">
-          <url>file://$PROJECT_DIR$/src/main/java/com/auth/service/SavingGoalService.java</url>
-          <line>20</line>
-          <properties class="com.auth.service.SavingGoalService" method="softDelete">
-            <option name="EMULATED" value="true" />
-            <option name="WATCH_EXIT" value="false" />
-          </properties>
-          <option name="timeStamp" value="43" />
         </line-breakpoint>
         <line-breakpoint type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/com/auth/email/EmailService.java</url>

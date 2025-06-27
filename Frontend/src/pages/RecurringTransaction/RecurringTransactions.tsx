@@ -546,7 +546,7 @@ const RecurringTransactions = () => {
             </Typography>
             <TableContainer
               component={Paper}
-              sx={{ background: "transparent" }}
+              sx={{ background: "transparent" , mb: 3}}
             >
               <Table>
                 <TableHead

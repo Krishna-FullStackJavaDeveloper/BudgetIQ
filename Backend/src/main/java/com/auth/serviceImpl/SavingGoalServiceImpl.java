@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class SavingGoalServiceImpl implements SavingGoalService{
+public class SavingGoalServiceImpl implements SavingGoalService {
 
     private final SavingGoalRepository goalRepo;
     private final GoalTransactionRepository txnRepo;

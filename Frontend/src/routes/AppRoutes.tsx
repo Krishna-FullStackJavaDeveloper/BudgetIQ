@@ -17,25 +17,36 @@ import UpdateFamily from "../pages/UserProfile/UpdateFamily";
 import ExpensePage from "../pages/BudgetManagement/ExpensePage";
 import AddCategory from "../pages/BudgetManagement/AddCategory";
 import RecurringTransactions from "../pages/RecurringTransaction/RecurringTransactions";
+import SavingGoalsPage from "../pages/GoalTracker/SavingGoalsPage";
+import CreateGoalForm from "../pages/GoalTracker/CreateGoalForm";
+import GoalDetailsPage from "../pages/GoalTracker/GoalDetailsPage";
+import AddGoalTransactionPage from "../pages/GoalTracker/AddGoalTransactionPage";
+import GoalListPage from "../pages/GoalTracker/GoalListPage";
+import EditGoalForm from "../pages/GoalTracker/EditGoalForm";
 
 const AppRoutes = () => {
   return (
-      <Routes>
-        <Route path="*" element={<h2 className="text-center text-red-500">404 - Page Not Found</h2>} />
+    <Routes>
+      <Route
+        path="*"
+        element={
+          <h2 className="text-center text-red-500">404 - Page Not Found</h2>
+        }
+      />
       {/* Auth  */}
-        <Route path="/login" element={<Login />} /> {/* Update path to "/login" */}
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/verify-otp" element={<VerifyOtp />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/login" element={<Login />} />{" "}
+      {/* Update path to "/login" */}
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/verify-otp" element={<VerifyOtp />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       {/* Dashboard */}
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
-        <Route path="/moderator-dashboard" element={<ModeratorDashboard />} />
-        <Route path="/user-dashboard" element={<UserDashboard />} />
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/admin-dashboard" element={<AdminDashboard />} />
+      <Route path="/moderator-dashboard" element={<ModeratorDashboard />} />
+      <Route path="/user-dashboard" element={<UserDashboard />} />
       {/* landing page */}
-        <Route path="/" element={<LandingPage />} />
-
+      <Route path="/" element={<LandingPage />} />
       {/* User Profilepage */}
       <Route path="/edit-user/:userId" element={<Profile />} />
       <Route path="/manage-users" element={<UserOrg />} />
@@ -47,8 +58,18 @@ const AppRoutes = () => {
       <Route path="/add_Expense" element={<ExpensePage />} />
       <Route path="/add_Category" element={<AddCategory />} />
       {/* Recurring Transaction */}
-      <Route path="/recurring_transaction" element={<RecurringTransactions />} />
-      </Routes>
+      <Route
+        path="/recurring_transaction"
+        element={<RecurringTransactions />}
+      />
+      {/* Goal Tracker */}
+      <Route path="/savingGoals" element={<SavingGoalsPage />} />
+      <Route path="/goals/create" element={<CreateGoalForm />} />
+      <Route path="/goals/:goalId" element={<GoalDetailsPage />} />
+      <Route path="/goals/:goalId/add-transaction" element={<AddGoalTransactionPage />} />
+      <Route path="/goals" element={<GoalListPage />} />
+      <Route path="/goals/:goalId/edit" element={<EditGoalForm />} />
+    </Routes>
   );
 };
 

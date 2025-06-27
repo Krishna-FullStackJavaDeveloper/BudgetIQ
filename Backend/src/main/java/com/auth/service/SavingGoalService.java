@@ -12,12 +12,18 @@ import java.util.List;
 
 public interface SavingGoalService {
     SavingGoalResponse createGoal(SavingGoalRequest request, Long userId);
+
     GoalTransactionResponse addTransaction(GoalTransactionRequest request, Long userId);
+
     List<SavingGoalResponse> getAllGoals(Long userId);
+
     SavingGoalResponse getGoalDetails(Long goalId, Long userId);
 
     Page<SavingGoalResponse> searchGoals(Long userId, GoalSearchFilter filter);
+
     SavingGoalResponse updateGoal(Long goalId, Long userId, SavingGoalRequest request);
+
     void softDelete(Long goalId, Long userId);
+
     List<MonthlyProgressResponse> getMonthlyProgress(Long goalId, Long userId);
 }

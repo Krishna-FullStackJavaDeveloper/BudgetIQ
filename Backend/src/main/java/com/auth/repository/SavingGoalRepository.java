@@ -12,8 +12,9 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface SavingGoalRepository extends JpaRepository<SavingGoal , Long> {
+public interface SavingGoalRepository extends JpaRepository<SavingGoal, Long> {
     List<SavingGoal> findByUser(User user);
+
     List<SavingGoal> findByUserAndActiveTrue(User user);
 
     @Query("SELECT g FROM SavingGoal g WHERE g.user = :user AND g.active = true AND " +

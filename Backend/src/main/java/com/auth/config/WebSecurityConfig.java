@@ -65,7 +65,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/api/auth/**", "/api/users/**").permitAll()
                                 .requestMatchers("/api/test/**", "/api/timezones/**", "/api/categories/**" , "/api/expenses/**",
-                                        "/api/incomes/**", "/api/summary/**", "/api/families/**", "/api/recurring/**")
+                                        "/api/incomes/**", "/api/summary/**", "/api/families/**", "/api/recurring/**", "/api/goals/**")
                                 .permitAll()
 //                                .requestMatchers("/api/users/**").permitAll()
                                 .requestMatchers("/api/files/**").permitAll()

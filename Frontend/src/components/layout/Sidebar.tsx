@@ -84,6 +84,12 @@ const Sidebar: React.FC<SidebarProps> = ({
         path: "/recurring_transaction",
         icon: <LocalAtmIcon />,
       },
+       // Recurring Transaction
+      {
+        label: "Goal Tracker",
+        path: "/savingGoals",
+        icon: <LocalAtmIcon />,
+      },
     ],
     user: [
       // { label: 'Dashboard', path: '/user-dashboard', icon: <DashboardIcon /> },

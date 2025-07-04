@@ -12,7 +12,6 @@ import {
   GoalResponse,
   MonthlyProgress,
 } from "../../components/Interface/goalTypes";
-import { GoalService } from "../../service/goalService";
 import {
   Box,
   Typography,
@@ -26,6 +25,8 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
 import CustomTooltip from "../../components/layout/CustomTooltip ";
+import TableViewIcon from "@mui/icons-material/TableView";
+import { useGoalService } from "../../service/goalService";
 
 const GoalDetailsPage: React.FC = () => {
   const { goalId } = useParams();
@@ -37,14 +38,14 @@ const GoalDetailsPage: React.FC = () => {
 
   const hasFetched = useRef(false);
 
+  const { getGoalById, getMonthlyProgress } = useGoalService();
+
   const fetchGoalDetails = async () => {
     try {
       if (!hasFetched.current) {
         hasFetched.current = true;
-        const goalRes = await GoalService.getGoalById(Number(goalId));
-        const progressRes = await GoalService.getMonthlyProgress(
-          Number(goalId)
-        );
+        const goalRes = await getGoalById(Number(goalId));
+        const progressRes = await getMonthlyProgress(Number(goalId));
 
         setGoal(goalRes.data);
         setProgressData(progressRes.data);
@@ -124,6 +125,16 @@ const GoalDetailsPage: React.FC = () => {
               }[goal.priority] || "Unknown"}
             </Typography>
           </Grid>
+          <Grid item xs={12} sm={6}>
+            {goal.achieved && (
+              <Typography
+                component="div" // 👈 prevents nested <p>
+                sx={{ color: "#E65100", fontWeight: "bold", mt: 1 }}
+              >
+                🎉 Congratulations! Goal Achieved!
+              </Typography>
+            )}
+          </Grid>
         </Grid>
       </Paper>
 
@@ -147,21 +158,35 @@ const GoalDetailsPage: React.FC = () => {
 
       <Divider sx={{ my: 3 }} />
 
-      <Stack direction="row" spacing={2}>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => navigate(`/goals/${goal.id}/add-transaction`)}
-          sx={{
-            px: 3,
-            fontWeight: 600,
-            fontSize: "0.9rem",
-            whiteSpace: "nowrap",
-            display: "flex",
-            alignItems: "center",
-
-            // Fix icon vertical alignment here:
-            "& .MuiButton-startIcon": {
+      <Stack
+        direction="row"
+        spacing={2}
+        justifyContent="space-between"
+        alignItems="center"
+        mt={2}
+      >
+        {/* Left side buttons */}
+        <Box display="flex" gap={2}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => navigate(`/goals/${goal.id}/add-transaction`)}
+            disabled={goal.achieved}
+            sx={{
+              px: 3,
+              fontWeight: 600,
+              fontSize: "0.9rem",
+              whiteSpace: "nowrap",
+              display: "flex",
+              alignItems: "center",
+              backgroundColor: goal.achieved ? "#263238" : "#1976d2",
+              color: "#fff",
+              "&:hover": {
+                backgroundColor: goal.achieved ? "#b0bec5" : "#115293",
+              },
+              cursor: goal.achieved ? "not-allowed" : "pointer",
+              boxShadow: goal.achieved ? "none" : undefined,
+               "& .MuiButton-startIcon": {
               display: "flex",
               alignItems: "center",
               verticalAlign: "middle",
@@ -170,11 +195,48 @@ const GoalDetailsPage: React.FC = () => {
             "& .MuiSvgIcon-root": {
               verticalAlign: "middle",
             },
-          }}
-        >
-          Add Transaction
-        </Button>
 
+            }}
+          >
+            {goal.achieved ? "Goal Achieved" : "Add Transaction"}
+          </Button>
+
+          <Button
+            variant="outlined"
+            startIcon={<TableViewIcon />}
+            onClick={() => navigate(`/goals/${goal.id}/add-transaction`)}
+            sx={{
+              px: 3,
+              fontWeight: 600,
+              fontSize: "0.9rem",
+              whiteSpace: "nowrap",
+              display: "flex",
+              alignItems: "center",
+              color: "#1976d2",
+              borderColor: "#1976d2",
+              transition: "all 0.3s ease",
+              "&:hover": {
+                backgroundColor: "#e3f2fd",
+                boxShadow: "0 4px 8px rgba(25, 118, 210, 0.3)",
+                borderColor: "#1565c0",
+              },
+               "& .MuiButton-startIcon": {
+              display: "flex",
+              alignItems: "center",
+              verticalAlign: "middle",
+              marginTop: 0,
+            },
+            "& .MuiSvgIcon-root": {
+              verticalAlign: "middle",
+            },
+
+            }}
+          >
+            View Transactions
+          </Button>
+        </Box>
+
+        {/* Right side button */}
         <Button
           variant="outlined"
           startIcon={<EditIcon />}
@@ -184,15 +246,7 @@ const GoalDetailsPage: React.FC = () => {
             "&:hover": {
               boxShadow: "0 6px 6px rgb(25 118 210 / 0.5)",
             },
-            px: 3,
-            fontWeight: 600,
-            fontSize: "0.9rem",
-            whiteSpace: "nowrap",
-            display: "flex",
-            alignItems: "center",
-
-            // Fix icon vertical alignment here:
-            "& .MuiButton-startIcon": {
+             "& .MuiButton-startIcon": {
               display: "flex",
               alignItems: "center",
               verticalAlign: "middle",
@@ -201,6 +255,13 @@ const GoalDetailsPage: React.FC = () => {
             "& .MuiSvgIcon-root": {
               verticalAlign: "middle",
             },
+
+            px: 3,
+            fontWeight: 600,
+            fontSize: "0.9rem",
+            whiteSpace: "nowrap",
+            display: "flex",
+            alignItems: "center",
           }}
         >
           Edit Goal

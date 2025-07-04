@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { SavingGoalResponse } from "../../components/Interface/goalTracker";
-import { GoalService } from "../../service/goalService";
+import { useGoalService } from "../../service/goalService";
 import {
   Box,
   Typography,
@@ -37,11 +37,12 @@ const SavingGoalsPage: React.FC = () => {
   const navigate = useNavigate();
   const [itemToDelete, setItemToDelete] = useState<{ id: number } | null>(null);
 
+   const { getAllGoals, deleteGoal } = useGoalService();
   const loadGoals = async () => {
     try {
       if (!hasFetched.current) {
         hasFetched.current = true;
-        const response = await GoalService.getAllGoals();
+        const response = await getAllGoals();
         setGoals(response.data);
         setFilteredGoals(response.data); // Initialize filtered goals
       }
@@ -62,7 +63,7 @@ const SavingGoalsPage: React.FC = () => {
     if (!itemToDelete) return;
 
     try {
-      await GoalService.deleteGoal(itemToDelete.id);
+      await deleteGoal(itemToDelete.id);
       const updatedGoals = goals.filter((goal) => goal.id !== itemToDelete.id);
       setGoals(updatedGoals);
       setFilteredGoals(
@@ -254,25 +255,45 @@ const SavingGoalsPage: React.FC = () => {
                 </CardContent>
 
                 <Divider />
-                <Box p={1.5} textAlign="right">
-                  <Tooltip title="View Details">
-                    <IconButton
-                      color="primary"
-                      onClick={() => handleViewDetails(goal.id)}
-                      aria-label="View Details"
+                <Box
+                  p={1.5}
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  {/* Left side: Achieved label */}
+                  {goal.achieved ? (
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "#E65100", fontWeight: "bold", ml: 1 }}
                     >
-                      <VisibilityIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Delete Goal">
-                    <IconButton
-                      color="error"
-                      onClick={() => handleDeleteGoal({ id: goal.id })}
-                      aria-label="Delete Goal"
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Tooltip>
+                      🎉 Goal Achieved
+                    </Typography>
+                  ) : (
+                    <span></span> // Keeps space aligned if no message
+                  )}
+
+                  {/* Right side: Action Icons */}
+                  <Box>
+                    <Tooltip title="View Details">
+                      <IconButton
+                        color="primary"
+                        onClick={() => handleViewDetails(goal.id)}
+                        aria-label="View Details"
+                      >
+                        <VisibilityIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Delete Goal">
+                      <IconButton
+                        color="error"
+                        onClick={() => handleDeleteGoal({ id: goal.id })}
+                        aria-label="Delete Goal"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
                 </Box>
               </Card>
             </Grid>

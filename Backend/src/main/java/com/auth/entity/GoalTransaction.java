@@ -28,6 +28,8 @@ public class GoalTransaction {
     private boolean manuallyAdded = false;
     private boolean autoTransferred = false;
 
+    private boolean softDeleted = false; // ✅ new field
+
     private Instant createdAt;
     private Instant updatedAt;
 }

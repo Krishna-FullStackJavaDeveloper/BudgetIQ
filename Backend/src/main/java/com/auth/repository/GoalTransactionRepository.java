@@ -15,18 +15,18 @@ import java.util.Optional;
 public interface GoalTransactionRepository extends JpaRepository<GoalTransaction, Long> {
     List<GoalTransaction> findByGoal(SavingGoal goal);
 
-//    @Query("SELECT new com.auth.payload.response.MonthlyProgressResponse(" +
-//            "FUNCTION('DATE_FORMAT', t.date, '%b %Y'), SUM(t.amount)) " +
-//            "FROM GoalTransaction t " +
-//            "WHERE t.goal = ?1 " +
-//            "GROUP BY FUNCTION('DATE_FORMAT', t.date, '%b %Y') " +
-//            "ORDER BY MIN(t.date)")
-//    List<MonthlyProgressResponse> getMonthlyProgress(@Param("goal") SavingGoal goal);
-//
     @Query(value = "SELECT DATE_FORMAT(date, '%b %Y') AS month, SUM(amount) AS totalSaved " +
-            "FROM goal_transaction WHERE goal_id = :goalId " +
+            "FROM goal_transaction " +
+            "WHERE goal_id = :goalId AND soft_deleted = false " +
             "GROUP BY month ORDER BY MIN(date)",
             nativeQuery = true)
     List<Object[]> getMonthlyProgress(@Param("goalId") Long goalId);
+
+    @Query("SELECT SUM(g.amount) FROM GoalTransaction g WHERE g.goal.id = :goalId AND g.softDeleted = false")
+    Double getTotalSavedAmount(@Param("goalId") Long goalId);
+
+    List<GoalTransaction> findByGoalAndSoftDeletedFalse(SavingGoal goal);
+
+    Optional<GoalTransaction> findByIdAndGoal_User_Id(Long id, Long userId);
 
 }

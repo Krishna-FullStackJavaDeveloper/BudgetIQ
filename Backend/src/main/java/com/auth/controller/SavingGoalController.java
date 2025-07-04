@@ -105,4 +105,35 @@ public class SavingGoalController {
                 new ApiResponse<>("Goals fetched", savingGoalService.searchGoals(user.getId(), filter), 200)
         );
     }
+
+    // Get transactions for a specific goal
+    @GetMapping("/{goalId}/transactions")
+    public ResponseEntity<ApiResponse<List<GoalTransactionResponse>>> getTransactionsByGoalId(
+            @PathVariable Long goalId,
+            @CurrentUser UserDetailsImpl user
+    ) {
+        List<GoalTransactionResponse> transactions = savingGoalService.getTransactionsByGoalId(goalId, user.getId());
+        return ResponseEntity.ok(new ApiResponse<>("Transactions fetched", transactions, 200));
+    }
+
+    // Update transaction by ID
+    @PutMapping("/transactions/{transactionId}")
+    public ResponseEntity<ApiResponse<GoalTransactionResponse>> updateTransaction(
+            @PathVariable Long transactionId,
+            @RequestBody GoalTransactionRequest request,
+            @CurrentUser UserDetailsImpl user
+    ) {
+        GoalTransactionResponse updated = savingGoalService.updateTransaction(transactionId, request, user.getId());
+        return ResponseEntity.ok(new ApiResponse<>("Transaction updated", updated, 200));
+    }
+
+    // Delete transaction by ID
+    @DeleteMapping("/transactions/{transactionId}")
+    public ResponseEntity<ApiResponse<String>> deleteTransaction(
+            @PathVariable Long transactionId,
+            @CurrentUser UserDetailsImpl user
+    ) {
+        savingGoalService.deleteTransaction(transactionId, user.getId());
+        return ResponseEntity.ok(new ApiResponse<>("Transaction deleted", "Deleted", 200));
+    }
 }

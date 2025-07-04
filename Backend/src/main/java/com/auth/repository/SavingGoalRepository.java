@@ -15,9 +15,12 @@ import java.util.List;
 public interface SavingGoalRepository extends JpaRepository<SavingGoal, Long> {
     List<SavingGoal> findByUser(User user);
 
-    List<SavingGoal> findByUserAndActiveTrue(User user);
+    List<SavingGoal> findByUserAndSoftDeletedFalse(User user);
 
-    @Query("SELECT g FROM SavingGoal g WHERE g.user = :user AND g.active = true AND " +
+    // Add this if not present
+    @Query("SELECT g FROM SavingGoal g WHERE g.user = :user AND g.softDeleted = false AND " +
             "(LOWER(g.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR :keyword IS NULL)")
     Page<SavingGoal> searchByTitleAndUser(@Param("keyword") String keyword, @Param("user") User user, Pageable pageable);
+
+
 }

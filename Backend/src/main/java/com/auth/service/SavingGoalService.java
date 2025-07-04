@@ -26,4 +26,10 @@ public interface SavingGoalService {
     void softDelete(Long goalId, Long userId);
 
     List<MonthlyProgressResponse> getMonthlyProgress(Long goalId, Long userId);
+
+    List<GoalTransactionResponse> getTransactionsByGoalId(Long goalId, Long userId);
+
+    GoalTransactionResponse updateTransaction(Long transactionId, GoalTransactionRequest request, Long userId);
+
+    void deleteTransaction(Long transactionId, Long userId);
 }

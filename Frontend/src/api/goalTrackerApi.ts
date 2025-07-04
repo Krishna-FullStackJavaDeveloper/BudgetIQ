@@ -113,5 +113,55 @@ export const searchSavingGoals = async (filterParams: any) => {
   } catch (error) {
     console.error("Error searching saving goals:", error);
     throw error;
+  } 
+};
+
+// 📌 Get all transactions for a specific goal
+export const getTransactionsByGoalId = async (goalId: number) => {
+  try {
+    const response = await axios.get(`${API_URL}/${goalId}/transactions`, {
+      headers: getHeaders(),
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching transactions for goal ID ${goalId}:`, error);
+    throw error;
   }
 };
+
+// 📌 Update a specific transaction by ID
+export const updateTransaction = async (
+  transactionId: number,
+  updatedData: any
+) => {
+  try {
+    const response = await axios.put(
+      `${API_URL}/transactions/${transactionId}`,
+      updatedData,
+      {
+        headers: getHeaders(),
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`Error updating transaction ID ${transactionId}:`, error);
+    throw error;
+  }
+};
+
+// 📌 Delete a specific transaction by ID
+export const deleteTransaction = async (transactionId: number) => {
+  try {
+    const response = await axios.delete(
+      `${API_URL}/transactions/${transactionId}`,
+      {
+        headers: getHeaders(),
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`Error deleting transaction ID ${transactionId}:`, error);
+    throw error;
+  }
+};
+

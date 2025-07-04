@@ -34,7 +34,8 @@ public class SavingGoal {
 
     private String sourceCategory; // Optional: e.g., "Freelance"
 
-    private boolean autoTransferSuggested = false;
+    @Column(nullable = false)
+    private boolean softDeleted = false;
 
     private Instant createdAt;
     private Instant updatedAt;

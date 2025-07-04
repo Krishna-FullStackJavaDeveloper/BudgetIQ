@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { GoalService } from "../../service/goalService";
+import { useGoalService } from "../../service/goalService";
 import {
   Box,
   Typography,
@@ -12,6 +12,9 @@ import {
   Alert,
   Stack,
 } from "@mui/material";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
 
 const EditGoalForm: React.FC = () => {
   const { goalId } = useParams();
@@ -20,14 +23,23 @@ const EditGoalForm: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const { getGoalById, updateGoal } = useGoalService();
+
+  function parseCustomDate(dateStr: string | undefined): string {
+    if (!dateStr || dateStr === "N/A") return ""; // no date
+    const datePart = dateStr.split(",")[0].trim(); // Only date before comma
+    const parsed = dayjs(datePart, "DD-MM-YYYY");
+    return parsed.isValid() ? parsed.format("YYYY-MM-DD") : "";
+  }
+
   useEffect(() => {
     const fetchGoal = async () => {
       try {
-        const res = await GoalService.getGoalById(Number(goalId));
+        const res = await getGoalById(Number(goalId));
         setForm({
           ...res.data,
-          startDate: res.data.startDate.slice(0, 10),
-          endDate: res.data.endDate.slice(0, 10),
+          startDate: parseCustomDate(res.data.startDate),
+          endDate: parseCustomDate(res.data.endDate),
         });
       } catch (err) {
         setError("Failed to load goal.");
@@ -39,9 +51,11 @@ const EditGoalForm: React.FC = () => {
     fetchGoal();
   }, [goalId]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-  setForm({ ...form, [e.target.name]: e.target.value });
-};
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async () => {
     try {
@@ -52,7 +66,7 @@ const EditGoalForm: React.FC = () => {
         endDate: new Date(form.endDate).toISOString(),
         priority: parseInt(form.priority),
       };
-      await GoalService.updateGoal(Number(goalId), payload);
+      await updateGoal(Number(goalId), payload);
       navigate(`/goals/${goalId}`);
     } catch (err) {
       console.error("Error updating goal:", err);
@@ -63,7 +77,7 @@ const EditGoalForm: React.FC = () => {
   if (loading) return <p>Loading...</p>;
   if (!form) return <p>Goal not found.</p>;
 
-   return (
+  return (
     <Box maxWidth="sm" mx="auto" p={2}>
       <Paper elevation={3} sx={{ p: 4 }}>
         <Typography variant="h5" fontWeight="bold" gutterBottom>
@@ -94,25 +108,47 @@ const EditGoalForm: React.FC = () => {
             fullWidth
           />
 
-          <TextField
-            label="Start Date"
-            name="startDate"
-            type="date"
-            value={form.startDate}
-            onChange={handleChange}
-            fullWidth
-            InputLabelProps={{ shrink: true }}
-          />
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker
+              label="Start Date"
+              value={form.startDate ? dayjs(form.startDate) : null}
+              onChange={(newValue) => {
+                setForm({
+                  ...form,
+                  startDate:
+                    newValue && newValue.isValid()
+                      ? newValue.format("YYYY-MM-DD")
+                      : "",
+                });
+              }}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                },
+              }}
+            />
+          </LocalizationProvider>
 
-          <TextField
-            label="End Date"
-            name="endDate"
-            type="date"
-            value={form.endDate}
-            onChange={handleChange}
-            fullWidth
-            InputLabelProps={{ shrink: true }}
-          />
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker
+              label="End Date"
+              value={form.endDate ? dayjs(form.endDate) : null}
+              onChange={(newValue) => {
+                setForm({
+                  ...form,
+                  endDate:
+                    newValue && newValue.isValid()
+                      ? newValue.format("YYYY-MM-DD")
+                      : "",
+                });
+              }}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                },
+              }}
+            />
+          </LocalizationProvider>
 
           <TextField
             label="Priority"
@@ -150,3 +186,5 @@ const EditGoalForm: React.FC = () => {
 };
 
 export default EditGoalForm;
+
+

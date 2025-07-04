@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { GoalService } from "../../service/goalService";
 import { SavingGoalResponse } from "../Interface/goalTracker";
+import { useGoalService } from "../../service/goalService";
 
 const MyGoals = () => {
   const [goals, setGoals] = useState<SavingGoalResponse[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const { getAllGoals } = useGoalService();
   const loadGoals = async () => {
     try {
-      const res = await GoalService.getAllGoals();
+      const res = await getAllGoals();
       setGoals(res.data); // assuming `ApiResponse<T>` structure
     } catch (err) {
       console.error("Failed to fetch goals:", err);

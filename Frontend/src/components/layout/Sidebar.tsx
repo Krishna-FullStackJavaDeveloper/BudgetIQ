@@ -21,8 +21,8 @@ import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import LocalAtmIcon from "@mui/icons-material/LocalAtm";
 import AddCardIcon from "@mui/icons-material/AddCard";
 import cashWithdrawIcon from "../../assets/cash-withdrawal.png";
-import CategoryIcon from "@mui/icons-material/Category";
-
+import CategoryIcon from "@mui/icons-material/Category"; 
+import EmojiEventsTwoToneIcon from '@mui/icons-material/EmojiEventsTwoTone';
 interface SidebarProps {
   open: boolean;
   toggleSidebar: () => void;
@@ -51,6 +51,12 @@ const Sidebar: React.FC<SidebarProps> = ({
       { label: "Income", path: "/add_cash", icon: <AddCardIcon /> },
       { label: "Expense", path: "/add_Expense", icon: <LocalAtmIcon /> },
       { label: "Category", path: "/add_Category", icon: <CategoryIcon /> },
+       // Goal Tracker
+      {
+        label: "Goal Tracker",
+        path: "/savingGoals",
+        icon: <EmojiEventsTwoToneIcon />,
+      },
       // Admin Pages
       { label: "Reports", path: "/manage-users-test", icon: <ReportIcon /> },
       {
@@ -66,10 +72,16 @@ const Sidebar: React.FC<SidebarProps> = ({
       },
     ],
     moderator: [
-       //Category wise Tracking
+      //Category wise Tracking
       { label: "Income", path: "/add_cash", icon: <AddCardIcon /> },
       { label: "Expense", path: "/add_Expense", icon: <LocalAtmIcon /> },
       { label: "Category", path: "/add_Category", icon: <CategoryIcon /> },
+      // Goal Tracker
+      {
+        label: "Goal Tracker",
+        path: "/savingGoals",
+        icon: <EmojiEventsTwoToneIcon />,
+      },
       // Admin Pages
       { label: "Manage Users", path: "/manage-users", icon: <PeopleIcon /> },
       { label: "Reports", path: "/reports", icon: <ReportIcon /> },
@@ -78,16 +90,10 @@ const Sidebar: React.FC<SidebarProps> = ({
         path: `/edit-user/${userId}`,
         icon: <PersonIcon />,
       },
-       // Recurring Transaction
+      // Recurring Transaction
       {
         label: "Recurring Tansaction",
         path: "/recurring_transaction",
-        icon: <LocalAtmIcon />,
-      },
-       // Recurring Transaction
-      {
-        label: "Goal Tracker",
-        path: "/savingGoals",
         icon: <LocalAtmIcon />,
       },
     ],
@@ -97,6 +103,12 @@ const Sidebar: React.FC<SidebarProps> = ({
       // { label: 'Add Expense', path: '/add_Expense', icon: <img src={cashWithdrawIcon} alt="Withdraw Cash" style={{ width: 24, height: 24 }} /> },
       { label: "Expense", path: "/add_Expense", icon: <LocalAtmIcon /> },
       { label: "Category", path: "/add_Category", icon: <CategoryIcon /> },
+       // Goal Tracker
+      {
+        label: "Goal Tracker",
+        path: "/savingGoals",
+        icon: <EmojiEventsTwoToneIcon />,
+      },
       {
         label: "Test-Profile",
         path: `/edit-user/${userId}`,
@@ -109,7 +121,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       },
       { label: "Settings", path: "/settings", icon: <SettingsIcon /> },
       { label: "Profile", path: `/edit-user/${userId}`, icon: <PersonIcon /> },
-       // Recurring Transaction
+      // Recurring Transaction
       {
         label: "Recurring Tansaction",
         path: "/recurring_transaction",

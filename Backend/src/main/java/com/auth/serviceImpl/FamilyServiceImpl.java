@@ -6,6 +6,7 @@ import com.auth.entity.Family;
 import com.auth.entity.User;
 import com.auth.payload.request.FamilyRequest;
 import com.auth.payload.request.SignupRequest;
+import com.auth.payload.response.FamilyMemberDto;
 import com.auth.payload.response.FamilyResponse;
 import com.auth.payload.response.FamilySummaryResponse;
 import com.auth.repository.FamilyRepository;
@@ -163,11 +164,14 @@ public class FamilyServiceImpl implements FamilyService {
         // Get count of ACTIVE users in this family
         long activeUserCount = familyRepository.countActiveUsersByFamilyId(family.getId());
 
-        // Log or return the active user size as needed
-        log.info("Active users in family '{}': {}", family.getFamilyName(), activeUserCount);
+        List<FamilyMemberDto> activeUsers = userRepository.findAllByFamilyId(family.getId()).stream()
+                .filter(user -> user.getAccountStatus() == AccountStatus.ACTIVE)
+                .map(user -> new FamilyMemberDto(user.getUsername(), user.getEmail()))
+                .toList();
 
         FamilyResponse response = mapToResponse(family);
         response.setUserSize((int) activeUserCount); // update the response with active user count
+        response.setActiveUsers(activeUsers);
 
         return response;
     }

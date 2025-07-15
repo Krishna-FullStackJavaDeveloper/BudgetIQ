@@ -1,10 +1,12 @@
 package com.auth.service;
 
+import com.auth.entity.Expense;
 import com.auth.payload.request.ExpenseRequest;
 import com.auth.payload.response.ExpenseResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.Instant;
 import java.util.List;
 
 public interface ExpenseService {
@@ -14,4 +16,5 @@ public interface ExpenseService {
     void softDeleteExpense(Long id, Long userId);
     ExpenseResponse getExpenseHistory(Long id);
     List<ExpenseResponse> getMonthlyExpenses(Long userId, Integer month, Integer year);
+    List<Expense> getExpenseBetween(Long userId, Instant start, Instant end);
 }

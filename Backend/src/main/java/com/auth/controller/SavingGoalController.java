@@ -46,7 +46,7 @@ public class SavingGoalController {
     }
 
     // View all goals of user
-    @GetMapping("/my")
+    @GetMapping("/my-goals")
     public ResponseEntity<ApiResponse<List<SavingGoalResponse>>> getUserGoals(
             @CurrentUser UserDetailsImpl currentUser) {
 

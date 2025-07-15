@@ -38,7 +38,7 @@ public class SendNotificationEmail {
         <p>Hello %s,</p>
         <p>Your recurring transaction titled <strong>%s</strong> for <strong>%s</strong> (%s)</p>
         <p>was originally scheduled on <strong>%s</strong>, and was processed on <strong>%s</strong>.</p>
-        <p>Best regards,<br/>Team BudgetIQ</p>
+        <p>Best regards,<br/>Team BudgetIQ<br/>(This mailbox is not monitored. Please do not reply to this message.)</p> 
         """,
                 userName,
                 txn.getTitle(),

@@ -51,6 +51,12 @@ public class EmailTemplateService {
         return cachedSubjects.getOrDefault(key, "No Subject"); // Use cached subjects
     }
 
+    public String replacePlaceholders(String template, Map<String, String> placeholders) {
+        for (Map.Entry<String, String> entry : placeholders.entrySet()) {
+            template = template.replace("{" + entry.getKey() + "}", entry.getValue());
+        }
+        return template;
+    }
 
     //    Modify your EmailTemplateService to replace placeholders dynamically.
     public String getFormattedBody(String key, Map<String, String> placeholders) {

@@ -78,6 +78,13 @@ public class ExpenseServiceImpl implements ExpenseService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<Expense> getExpenseBetween(Long userId, Instant start, Instant end) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
+        return expenseRepository.findByUserAndDateBetweenAndDeletedFalse(user, start, end);
+    }
+
     private ExpenseResponse mapToResponse(Expense expense) {
         return ExpenseResponse.builder()
                 .id(expense.getId())

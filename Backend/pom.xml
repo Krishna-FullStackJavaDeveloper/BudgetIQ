@@ -119,6 +119,33 @@
             <artifactId>spring-hateoas</artifactId>
         </dependency>
 
+        <!-- Core Kernel -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>kernel</artifactId>
+            <version>7.2.5</version>
+        </dependency>
+
+        <!-- Layout for document building -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>layout</artifactId>
+            <version>7.2.5</version>
+        </dependency>
+
+        <!-- iText io (for image/font handling) -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>io</artifactId>
+            <version>7.2.5</version>
+        </dependency>
+        <!-- JFreeChart -->
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.5.3</version> <!-- or latest -->
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>

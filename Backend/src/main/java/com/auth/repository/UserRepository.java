@@ -1,5 +1,6 @@
 package com.auth.repository;
 
+import com.auth.eNum.AccountStatus;
 import com.auth.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -42,6 +43,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.roles LEFT JOIN FETCH u.family WHERE u.id = :id")
     Optional<User> findByIdWithRolesAndFamily(@Param("id") Long id);
-
 
 }

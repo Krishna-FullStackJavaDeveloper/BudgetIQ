@@ -23,6 +23,7 @@ import GoalDetailsPage from "../pages/GoalTracker/GoalDetailsPage";
 import AddGoalTransactionPage from "../pages/GoalTracker/AddGoalTransactionPage";
 import GoalListPage from "../pages/GoalTracker/GoalListPage";
 import EditGoalForm from "../pages/GoalTracker/EditGoalForm";
+import ReportPage from "../pages/Reports/ReportPage";
 
 const AppRoutes = () => {
   return (
@@ -69,6 +70,8 @@ const AppRoutes = () => {
       <Route path="/goals/:goalId/add-transaction" element={<AddGoalTransactionPage />} />
       <Route path="/goals" element={<GoalListPage />} />
       <Route path="/goals/:goalId/edit" element={<EditGoalForm />} />
+      {/* Report */}
+      <Route path="/report" element={<ReportPage />} />
     </Routes>
   );
 };

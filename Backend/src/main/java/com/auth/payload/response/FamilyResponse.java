@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.List;
 
 @Getter
 @Setter
@@ -16,5 +17,5 @@ public class FamilyResponse {
     private Instant createdAt;
     private Long moderatorId;
     private String moderatorUsername;
-
+    private List<FamilyMemberDto> activeUsers;
 }

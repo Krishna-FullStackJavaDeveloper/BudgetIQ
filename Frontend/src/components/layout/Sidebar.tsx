@@ -84,7 +84,8 @@ const Sidebar: React.FC<SidebarProps> = ({
       },
       // Admin Pages
       { label: "Manage Users", path: "/manage-users", icon: <PeopleIcon /> },
-      { label: "Reports", path: "/reports", icon: <ReportIcon /> },
+      // Report
+      { label: "Reports", path: "/report", icon: <ReportIcon /> },
       {
         label: "My Profile",
         path: `/edit-user/${userId}`,
@@ -96,6 +97,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         path: "/recurring_transaction",
         icon: <LocalAtmIcon />,
       },
+       { label: "Reports", path: "/manage-users-test", icon: <ReportIcon /> },
     ],
     user: [
       // { label: 'Dashboard', path: '/user-dashboard', icon: <DashboardIcon /> },
@@ -127,6 +129,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         path: "/recurring_transaction",
         icon: <LocalAtmIcon />,
       },
+      // Report
+      { label: "Reports", path: "/report", icon: <ReportIcon /> },
     ],
   };
 

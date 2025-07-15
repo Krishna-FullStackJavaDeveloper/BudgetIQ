@@ -7,18 +7,23 @@ import { Provider } from "react-redux";
 import { store } from "./app/store";
 import "./styles/global.css"; // Import the global styles
 import { BrowserRouter } from 'react-router-dom'; // Import BrowserRouter
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
   <React.StrictMode>
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
    <Provider store={store}>
       {/* Wrap your entire application with BrowserRouter */}
       <BrowserRouter>
+      
         <App />
       </BrowserRouter>
     </Provider>
+  </LocalizationProvider>
   </React.StrictMode>
 );
 

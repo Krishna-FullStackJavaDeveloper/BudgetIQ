@@ -8,10 +8,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9ef1f0a6-0768-4427-ac2f-d3321830eed0" name="Changes" comment="create get user by userId for all roles.">
-      <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/GoalTracker/CreateGoalForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/GoalTracker/CreateGoalForm.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/GoalTracker/EditGoalForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/GoalTracker/EditGoalForm.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/GoalTracker/GoalDetailsPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/GoalTracker/GoalDetailsPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/GoalTracker/SavingGoalsPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/GoalTracker/SavingGoalsPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/api/goalTrackerApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/api/goalTrackerApi.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/api/income.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/api/income.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/components/layout/CustomTooltip .tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/components/layout/CustomTooltip .tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/components/layout/Sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/components/layout/Sidebar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/index.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/pages/GoalTracker/AddGoalTransactionPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/pages/GoalTracker/AddGoalTransactionPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Frontend/src/routes/AppRoutes.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Frontend/src/routes/AppRoutes.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -76,6 +80,7 @@
   &quot;keyToString&quot;: {
     &quot;Application.JwtDebugger.executor&quot;: &quot;Run&quot;,
     &quot;Application.RoleBaseAuthenticationApplication.executor&quot;: &quot;Debug&quot;,
+    &quot;JUnit.RoleBaseAuthenticationApplicationTests.contextLoads.executor&quot;: &quot;Debug&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
@@ -83,9 +88,14 @@
     &quot;last_directory_selection&quot;: &quot;D:/Krishna/Workspace/IntelliJ/springboot-role-base-authentication/src/test/java&quot;,
     &quot;last_opened_file_path&quot;: &quot;C:/Krishna/My Project/BudgetIQ/Backend&quot;,
     &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
 }</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Krishna\My Project\BudgetIQ\Backend\src\main\resources\fonts" />
+    </key>
+  </component>
   <component name="RunManager" selected="Application.RoleBaseAuthenticationApplication">
     <configuration name="JwtDebugger" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.auth.globalUtils.JwtDebugger" />
@@ -116,9 +126,26 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="RoleBaseAuthenticationApplicationTests.contextLoads" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="budgetIQ" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.auth.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.auth" />
+      <option name="MAIN_CLASS_NAME" value="com.auth.RoleBaseAuthenticationApplicationTests" />
+      <option name="METHOD_NAME" value="contextLoads" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <recent_temporary>
       <list>
         <item itemvalue="Application.RoleBaseAuthenticationApplication" />
+        <item itemvalue="JUnit.RoleBaseAuthenticationApplicationTests.contextLoads" />
         <item itemvalue="Application.JwtDebugger" />
       </list>
     </recent_temporary>
@@ -331,7 +358,7 @@
         </line-breakpoint>
         <line-breakpoint type="java-method">
           <url>file://$PROJECT_DIR$/src/main/java/com/auth/email/EmailService.java</url>
-          <line>111</line>
+          <line>112</line>
           <properties class="com.auth.email.EmailService" method="sendPasswordResetEmail">
             <option name="EMULATED" value="true" />
             <option name="WATCH_EXIT" value="false" />
@@ -340,7 +367,7 @@
         </line-breakpoint>
         <line-breakpoint type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/com/auth/email/EmailService.java</url>
-          <line>112</line>
+          <line>113</line>
           <option name="timeStamp" value="42" />
         </line-breakpoint>
       </breakpoints>

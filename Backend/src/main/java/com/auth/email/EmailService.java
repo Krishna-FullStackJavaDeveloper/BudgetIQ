@@ -6,6 +6,7 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -170,6 +171,38 @@ public class EmailService {
             }
         });
     }
+
+    public void sendAttachment(String recipientEmail, String action, Map<String, String> placeholders, byte[] pdfBytes, String fileName) {
+
+        executorService.submit(() -> {
+            try {
+                emailTemplateService.loadTemplates("notification-email-templates.properties");
+
+                String subjectTemplate = emailTemplateService.getSubject("email." + action);
+                String subject = emailTemplateService.replacePlaceholders(subjectTemplate, placeholders);
+                String body = emailTemplateService.getFormattedBody("email." + action, placeholders);
+
+                MimeMessage message = emailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+
+                helper.setFrom("BudgetIQ <" + senderEmail + ">");
+                helper.setTo(recipientEmail);
+                helper.setSubject(subject);
+                helper.setReplyTo("no-reply@gmail.com");
+                helper.setText(body, false); // true if HTML
+
+                helper.addAttachment(fileName, new ByteArrayResource(pdfBytes));
+
+                emailSender.send(message);
+                log.info("Email with attachment sent to {}", recipientEmail);
+
+            } catch (MessagingException e) {
+                log.error("Failed to send email with attachment to {}: {}", recipientEmail, e.getMessage());
+            }
+        });
+    }
+
 
     @PreDestroy
     public void shutdown() {

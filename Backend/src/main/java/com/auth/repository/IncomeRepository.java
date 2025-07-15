@@ -48,4 +48,9 @@ public interface IncomeRepository extends JpaRepository<Income, Long>{
                                                 @Param("start") Instant start,
                                                 @Param("end") Instant end);
 
+    @Query("SELECT i FROM Income i WHERE i.user = :user AND i.date BETWEEN :start AND :end AND i.deleted = false ORDER BY i.date ASC")
+    List<Income> findByUserAndDateBetweenAndDeletedFalse(@Param("user") User user,
+                                                         @Param("start") Instant start,
+                                                         @Param("end") Instant end);
+
 }

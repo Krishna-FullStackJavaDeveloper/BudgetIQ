@@ -7,7 +7,7 @@ const getAuthToken = () => {
   return localStorage.getItem("token"); // Update this based on where you store the token
 };
 
-// Fetch all expenses
+// Fetch all Income
 export const getAllIncome = async (
   page: number,
   size: number,

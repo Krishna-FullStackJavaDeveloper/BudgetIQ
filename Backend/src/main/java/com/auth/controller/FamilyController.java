@@ -67,14 +67,14 @@ public class FamilyController {
 
     // ✅ Get families by moderator ID (i.e., current logged-in user only)
     @GetMapping("/my-family")
-    @PreAuthorize("hasRole('MODERATOR')")
+    @PreAuthorize("hasRole('MODERATOR')  or hasRole('USER')")
     public ResponseEntity<ApiResponse<FamilyResponse>> getFamiliesByModerator(
             @CurrentUser UserDetailsImpl loggedInUser) {
 
         FamilyResponse family = familyService.getFamilyByUserId(loggedInUser.getId());
 
         ApiResponse<FamilyResponse> response = new ApiResponse<>(
-                "Family fetched successfully for moderator",
+                "Family fetched successfully",
                 family,
                 200
         );

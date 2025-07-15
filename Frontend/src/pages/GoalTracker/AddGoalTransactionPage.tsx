@@ -22,7 +22,7 @@ import {
   TableFooter,
 } from "@mui/material";
 import { Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -107,9 +107,7 @@ const AddGoalTransactionPage: React.FC = () => {
 
   const fetchGoal = async () => {
     try {
-      const res: { data: GoalResponse } = await getGoalById(
-        Number(goalId)
-      );
+      const res: { data: GoalResponse } = await getGoalById(Number(goalId));
       setGoal(res.data);
     } catch (err) {
       console.error("Error fetching goal:", err);
@@ -302,23 +300,38 @@ const AddGoalTransactionPage: React.FC = () => {
   );
 
   // oldest first in chart
-  const chartData = transactions.map((txn) => ({
-   date: dayjs(txn.date).utc().format("DD-MMMM-YYYY"),
-    amount: txn.amount,
-  })).reverse();
+  const chartData = transactions
+    .map((txn) => ({
+      date: dayjs(txn.date).utc().format("DD-MMMM-YYYY"),
+      amount: txn.amount,
+    }))
+    .reverse();
 
   const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    const dateLabel = dayjs(label).format("DD-MMMM-YYYY | dddd");
-    return (
-      <Box sx={{ backgroundColor: 'white', border: '1px solid #ccc', padding: 1 }}>
-        <Typography variant="body2" sx={{ color: "#004080", fontWeight:'bold' }}>{dateLabel}</Typography>
-        <Typography variant="body2">${payload[0].value.toFixed(2)}</Typography>
-      </Box>
-    );
-  }
-  return null;
-};
+    if (active && payload && payload.length) {
+      const dateLabel = dayjs(label).format("DD-MMMM-YYYY | dddd");
+      return (
+        <Box
+          sx={{
+            backgroundColor: "white",
+            border: "1px solid #ccc",
+            padding: 1,
+          }}
+        >
+          <Typography
+            variant="body2"
+            sx={{ color: "#004080", fontWeight: "bold" }}
+          >
+            {dateLabel}
+          </Typography>
+          <Typography variant="body2">
+            ${payload[0].value.toFixed(2)}
+          </Typography>
+        </Box>
+      );
+    }
+    return null;
+  };
 
   return (
     <Box sx={{ p: 3 }}>
@@ -331,104 +344,138 @@ const AddGoalTransactionPage: React.FC = () => {
             mb={3}
             sx={{ color: "#004080" }}
           >
-            Transactions for Goal: <ins>{goal?.title}</ins>
+            Transactions for Goal:{" "}
+            <Link
+              to="/savingGoals"
+              style={{ textDecoration: "underline", cursor: "pointer" }}
+            >
+              {goal?.title}
+            </Link>
           </Typography>
           <Paper sx={{ mb: 3 }}>
-  <TableContainer sx={{ background: "transparent", mb: 2 }}>
-    <Table size="medium">
-      <TableHead sx={{ backgroundColor: "rgba(150, 206, 255, 0.25)" }}>
-        <TableRow>
-          <TableCell sortDirection={orderBy === "date" ? order : false} sx={{ fontWeight: 600, color: "#004080", cursor: "pointer" }}>
-            <TableSortLabel
-              active={orderBy === "date"}
-              direction={orderBy === "date" ? order : "asc"}
-              onClick={() => handleRequestSort("date")}
-            >
-              Date
-            </TableSortLabel>
-          </TableCell>
-          <TableCell sortDirection={orderBy === "amount" ? order : false} sx={{ fontWeight: 600, color: "#004080", cursor: "pointer" }}>
-            <TableSortLabel
-              active={orderBy === "amount"}
-              direction={orderBy === "amount" ? order : "asc"}
-              onClick={() => handleRequestSort("amount")}
-            >
-              Amount
-            </TableSortLabel>
-          </TableCell>
-          <TableCell sortDirection={orderBy === "sourceNote" ? order : false} sx={{ fontWeight: 600, color: "#004080", cursor: "pointer" }}>
-            <TableSortLabel
-              active={orderBy === "sourceNote"}
-              direction={orderBy === "sourceNote" ? order : "asc"}
-              onClick={() => handleRequestSort("sourceNote")}
-            >
-              Note
-            </TableSortLabel>
-          </TableCell>
-          <TableCell sx={{ fontWeight: 600, color: "#004080", cursor: "default" }}>
-            Actions
-          </TableCell>
-        </TableRow>
-      </TableHead>
-
-      <TableBody>
-        {displayedTransactions.length === 0 ? (
-          <TableRow>
-            <TableCell colSpan={6} align="center">
-              No transactions found.
-            </TableCell>
-          </TableRow>
-        ) : (
-          displayedTransactions.map((txn, idx) => (
-            <TableRow key={txn.id}>
-              <TableCell>{txn.date.split("T")[0]}</TableCell>
-              <TableCell>${txn.amount.toFixed(2)}</TableCell>
-              <TableCell>{txn.sourceNote || "-"}</TableCell>
-              <TableCell align="center">
-                <IconButton
-                  onClick={() => handleEdit(page * rowsPerPage + idx)}
-                  size="small"
-                  color="primary"
+            <TableContainer sx={{ background: "transparent", mb: 2 }}>
+              <Table size="medium">
+                <TableHead
+                  sx={{ backgroundColor: "rgba(150, 206, 255, 0.25)" }}
                 >
-                  <EditIcon />
-                </IconButton>
-                <IconButton
-                  onClick={() => handleDelete(txn.id)}
-                  size="small"
-                  color="error"
-                >
-                  <DeleteIcon />
-                </IconButton>
-              </TableCell>
-            </TableRow>
-          ))
-        )}
-      </TableBody>
+                  <TableRow>
+                    <TableCell
+                      sortDirection={orderBy === "date" ? order : false}
+                      sx={{
+                        fontWeight: 600,
+                        color: "#004080",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <TableSortLabel
+                        active={orderBy === "date"}
+                        direction={orderBy === "date" ? order : "asc"}
+                        onClick={() => handleRequestSort("date")}
+                      >
+                        Date
+                      </TableSortLabel>
+                    </TableCell>
+                    <TableCell
+                      sortDirection={orderBy === "amount" ? order : false}
+                      sx={{
+                        fontWeight: 600,
+                        color: "#004080",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <TableSortLabel
+                        active={orderBy === "amount"}
+                        direction={orderBy === "amount" ? order : "asc"}
+                        onClick={() => handleRequestSort("amount")}
+                      >
+                        Amount
+                      </TableSortLabel>
+                    </TableCell>
+                    <TableCell
+                      sortDirection={orderBy === "sourceNote" ? order : false}
+                      sx={{
+                        fontWeight: 600,
+                        color: "#004080",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <TableSortLabel
+                        active={orderBy === "sourceNote"}
+                        direction={orderBy === "sourceNote" ? order : "asc"}
+                        onClick={() => handleRequestSort("sourceNote")}
+                      >
+                        Note
+                      </TableSortLabel>
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: 600,
+                        color: "#004080",
+                        cursor: "default",
+                      }}
+                    >
+                      Actions
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
 
-      {/* ✅ Add this footer for pagination */}
-      <TableFooter>
-        <TableRow>
-          <TablePagination
-            rowsPerPageOptions={[5]}
-            count={transactions.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            colSpan={4}
-            sx={{
-              ".MuiTablePagination-toolbar": {
-                justifyContent: "flex-end", // Align pagination to right
-                pr: 2,
-              },
-            }}
-          />
-        </TableRow>
-      </TableFooter>
-    </Table>
-  </TableContainer>
-</Paper>
+                <TableBody>
+                  {displayedTransactions.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center">
+                        No transactions found.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    displayedTransactions.map((txn, idx) => (
+                      <TableRow key={txn.id}>
+                        <TableCell>{txn.date.split("T")[0]}</TableCell>
+                        <TableCell>${txn.amount.toFixed(2)}</TableCell>
+                        <TableCell>{txn.sourceNote || "-"}</TableCell>
+                        <TableCell align="center">
+                          <IconButton
+                            onClick={() => handleEdit(page * rowsPerPage + idx)}
+                            size="small"
+                            color="primary"
+                          >
+                            <EditIcon />
+                          </IconButton>
+                          <IconButton
+                            onClick={() => handleDelete(txn.id)}
+                            size="small"
+                            color="error"
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
 
+                {/* ✅ Add this footer for pagination */}
+                <TableFooter>
+                  <TableRow>
+                    <TablePagination
+                      rowsPerPageOptions={[5]}
+                      count={transactions.length}
+                      rowsPerPage={rowsPerPage}
+                      page={page}
+                      onPageChange={handleChangePage}
+                      onRowsPerPageChange={handleChangeRowsPerPage}
+                      colSpan={4}
+                      sx={{
+                        ".MuiTablePagination-toolbar": {
+                          justifyContent: "flex-end", // Align pagination to right
+                          pr: 2,
+                        },
+                      }}
+                    />
+                  </TableRow>
+                </TableFooter>
+              </Table>
+            </TableContainer>
+          </Paper>
         </Grid>
 
         {/* Form */}
@@ -579,11 +626,16 @@ const AddGoalTransactionPage: React.FC = () => {
         </Grid>
       </Grid>
 
-
-       {/* 📈 Day-wise Line Chart */}
+      {/* 📈 Day-wise Line Chart */}
       <Box mt={5} mb={3}>
-        <Typography variant="h6" fontWeight={600} mb={2} sx={{ color: "#004080" }}>
-          Daily Transaction Graph: <ins>{goal?.title}</ins>
+        <Typography
+          variant="h6"
+          fontWeight={600}
+          mb={2}
+          sx={{ color: "#004080" }}
+        >
+          Daily Transaction Graph
+          {/* : <ins>{goal?.title}</ins> */}
         </Typography>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart
@@ -593,8 +645,13 @@ const AddGoalTransactionPage: React.FC = () => {
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="date" />
             <YAxis />
-             <Tooltip content={<CustomTooltip />} />
-            <Line type="monotone" dataKey="amount" stroke="#1976d2" strokeWidth={2} />
+            <Tooltip content={<CustomTooltip />} />
+            <Line
+              type="monotone"
+              dataKey="amount"
+              stroke="#1976d2"
+              strokeWidth={2}
+            />
           </LineChart>
         </ResponsiveContainer>
       </Box>

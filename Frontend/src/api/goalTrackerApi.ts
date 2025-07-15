@@ -27,7 +27,7 @@ export const createSavingGoal = async (goalData: any) => {
 // 📌 Get all goals of current user
 export const fetchMySavingGoals = async () => {
   try {
-    const response = await axios.get(`${API_URL}/my`, {
+    const response = await axios.get(`${API_URL}/my-goals`, {
       headers: getHeaders(),
     });
     return response.data;

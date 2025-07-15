@@ -55,6 +55,13 @@ public class IncomeServiceImpl implements IncomeService{
     }
 
     @Override
+    public List<Income> getIncomeBetween(Long userId, Instant start, Instant end) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
+        return incomeRepository.findByUserAndDateBetweenAndDeletedFalse(user, start, end);
+    }
+
+    @Override
     public IncomeResponse updateIncome(Long id, IncomeRequest request, Long userId) {
         Income income = incomeRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Income not found"));
         if (!income.getUser().getId().equals(userId)) throw new RuntimeException("Unauthorized");

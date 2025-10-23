@@ -88,23 +88,6 @@ const glassCardStyle = {
   transition: "all 0.3s ease-in-out",
 };
 
-const recurringTransactions = [
-  {
-    category: "Rent",
-    description: "Monthly House Rent",
-    amount: "$1200",
-    dueDate: "April 5, 2025",
-    icon: <Home sx={{ color: "#3B48E0" }} />,
-  },
-  {
-    category: "Subscription",
-    description: "Netflix Premium",
-    amount: "$15",
-    dueDate: "April 10, 2025",
-    icon: <Subscriptions sx={{ color: "#D32F2F" }} />,
-  },
-];
-
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -114,7 +97,9 @@ const AdminDashboard = () => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [isFocused, setIsFocused] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => {
+    return !sessionStorage.getItem("dashboardLoadedOnce");
+  });
 
   const [category, setCategory] = useState("");
   const [categoryList, setCategoryList] = useState<any[]>([]);
@@ -282,10 +267,11 @@ const AdminDashboard = () => {
     SummaryComponent();
 
     const timer = setTimeout(() => {
-      setLoading(false); // After 1.5 seconds, stop showing the loader
+      setLoading(false);
+      sessionStorage.setItem("dashboardLoadedOnce", "true"); // Mark as loaded once
     }, 1500);
 
-    return () => clearTimeout(timer); // Cleanup timer
+    return () => clearTimeout(timer);
   }, []);
 
   if (loading) {
@@ -594,7 +580,7 @@ const AdminDashboard = () => {
                           }}
                         >
                           <span>Inactive Users:</span>
-                          <span style={{ color: "#e57373" }}> 
+                          <span style={{ color: "#e57373" }}>
                             {/* ffb74d */}
                             {inactiveUser}
                           </span>
@@ -1136,140 +1122,6 @@ const AdminDashboard = () => {
               </DialogActions>
             </Dialog>
           </Card>
-        </Grid>
-        {/* Recurring tansaction start */}
-
-        <Grid item xs={12}>
-          {/* <Card
-            sx={{
-              borderRadius: 4,
-              boxShadow: "0 12px 40px rgba(0, 0, 0, 0.1)",
-              background: "transparent",
-              p: 2,
-              mb: 4,
-            }}
-          > */}
-          <CardContent>
-            <Typography
-              variant="h5"
-              sx={{
-                fontWeight: "bold",
-                color: "#1e293b",
-                mb: 2,
-                textAlign: "center",
-              }}
-            >
-              Recurring Transactions
-            </Typography>
-
-            <TableContainer
-              component={Paper}
-              sx={{
-                borderRadius: "20px",
-                backdropFilter: "blur(14px)",
-                background: "rgba(255, 255, 255, 0.15)",
-                border: "1px solid rgba(255, 255, 255, 0.3)",
-                boxShadow: "0 12px 40px rgba(0, 0, 0, 0.15)",
-                transition: "transform 0.4s ease, box-shadow 0.4s ease",
-                maxHeight: 480,
-                overflowY: "auto",
-              }}
-            >
-              <Table>
-                <TableHead
-                  sx={{
-                    background:
-                      "linear-gradient(135deg, rgba(174, 148, 243, 0.15), rgba(142, 68, 173, 0.15))",
-                    "& th": {
-                      color: "#1e293b",
-                      fontWeight: 700,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
-                      fontSize: 13,
-                      borderBottom: "2px solid rgba(255,255,255,0.3)",
-                      backdropFilter: "blur(8px)",
-                      textAlign: "center",
-                    },
-                  }}
-                >
-                  <TableRow>
-                    <TableCell>Category</TableCell>
-                    <TableCell>Description</TableCell>
-                    <TableCell>Amount</TableCell>
-                    <TableCell>Next Due</TableCell>
-                    <TableCell>Action</TableCell>
-                  </TableRow>
-                </TableHead>
-
-                <TableBody
-                  sx={{
-                    "& tr:hover": {
-                      backgroundColor: "transparent",
-                      boxShadow: "inset 0 0 8px rgba(142, 68, 173, 0.1)",
-                      transform: "translateY(-1px)",
-                      transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                      cursor: "pointer",
-                    },
-                    "& td": {
-                      fontSize: 14,
-                      color: "#334155",
-                      paddingY: 1.5,
-                      paddingX: 2,
-                      verticalAlign: "middle",
-                      borderBottom: "1px solid rgba(255, 255, 255, 0.15)",
-                      backdropFilter: "blur(8px)",
-                      textAlign: "center",
-                    },
-                  }}
-                >
-                  {recurringTransactions.map((txn, index) => (
-                    <TableRow key={txn.category}>
-                      <TableCell>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: 1,
-                          }}
-                        >
-                          <Avatar sx={{ bgcolor: "transparent" }}>
-                            {txn.icon}
-                          </Avatar>
-                          {txn.category}
-                        </Box>
-                      </TableCell>
-                      <TableCell>{txn.description}</TableCell>
-                      <TableCell sx={{ fontWeight: "bold", color: "#6C5CE7" }}>
-                        {txn.amount}
-                      </TableCell>
-                      <TableCell sx={{ color: "#2E7D32", fontWeight: "bold" }}>
-                        {txn.dueDate}
-                      </TableCell>
-                      <TableCell>
-                        <MuiTooltip title="Mark as Paid">
-                          <IconButton color="success">
-                            <CheckCircle />
-                          </IconButton>
-                        </MuiTooltip>
-                        <MuiTooltip title="Edit">
-                          <IconButton color="primary">
-                            <Edit />
-                          </IconButton>
-                        </MuiTooltip>
-                        <MuiTooltip title="Delete">
-                          <IconButton color="error">
-                            <Delete />
-                          </IconButton>
-                        </MuiTooltip>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </CardContent>
-          {/* </Card> */}
         </Grid>
       </Grid>
     </Box>

@@ -585,7 +585,7 @@ const ManageUser: React.FC = () => {
       ],
     });
   };
- const handleAddMember = () => navigate(`/create_user`);
+  const handleAddMember = () => navigate(`/create_user`);
 
   return (
     <>
@@ -1053,7 +1053,6 @@ const ManageUser: React.FC = () => {
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              
               <Typography
                 variant="subtitle2"
                 sx={{ fontWeight: 600, lineHeight: 1 }}
@@ -1078,8 +1077,8 @@ const ManageUser: React.FC = () => {
           border: "1px solid rgba(255, 255, 255, 0.3)",
           boxShadow: "0 12px 40px rgba(0, 0, 0, 0.15)",
           transition: "transform 0.4s ease, box-shadow 0.4s ease",
-          maxHeight: 480,
-          overflowY: "auto",
+          maxHeight: "unset", // or remove entirely
+          overflowY: "visible", // let the content expand the container
         }}
       >
         <Table

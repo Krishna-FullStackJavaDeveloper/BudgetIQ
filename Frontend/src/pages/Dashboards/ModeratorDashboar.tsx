@@ -1,4 +1,4 @@
-import React, { JSX, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Grid,
   Card,
@@ -8,14 +8,6 @@ import {
   IconButton,
   Avatar,
   Stack,
-  TableContainer,
-  Paper,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Tooltip as MuiTooltip,
   Fab,
   Dialog,
   DialogTitle,
@@ -42,18 +34,12 @@ import {
 } from "recharts";
 import {
   Edit,
-  Delete,
-  CheckCircle,
   Add,
-  Home,
-  Subscriptions,
   MonetizationOn,
   TrendingDown,
   TrendingUp,
   CurrencyExchange,
   Close,
-  PersonAdd,
-  Send,
 } from "@mui/icons-material";
 import dayjs, { Dayjs } from "dayjs";
 import { useNavigate } from "react-router-dom";
@@ -73,25 +59,7 @@ import { LinearProgress } from "@mui/joy";
 import GroupIcon from "@mui/icons-material/Group";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 
-const userID = localStorage.getItem("user") || "";
 const userRoles = JSON.parse(localStorage.getItem("roles") || "[]");
-
-const recurringTransactions = [
-  {
-    category: "Rent",
-    description: "Monthly House Rent",
-    amount: "$1200",
-    dueDate: "April 5, 2025",
-    icon: <Home sx={{ color: "#3B48E0" }} />,
-  },
-  {
-    category: "Subscription",
-    description: "Netflix Premium",
-    amount: "$15",
-    dueDate: "April 10, 2025",
-    icon: <Subscriptions sx={{ color: "#D32F2F" }} />,
-  },
-];
 
 const ModeratorDashboard = () => {
   const navigate = useNavigate();
@@ -104,7 +72,9 @@ const ModeratorDashboard = () => {
   const [isFocused, setIsFocused] = useState(false);
   const handleEditFamily = () => navigate(`/my-family`);
   const handleAddMember = () => navigate(`/manage-users`);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => {
+  return !sessionStorage.getItem("dashboardLoadedOnce");
+});
 
   const [category, setCategory] = useState("");
   const [categoryList, setCategoryList] = useState<any[]>([]);
@@ -258,21 +228,23 @@ const ModeratorDashboard = () => {
     }
   };
 
-  useEffect(() => {
-    fetchCategories();
-    fetchExpenses();
-    SummaryComponent();
-    if (!fetchedOnce.current) {
-      fetchFamily();
-      fetchedOnce.current = true;
-    }
+ useEffect(() => {
+  fetchCategories();
+  fetchExpenses();
+  SummaryComponent();
 
-    const timer = setTimeout(() => {
-      setLoading(false); // After 1.5 seconds, stop showing the loader
-    }, 1500);
+  if (!fetchedOnce.current) {
+    fetchFamily();
+    fetchedOnce.current = true;
+  }
 
-    return () => clearTimeout(timer); // Cleanup timer
-  }, []);
+  const timer = setTimeout(() => {
+    setLoading(false);
+    sessionStorage.setItem("dashboardLoadedOnce", "true"); // Mark as loaded once
+  }, 1500);
+
+  return () => clearTimeout(timer);
+}, []);
 
   if (loading) {
     return <Loader />;
@@ -950,111 +922,6 @@ const ModeratorDashboard = () => {
               </DialogActions>
             </Dialog>
           </Card>
-        </Grid>
-        {/* Recurring tansaction start */}
-        <Grid item xs={12}>
-          {/* <Card
-            sx={{
-              borderRadius: 4,
-              boxShadow: 4,
-              p: 2,
-              mb: 9,
-            }}
-          > */}
-            <CardContent>
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: "bold",
-                  color: "#333",
-                  mb: 2,
-                  textAlign: "center",
-                }}
-              >
-                {/* 🔁  */}
-                Recurring Transactions
-              </Typography>
-
-              <TableContainer component={Paper} sx={{ borderRadius: 3 , mb: 4}}>
-                <Table>
-                  <TableHead>
-                    <TableRow sx={{ backgroundColor: "#8E44AD" }}>
-                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                        Category
-                      </TableCell>
-                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                        Description
-                      </TableCell>
-                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                        Amount
-                      </TableCell>
-                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                        Next Due
-                      </TableCell>
-                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                        Action
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {recurringTransactions.map((txn, index) => (
-                      <TableRow
-                        key={txn.category}
-                        sx={{
-                          backgroundColor: index % 2 === 0 ? "#f8f8f8" : "#fff",
-                        }}
-                      >
-                        <TableCell>
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                            }}
-                          >
-                            <Avatar sx={{ bgcolor: "transparent" }}>
-                              {txn.icon}
-                            </Avatar>
-                            {txn.category}
-                          </Box>
-                        </TableCell>
-                        <TableCell>{txn.description}</TableCell>
-                        <TableCell
-                          sx={{ fontWeight: "bold", color: "#0288D1" }}
-                        >
-                          {txn.amount}
-                        </TableCell>
-                        <TableCell
-                          sx={{ color: "#2E7D32", fontWeight: "bold" }}
-                        >
-                          {txn.dueDate}
-                        </TableCell>
-                        <TableCell
-                          sx={{ color: "#2E7D32", fontWeight: "bold" }}
-                        >
-                          <MuiTooltip title="Mark as Paid">
-                            <IconButton color="success">
-                              <CheckCircle />
-                            </IconButton>
-                          </MuiTooltip>
-                          <MuiTooltip title="Edit">
-                            <IconButton color="primary">
-                              <Edit />
-                            </IconButton>
-                          </MuiTooltip>
-                          <MuiTooltip title="Delete">
-                            <IconButton color="error">
-                              <Delete />
-                            </IconButton>
-                          </MuiTooltip>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </CardContent>
-          {/* </Card> */}
         </Grid>
       </Grid>
     </>

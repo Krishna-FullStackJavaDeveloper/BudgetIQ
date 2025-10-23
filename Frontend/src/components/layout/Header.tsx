@@ -1,168 +1,246 @@
-import React, { useState } from 'react';
-import { AppBar, Toolbar, Typography, Button, useTheme, IconButton, Badge, Menu, MenuItem } from '@mui/material';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth'; 
-import BudgetIQIcon from "../../assets/BudgetIQ.png";
-import { useNotification } from '../common/NotificationProvider';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-// BudgetiQ.png
+import React, { useState } from "react";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  useTheme,
+  IconButton,
+  Badge,
+  Menu,
+  MenuItem,
+  Box,
+} from "@mui/material";
+import { Link, useNavigate } from "react-router-dom";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import { useAuth } from "../../hooks/useAuth";
+import { useNotification } from "../common/NotificationProvider";
+import BudgetIQIcon from "../../assets/9.png";
+import { formatNotificationTime } from "../../hooks/formatNotificationTime";
 
 const Header: React.FC = () => {
   const theme = useTheme();
-  const { isAuthenticated, handleLogout, roles } = useAuth(); // Access the authentication state and handleLogout function
+  const { isAuthenticated, handleLogout, roles } = useAuth();
+  const { notifications, removeNotification } = useNotification();
   const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-   // Access notifications from global context
-   const { notifications, removeNotification } = useNotification();  
-// Notification Menu Logic
-const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-const handleNotificationClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-  // Only set anchorEl if it's not already open
-  if (anchorEl !== event.currentTarget) {
+  const handleNotificationClick = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
     setAnchorEl(event.currentTarget);
-  }
-};
-const handleNotificationClose = () => {
-  setAnchorEl(null);
-};
- 
+  };
+
+  const handleNotificationClose = () => {
+    setAnchorEl(null);
+  };
+
   const handleLogoutClick = () => {
-    handleLogout(); // Dispatch logout action
-    navigate('/login'); // Redirect to login page after logout
+    handleLogout();
+    navigate("/login");
   };
 
   const handleLogoClick = () => {
-    if (isAuthenticated && roles) {
-      // Check if the user has a role
-      const role = roles[0]?.replace('ROLE_', '').toLowerCase(); // Get the first role and clean it
-      if (role) {
-        // Redirect to corresponding dashboard based on role
-        navigate(`/${role}-dashboard`); // Assuming dashboards are named like 'admin-dashboard', 'user-dashboard', etc.
-      } else {
-        navigate('/'); // Default redirect if no valid role is found
-      }
-    }else{
-      navigate('/'); 
+    if (isAuthenticated && roles?.length) {
+      const role = roles[0]?.replace("ROLE_", "").toLowerCase();
+      navigate(`/${role}-dashboard`);
+    } else {
+      navigate("/");
     }
   };
-  
 
   return (
     <>
-    <AppBar position="fixed" sx={{ width: '100%',  top: 0,
-      background: 'linear-gradient(135deg, #6a11cb, #2575fc, #6a11cb)', // Purple to blue
-    }}>
-      <Toolbar>
-        <Typography
-          variant="h6"
-           component="div"
-           onClick={handleLogoClick}
-          sx={{
-            flexGrow: 1,
-            fontWeight: 300,
-            fontSize: '1.5rem',
-            letterSpacing: '0.5px',
-            marginLeft: '60px',
-            textDecoration: 'none',  // Ensures no underline on the Link
-            color: 'inherit',  // Inherits the color from the parent or theme
-             cursor: 'pointer', 
-          }}
-        >
-           {/* <img src={BudgetIQIcon} alt="BudgetIQ Icon" className="app-icon" /> */}
-          BudgetIQ - Your Best Friend for Better Saving.
-        </Typography>
-
-        {/* Conditionally render Login or Logout button based on isAuthenticated */}
-        {isAuthenticated && (
-          <>
-            {/* Notification Icon with Badge */}
-            <IconButton color="inherit" onClick={handleNotificationClick} sx={{ mr: 1 }}>
-              <Badge badgeContent={notifications.length} color="error">
-              <NotificationsIcon  sx={{ mb: 1.5}}/>
-              </Badge>
-            </IconButton>
-
-            {/* Notification Dropdown Menu */}
-            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleNotificationClose}>
-              {notifications.length > 0 ? (
-                notifications.map((notification, index) => (
-                  <MenuItem
-                    key={index}
-                    sx={{ color: notification.severity === "error" ? "red" : "green" }}
-                    onClick={() => removeNotification(index)} // Remove on click
-                  >
-                    {notification.message}
-                  </MenuItem>
-                ))
-              ) : (
-                <MenuItem>No new notifications</MenuItem>
-              )}
-            </Menu>
-          </>
-        )}
-        {isAuthenticated ? (
-          <Button
-            color="inherit"
-            onClick={handleLogoutClick}
+      <AppBar
+        position="fixed"
+        sx={{
+          width: "100%",
+          top: 0,
+          background: "linear-gradient(135deg, #6a11cb, #2575fc, #6a11cb)",
+          boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+        }}
+      >
+        <Toolbar sx={{ justifyContent: "space-between" }}>
+          {/* Logo + Title */}
+          <Box
+            onClick={handleLogoClick}
             sx={{
-              borderRadius: '4px',
-              padding: '8px 16px',
-              fontWeight: 500,
-              fontSize: '1rem',
-              transition: 'background-color 0.3s',
-              '&:hover': {
-                backgroundColor: theme.palette.secondary.main,
-              },
+              display: "flex",
+              alignItems: "center",
+              cursor: "pointer",
+              textDecoration: "none",
+              color: "inherit",
+              marginLeft: isAuthenticated ? "44px" : 0,
             }}
           >
-            Logout
-          </Button>
-        ) : (
-          <>
-            <Button
-            color="inherit"
-            component={Link}
-            to="/login"
-            sx={{
-              borderRadius: '4px',
-              padding: '8px 16px',
-              fontWeight: 500,
-              fontSize: '1rem',
-              transition: 'background-color 0.3s',
-              '&:hover': {
-                backgroundColor: theme.palette.secondary.main,
-              },
-            }}
-          >
-            Login
-          </Button>
+            <Box
+              component="img"
+              src={BudgetIQIcon}
+              alt="BudgetIQ"
+              sx={{ height: 40, width: 40, mr: 1 }}
+            />
 
-          <Button
-            color="inherit"
-            component={Link}
-            to="/signup"
-            sx={{
-              borderRadius: '4px',
-              padding: '8px 16px',
-              fontWeight: 500,
-              fontSize: '1rem',
-              transition: 'background-color 0.3s',
-              '&:hover': {
-                backgroundColor: theme.palette.secondary.main,
-              },
-            }}
-          >
-            Register
-          </Button>
-          </>
-        )}
-      </Toolbar>
-    </AppBar>
-    {/* Add padding to content below the AppBar */}
-    <div style={{ paddingTop: "80px" }}>
-    {/* The rest of your page content goes here */}
-  </div>
-</>
+            <Box
+              sx={{ display: "flex", flexDirection: "column", lineHeight: 1 }}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 600,
+                  fontSize: "1.3rem", // Slightly larger
+                  letterSpacing: "0.5px",
+                }}
+              >
+                BudgetIQ
+              </Typography>
+
+              <Typography
+                variant="caption"
+                sx={{
+                  fontWeight: 300,
+                  fontSize: "0.75rem", // Smaller for slogan
+                  color: "#f0f0f0", // Slightly softer
+                }}
+              >
+                Your Best Friend for Better Saving
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Right Actions */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            {isAuthenticated && (
+              <>
+                {/* Notification */}
+                <IconButton color="inherit" onClick={handleNotificationClick}>
+                  <Badge badgeContent={notifications.length} color="error">
+                    <NotificationsIcon />
+                  </Badge>
+                </IconButton>
+
+                {/* Notification Menu */}
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleNotificationClose}
+                >
+                  {notifications.length > 0 ? (
+                    notifications.map((notification, index) => (
+                      <MenuItem
+                        key={index}
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "flex-start",
+                          gap: 0.3,
+                          minWidth: "280px",
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            width: "100%",
+                          }}
+                        >
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color:
+                                notification.severity === "error"
+                                  ? "red"
+                                  : notification.severity === "warning"
+                                  ? "orange"
+                                  : "green",
+                              flexGrow: 1,
+                            }}
+                          >
+                            {notification.message}
+                          </Typography>
+                          <IconButton
+                            size="small"
+                            color="inherit"
+                            onClick={() => removeNotification(index)}
+                          >
+                            ✖
+                          </IconButton>
+                        </Box>
+                        <Typography
+                          variant="caption"
+                          sx={{ color: "#888", fontSize: "0.7rem" }}
+                        >
+                          {formatNotificationTime(
+                            new Date(notification.timestamp)
+                          )}
+                        </Typography>
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem>No new notifications</MenuItem>
+                  )}
+                </Menu>
+              </>
+            )}
+
+            {isAuthenticated ? (
+              <Button
+                color="inherit"
+                onClick={handleLogoutClick}
+                sx={{
+                  borderRadius: 2,
+                  fontWeight: 500,
+                  fontSize: "1rem",
+                  px: 2,
+                  "&:hover": {
+                    backgroundColor: "rgba(255,255,255,0.2)",
+                  },
+                }}
+              >
+                Logout
+              </Button>
+            ) : (
+              <>
+                <Button
+                  component={Link}
+                  to="/login"
+                  color="inherit"
+                  sx={{
+                    borderRadius: 2,
+                    fontWeight: 500,
+                    fontSize: "1rem",
+                    px: 2,
+                    "&:hover": {
+                      backgroundColor: "rgba(255,255,255,0.2)",
+                    },
+                  }}
+                >
+                  Login
+                </Button>
+                <Button
+                  component={Link}
+                  to="/signup"
+                  color="inherit"
+                  sx={{
+                    borderRadius: 2,
+                    fontWeight: 500,
+                    fontSize: "1rem",
+                    px: 2,
+                    "&:hover": {
+                      backgroundColor: "rgba(255,255,255,0.2)",
+                    },
+                  }}
+                >
+                  Register
+                </Button>
+              </>
+            )}
+          </Box>
+        </Toolbar>
+      </AppBar>
+
+      {/* Page Content Padding */}
+      <div style={{ paddingTop: "80px" }} />
+    </>
   );
 };
 

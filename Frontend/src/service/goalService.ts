@@ -20,10 +20,13 @@ export const useGoalService = () => {
     createGoal: async (data: any) => {
       try {
         const res = await createSavingGoal(data);
-        showNotification("Goal created successfully!", "success");
+        showNotification(
+          `Goal "${data.title}" created successfully!`,
+          "success"
+        );
         return res;
       } catch (err) {
-        showNotification("Failed to create goal.", "error");
+        showNotification(`Failed to create goal "${data.title}".`, "error");
         throw err;
       }
     },
@@ -39,21 +42,24 @@ export const useGoalService = () => {
     updateGoal: async (id: number, data: any) => {
       try {
         const res = await updateSavingGoal(id, data);
-        showNotification("Goal updated successfully!", "success");
+        showNotification(
+          `Goal "${data.title}" updated successfully!`,
+          "success"
+        );
         return res;
       } catch (err) {
-        showNotification("Failed to update goal.", "error");
+        showNotification(`Failed to update goal "${data.title}".`, "error");
         throw err;
       }
     },
 
-    deleteGoal: async (id: number) => {
+    deleteGoal: async (id: number, title?: string) => {
       try {
         const res = await deleteSavingGoal(id);
-        showNotification("Goal deleted.", "info");
+        showNotification(`Goal deleted.`, "info");
         return res;
       } catch (err) {
-        showNotification("Failed to delete goal.", "error");
+        showNotification(`Failed to delete goal.`, "error");
         throw err;
       }
     },
@@ -61,16 +67,26 @@ export const useGoalService = () => {
     addTransaction: async (data: any) => {
       try {
         const res = await addGoalTransaction(data);
-        showNotification("Transaction added!", "success");
+        // Show clear message using sourceNote and amount
+        showNotification(
+          `Transaction "${data.sourceNote}" of $${data.amount} added successfully!`,
+          "success"
+        );
         return res;
       } catch (err: any) {
         const msg = err?.response?.data?.data || "";
         if (msg.includes("Goal already achieved")) {
-          showNotification("Goal is achieved. You cannot add new transactions.", "warning");
+          showNotification(
+            `Cannot add transaction "${data.sourceNote}" of $${data.amount}. Goal already achieved.`,
+            "warning"
+          );
         } else if (msg.includes("Amount exceeds target")) {
           showNotification(msg, "error");
         } else {
-          showNotification("Failed to add transaction.", "error");
+          showNotification(
+            `Failed to add transaction "${data.sourceNote}" of $${data.amount}.`,
+            "error"
+          );
         }
         throw err;
       }
@@ -91,24 +107,35 @@ export const useGoalService = () => {
     updateTransaction: async (id: number, data: any) => {
       try {
         const res = await updateTransaction(id, data);
-        showNotification("Transaction updated!", "success");
+        showNotification(
+          `Transaction "${data.sourceNote}" of $${data.amount} updated successfully!`,
+          "success"
+        );
         return res;
       } catch (err) {
-        showNotification("Failed to update transaction.", "error");
+        showNotification(
+          `Failed to update transaction "${data.sourceNote}" of $${data.amount}.`,
+          "error"
+        );
         throw err;
       }
     },
 
-    deleteTransaction: async (id: number) => {
+    deleteTransaction: async (id: number, txn: any) => {
       try {
         const res = await deleteTransaction(id);
-        showNotification("Transaction deleted.", "info");
+        showNotification(
+          `Transaction "${txn.sourceNote}" of $${txn.amount} deleted.`,
+          "info"
+        );
         return res;
       } catch (err) {
-        showNotification("Failed to delete transaction.", "error");
+        showNotification(
+          `Failed to delete transaction "${txn.sourceNote}".`,
+          "error"
+        );
         throw err;
       }
     },
   };
 };
-

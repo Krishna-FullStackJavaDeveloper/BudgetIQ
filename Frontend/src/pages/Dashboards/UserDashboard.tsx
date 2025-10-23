@@ -1,4 +1,4 @@
-import React, { JSX, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Grid,
   Card,
@@ -23,7 +23,6 @@ import {
   DialogActions,
   Button,
   Slide,
-  Chip,
   TextField,
   FormControl,
   InputLabel,
@@ -38,9 +37,7 @@ import {
   YAxis,
   Tooltip as RechartTooltip,
   CartesianGrid,
-  ReferenceLine,
   ResponsiveContainer,
-  Legend,
   LabelList,
 } from "recharts";
 import {
@@ -55,11 +52,6 @@ import {
   TrendingUp,
   CurrencyExchange,
   Close,
-  ShoppingCart,
-  School,
-  LocalGroceryStore,
-  Brush,
-  Fastfood,
   Language,
 } from "@mui/icons-material";
 import dayjs, { Dayjs } from "dayjs";
@@ -75,31 +67,6 @@ import { getCurrencySymbol } from "../../hooks/currencyUtils";
 import { Expense } from "../../components/Interface/Expense";
 import { SummaryResponse } from "../../components/Interface/SummaryResponse";
 
-const recurringTransactions = [
-  {
-    category: "Rent",
-    description: "Monthly House Rent",
-    amount: "1200",
-    dueDate: "April 5, 2025",
-    icon: <Home sx={{ color: "#3B48E0" }} />,
-  },
-  {
-    category: "Subscription",
-    description: "Netflix Premium",
-    amount: "15",
-    dueDate: "April 10, 2025",
-    icon: <Subscriptions sx={{ color: "#D32F2F" }} />,
-  },
-  // import LanguageIcon from '@mui/icons-material/Language';
-  {
-    category: "Bill",
-    description: "Internet Bill",
-    amount: "45",
-    dueDate: "April 28, 2025",
-    icon: <Language sx={{ color: "#1565C0" }} />,
-  },
-];
-
 const UserDashboard = () => {
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
@@ -108,8 +75,9 @@ const UserDashboard = () => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [isFocused, setIsFocused] = useState(false);
-  const [loading, setLoading] = useState(true);
-
+  const [loading, setLoading] = useState(() => {
+    return !sessionStorage.getItem("dashboardLoadedOnce");
+  });
   const [category, setCategory] = useState("");
   const [categoryList, setCategoryList] = useState<any[]>([]);
   const hasFetched = useRef(false);
@@ -285,10 +253,11 @@ const UserDashboard = () => {
     fetchExpenses();
     SummaryComponent();
     const timer = setTimeout(() => {
-      setLoading(false); // After 1.5 seconds, stop showing the loader
+      setLoading(false);
+      sessionStorage.setItem("dashboardLoadedOnce", "true"); // Mark as loaded once
     }, 1500);
 
-    return () => clearTimeout(timer); // Cleanup timer
+    return () => clearTimeout(timer);
   }, []);
 
   if (loading) {
@@ -768,112 +737,6 @@ const UserDashboard = () => {
                 </Button>
               </DialogActions>
             </Dialog>
-          </Card>
-        </Grid>
-        {/* Recurring tansaction start */}
-        <Grid item xs={12} md={8}>
-          <Card
-            sx={{
-              borderRadius: 3,
-              boxShadow: 4,
-              // p: 2,
-              mb: 3,
-              // background: "linear-gradient(135deg, #f5f7fa 30%, #c3cfe2 100%)",
-            }}
-          >
-            <CardContent>
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: "bold",
-                  color: "#333",
-                  mb: 2,
-                  textAlign: "center",
-                }}
-              >
-                {/* 🔁  */}
-                Recurring Transactions
-              </Typography>
-
-              <TableContainer component={Paper} sx={{ borderRadius: 3 }}>
-                <Table>
-                  <TableHead>
-                    <TableRow sx={{ backgroundColor: "#8E44AD" }}>
-                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                        Category
-                      </TableCell>
-                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                        Description
-                      </TableCell>
-                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                        Amount
-                      </TableCell>
-                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                        Next Due
-                      </TableCell>
-                      <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>
-                        Action
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {recurringTransactions.map((txn, index) => (
-                      <TableRow
-                        key={txn.category}
-                        sx={{
-                          backgroundColor: index % 2 === 0 ? "#f8f8f8" : "#fff",
-                        }}
-                      >
-                        <TableCell>
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                            }}
-                          >
-                            <Avatar sx={{ bgcolor: "transparent" }}>
-                              {txn.icon}
-                            </Avatar>
-                            {txn.category}
-                          </Box>
-                        </TableCell>
-                        <TableCell>{txn.description}</TableCell>
-                        <TableCell
-                          sx={{ fontWeight: "bold", color: "#0288D1" }}
-                        >
-                          {currencySymbol} {txn.amount}
-                        </TableCell>
-                        <TableCell
-                          sx={{ color: "#2E7D32", fontWeight: "bold" }}
-                        >
-                          {txn.dueDate}
-                        </TableCell>
-                        <TableCell
-                          sx={{ color: "#2E7D32", fontWeight: "bold" }}
-                        >
-                          <MuiTooltip title="Mark as Paid">
-                            <IconButton color="success">
-                              <CheckCircle />
-                            </IconButton>
-                          </MuiTooltip>
-                          <MuiTooltip title="Edit">
-                            <IconButton color="primary">
-                              <Edit />
-                            </IconButton>
-                          </MuiTooltip>
-                          <MuiTooltip title="Delete">
-                            <IconButton color="error">
-                              <Delete />
-                            </IconButton>
-                          </MuiTooltip>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </CardContent>
           </Card>
         </Grid>
       </Grid>

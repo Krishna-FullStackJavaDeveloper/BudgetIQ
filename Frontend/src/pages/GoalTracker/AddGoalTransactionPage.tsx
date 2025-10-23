@@ -22,7 +22,7 @@ import {
   TableFooter,
 } from "@mui/material";
 import { Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, data } from "react-router-dom";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -180,7 +180,6 @@ const AddGoalTransactionPage: React.FC = () => {
       fetchTransactions();
     } catch (err) {
       console.error("Failed to add transaction:", err);
-      alert("Failed to add transaction. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -222,7 +221,6 @@ const AddGoalTransactionPage: React.FC = () => {
       fetchTransactions();
     } catch (err) {
       console.error("Failed to update transaction:", err);
-      alert("Failed to update transaction. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -231,16 +229,18 @@ const AddGoalTransactionPage: React.FC = () => {
   // Delete transaction
   const handleDelete = async (txnId: number) => {
     // console.log("delete");
+    
+  const txn = transactions.find((t) => t.id === txnId);
+  if (!txn) return;
     if (!window.confirm("Are you sure you want to delete this transaction?"))
       return;
     try {
       setLoading(true);
-      await deleteTransaction(txnId);
+      await deleteTransaction(txnId, txn);
       if (editIndex !== null) resetForm();
       fetchTransactions();
     } catch (err) {
       console.error("Failed to delete transaction:", err);
-      alert("Failed to delete transaction. Please try again.");
     } finally {
       setLoading(false);
     }

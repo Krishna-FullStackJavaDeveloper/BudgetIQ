@@ -1,7 +1,6 @@
 import React from "react";
 import { Button, Typography, Grid, Box } from "@mui/material";
-import { Link } from "react-router-dom"; // Assuming you're using React Router for navigation
-import "../../styles/landing.css"; // Importing custom styles
+import { Link } from "react-router-dom";
 import BudgetIQIcon from "../../assets/9.png";
 import security from "../../assets/1.png";
 import Email from "../../assets/3.png";
@@ -14,113 +13,243 @@ import WatermarkIcon from "../../assets/8.png";
 const LandingPage = () => {
   return (
     <>
-     <div className="header">
-        <div className="icon-container">
-          <img src={BudgetIQIcon} alt="BudgetIQ Icon" className="app-icon" />
-        </div>
-        <div className="text-container">
-          <Typography variant="h3" className="app-name">BudgetIQ</Typography>
-          <Typography variant="h5" className="tagline">Your Best Friend for Better Saving.</Typography>
-        </div>
-      </div>
+      {/* Header */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#0066cc",
+          padding: "20px",
+          borderTopLeftRadius: "40px",
+          borderTopRightRadius: "40px",
+          height: 150,
+          position: "relative",
+          color: "white",
+          flexWrap: "wrap",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            marginRight: "15px",
+          }}
+        >
+          <Box
+            component="img"
+            src={BudgetIQIcon}
+            alt="BudgetIQ Icon"
+            sx={{
+              width: 100,
+              height: "auto",
+              transform: "scale(1.5)",
+              transition: "transform 0.3s ease-in-out",
+              mt: 6.25, // 50px roughly
+              mr: 6.25, // 50px roughly
+            }}
+          />
+        </Box>
 
- {/* Add watermark icon */}
- <img src={WatermarkIcon} alt="Watermark" className="watermark-icon" />
- 
-      <div className="cta-section">
-      <hr className="divider" /> {/* Thin white line between header and cta section */}
-        <Typography variant="h6" className="cta-text" style={{ marginBottom: "5%" }}>
-          Create an account or logIn to try the web app for free!
+        <Box
+          sx={{
+            textAlign: "center",
+          }}
+        >
+          <Typography
+            variant="h3"
+            sx={{ fontWeight: 600, mt: 2.5, fontSize: { xs: "2.5rem", sm: "3.125rem" } }}
+          >
+            BudgetIQ
+          </Typography>
+          <Typography
+            variant="h5"
+            sx={{ mt: 1.25, fontSize: { xs: "1rem", sm: "1.0625rem" } }}
+          >
+            Your Best Friend for Better Saving.
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* Watermark */}
+      <Box
+        component="img"
+        src={WatermarkIcon}
+        alt="Watermark"
+        sx={{
+          position: "fixed",
+          bottom: -1,
+          left: 1,
+          width: "20%",
+          opacity: 0.2,
+          zIndex: -1,
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* CTA Section */}
+      <Box
+        sx={{
+          backgroundColor: "#0066cc",
+          color: "white",
+          textAlign: "center",
+          padding: "30px 20px",
+          borderBottomLeftRadius: "40px",
+          borderBottomRightRadius: "40px",
+        }}
+      >
+        <Box
+          component="hr"
+          sx={{
+            border: "none",
+            height: 1,
+            backgroundColor: "white",
+            margin: "20px auto",
+            width: "80%",
+            opacity: 1,
+          }}
+        />
+
+        <Typography variant="h6" sx={{ mb: 5, fontSize: { xs: "1rem", sm: "1.25rem" } }}>
+          Get started now — create an account or log in to keep your wallet chill and your budget thrill!
         </Typography>
+
         <Grid container spacing={2} justifyContent="center">
           <Grid item>
-            <Button variant="contained" className="cta-button login-btn" component={Link} to="/login">
+            <Button
+              variant="contained"
+              component={Link}
+              to="/login"
+              sx={{
+                textTransform: "none",
+                fontWeight: 600,
+                borderRadius: "40px",
+                px: 6,
+                py: 1.5,
+                color: "#004080",
+                backgroundColor: "white",
+                boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)",
+                "&:hover": {
+                  backgroundColor: "#004080",
+                  color: "white",
+                  boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)",
+                },
+                width: { xs: "100%", sm: "auto" },
+              }}
+            >
               Login
             </Button>
           </Grid>
           <Grid item>
-            <Button variant="contained" className="cta-button login-btn" component={Link} to="/signup">
+            <Button
+              variant="contained"
+              component={Link}
+              to="/signup"
+              sx={{
+                textTransform: "none",
+                fontWeight: 600,
+                borderRadius: "40px",
+                px: 6,
+                py: 1.5,
+                color: "#004080",
+                backgroundColor: "white",
+                boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)",
+                "&:hover": {
+                  backgroundColor: "#004080",
+                  color: "white",
+                  boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)",
+                },
+                width: { xs: "100%", sm: "auto" },
+              }}
+            >
               Register
             </Button>
           </Grid>
         </Grid>
-      </div>
+      </Box>
 
-      <div className="features">
+      {/* Features Section */}
+      <Box sx={{ p: { xs: 3, sm: 6 }, backgroundColor: "#fefefe" }}>
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <div className="feature-item">
-              <img src={security} alt="Security Icon" className="feature-icon" />
-              <div className="feature-text">
-              <Typography variant="h6" className="feature-title">2FA for Security</Typography>
-              <Typography className="feature-description">
-                Ensure your account is always secure with two-factor authentication.
-              </Typography>
-              </div>
-            </div>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <div className="feature-item">
-              <img src={Email} alt="Email Notification Icon" className="feature-icon" />
-              <div className="feature-text">
-              <Typography variant="h6" className="feature-title">Email Notification</Typography>
-              <Typography className="feature-description">
-                Stay updated with important email notifications about your budget status.
-              </Typography>
-              </div>
-            </div>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <div className="feature-item">
-              <img src={Graphically} alt="Graphical Explanation Icon" className="feature-icon" />
-              <div className="feature-text">
-              <Typography variant="h6" className="feature-title">Explain Graphically</Typography>
-              <Typography className="feature-description">
-                Visualize your financial data with easy-to-understand graphical charts.
-              </Typography>
-              </div>
-            </div>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <div className="feature-item">
-              <img src={Excel} alt="Export Excel Icon" className="feature-icon" />
-              <div className="feature-text">
-              <Typography variant="h6" className="feature-title">Export Excel</Typography>
-              <Typography className="feature-description">
-                Export your budget data easily to Excel for offline management.
-              </Typography>
-              </div>
-            </div>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <div className="feature-item">
-              <img src={Budget} alt="Family Budgeting Icon" className="feature-icon" />
-              <div className="feature-text">
-              <Typography variant="h6" className="feature-title">Manage Budget Family-Wise</Typography>
-              <Typography className="feature-description">
-                Organize budgets across family members with a single admin user.
-              </Typography>
-              </div>
-            </div>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <div className="feature-item">
-              <img src={Summary} alt="Summary Filters Icon" className="feature-icon" />
-              <div className="feature-text">
-              <Typography variant="h6" className="feature-title">Filters for Summary</Typography>
-              <Typography className="feature-description">
-                Filter your budget summary by date, daily, monthly, or weekly.
-              </Typography>
-              </div>
-            </div>
-          </Grid>
+          {[
+            {
+              icon: security,
+              title: "2FA for Security",
+              description:
+                "Ensure your account is always secure with two-factor authentication.",
+            },
+            {
+              icon: Email,
+              title: "Email Notification",
+              description:
+                "Stay updated with important email notifications about your budget status.",
+            },
+            {
+              icon: Graphically,
+              title: "Explain Graphically",
+              description:
+                "Visualize your financial data with easy-to-understand graphical charts.",
+            },
+            {
+              icon: Excel,
+              title: "Export Excel",
+              description:
+                "Export your budget data easily to Excel for offline management.",
+            },
+            {
+              icon: Budget,
+              title: "Manage Budget Family-Wise",
+              description:
+                "Organize budgets across family members with a single admin user.",
+            },
+            {
+              icon: Summary,
+              title: "Filters for Summary",
+              description:
+                "Filter your budget summary by date, daily, monthly, or weekly.",
+            },
+          ].map(({ icon, title, description }) => (
+            <Grid item xs={12} md={6} key={title}>
+              <Box
+                sx={{
+                  bgcolor: "white",
+                  p: 3,
+                  borderRadius: 2,
+                  boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2.5,
+                  transition: "transform 0.3s ease-in-out",
+                  cursor: "default",
+                  "&:hover": {
+                    transform: "translateY(-10px)",
+                    boxShadow: "0 8px 16px rgba(0,0,0,0.2)",
+                  },
+                }}
+              >
+                <Box
+                  component="img"
+                  src={icon}
+                  alt={`${title} Icon`}
+                  sx={{ width: 100, flexShrink: 0 }}
+                />
+                <Box>
+                  <Typography
+                    variant="h6"
+                    sx={{ fontWeight: 500, color: "#333", mb: 0.5 }}
+                  >
+                    {title}
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: "#777" }}>
+                    {description}
+                  </Typography>
+                </Box>
+              </Box>
+            </Grid>
+          ))}
         </Grid>
-      </div>
+      </Box>
     </>
   );
 };

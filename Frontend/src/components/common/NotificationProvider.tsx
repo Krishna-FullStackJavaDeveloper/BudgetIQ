@@ -3,6 +3,7 @@ import Notification from "./Notification"; // Import Notification component
 
 // Define the notification type
 type NotificationType = {
+  timestamp: Date;
   message: string;
   severity: "success" | "error" | "warning" | "info";
 };
@@ -23,7 +24,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
 
   // Use useCallback to prevent re-creating the functions on every render
   const showNotification = useCallback((message: string, severity: "success" | "error" | "warning" | "info") => {
-    setNotifications((prev) => [...prev, { message, severity }]);
+    setNotifications((prev) => [...prev, { message, severity, timestamp: new Date() }]);
   }, []);
 
   const removeNotification = useCallback((index: number) => {
@@ -34,13 +35,14 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     <NotificationContext.Provider value={{ notifications, showNotification, removeNotification }}>
       {children}
       {/* Render notifications and pass removeNotification */}
-      {notifications.map((notification, index) => (
+      {notifications.map((notification, index ) => (
         <Notification
           key={index}
           message={notification.message}
           severity={notification.severity}
-          onClose={() => removeNotification(index)} // Close the notification
-        />
+          timestamp={notification.timestamp}
+          onClose={() => { } } // ❌ do nothing when snackbar closes
+            />
       ))}
     </NotificationContext.Provider>
   );

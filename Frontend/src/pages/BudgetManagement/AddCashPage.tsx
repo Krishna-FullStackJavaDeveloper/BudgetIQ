@@ -361,97 +361,106 @@ const AddCashPage = () => {
 
   return (
     <>
-      <Grid container spacing={1} p={3}>
-        <Grid item xs={12}>
-          <Card
-            sx={{
-              boxShadow: 4,
-              borderRadius: 3,
-              background: "linear-gradient(135deg, #e0f2f1, #ffffff)", // soft green gradient
-              mb: 4,
-              border: "1px solid rgba(0, 150, 136, 0.15)", // teal accent border
-            }}
-          >
-            <CardContent>
-              <Grid container spacing={2} alignItems="center">
-                {/* Title */}
-                <Grid item xs={12} sm={4}>
-                  <Typography
-                    variant="h6"
-                    fontWeight="bold"
-                    sx={{ color: "#00695c" }} // deep teal
-                  >
-                    Income Tracker
-                  </Typography>
-                </Grid>
-                {/* Selected Month Display */}
-                <Grid item xs={12} sm={4}>
-                  <Box>
-                    <Typography
-                      variant="body2"
-                      sx={{ mb: 0.5, color: "#004d40" }}
-                    >
-                      Showing income for:
-                    </Typography>
-                    <Typography variant="subtitle1" sx={{ color: "#00796b" }}>
-                      {selectedMonth?.format("MMMM YYYY")}
-                    </Typography>
-                  </Box>
-                </Grid>
+      <Box sx={{ maxWidth: "1600px", margin: "auto", p: 4 }}>
+        {/* Page Title */}
+        <Typography
+          variant="h4"
+          fontWeight="bold"
+          mb={3}
+          sx={{ color: "#00695c", letterSpacing: 1.2 }}
+        >
+          Income Tracker
+        </Typography>
 
-                {/* Date Picker */}
-                <Grid item xs={12} sm={4}>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      views={["month", "year"]}
-                      label="Select Month"
-                      value={selectedMonth}
-                      onChange={(newValue) =>
-                        setSelectedMonth(newValue ?? dayjs())
-                      }
-                      sx={{
-                        width: "100%",
-                        "& .MuiOutlinedInput-root": {
-                          borderRadius: "8px",
-                          backgroundColor: "#f1f8f6",
-                          boxShadow: 1,
-                        },
-                      }}
-                    />
-                  </LocalizationProvider>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={6}>
-          <Card
-            sx={{
-              boxShadow: 4,
-              borderRadius: 3,
-              height: 420,
-              background: "linear-gradient(135deg, #e0f2f1, #ffffff)", // green-tinted gradient
-              border: "1px solid rgba(0, 150, 136, 0.15)",
-            }}
+        {/* Top Card with Title + Month Display + Month Picker */}
+        <Card
+          sx={{
+            p: 3,
+            mb: 4,
+            borderRadius: 3,
+            boxShadow: 4,
+            background: "linear-gradient(135deg, #e0f2f1, #ffffff)",
+            border: "1px solid rgba(0, 150, 136, 0.15)",
+          }}
+        >
+          <Grid
+            container
+            spacing={2}
+            alignItems="center"
+            justifyContent="space-between"
           >
-            <CardContent sx={{ pb: 9 }}>
+            {/* Month Info Text */}
+            <Grid item xs={12} md={6}>
+              <Box>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ color: "#004d40", letterSpacing: 0.5 }}
+                >
+                  Showing income for
+                </Typography>
+                <Typography
+                  variant="h6"
+                  fontWeight={600}
+                  sx={{ color: "#00695c", mt: 0.5 }}
+                >
+                  {selectedMonth?.format("MMMM YYYY")}
+                </Typography>
+              </Box>
+            </Grid>
+
+            {/* Month Picker */}
+            <Grid item xs={12} md={6}>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  views={["month", "year"]}
+                  label="Select Month"
+                  value={selectedMonth}
+                  onChange={(newValue) => setSelectedMonth(newValue ?? dayjs())}
+                  sx={{
+                    width: "100%",
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "8px",
+                      backgroundColor: "#f1f8f6",
+                      boxShadow: 1,
+                    },
+                    "& label": {
+                      color: "#00796b",
+                    },
+                    "& .Mui-focused fieldset": {
+                      borderColor: "#009688",
+                    },
+                  }}
+                />
+              </LocalizationProvider>
+            </Grid>
+          </Grid>
+        </Card>
+
+        <Grid container spacing={2}>
+          {/* Left: Add/Edit Income Form */}
+          <Grid item xs={12} sm={6}>
+            <Card
+              sx={{
+                boxShadow: 4,
+                borderRadius: 3,
+                height: 420,
+                background: "linear-gradient(135deg, #e0f2f1, #ffffff)",
+                border: "1px solid rgba(0, 150, 136, 0.15)",
+                p: 3,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+            >
               <Typography
                 variant="h6"
                 fontWeight={800}
-                gutterBottom
                 textAlign="center"
-                sx={{
-                  color: "#00695c",
-                  mb: 2,
-                }}
+                sx={{ color: "#00695c", mb: 3, letterSpacing: 1 }}
               >
-                <Box component="span" sx={{ mx: 1 }}>
-                  {editingId ? "Edit Income" : "Add Income"}
-                </Box>
+                {editingId ? "Edit Income" : "Add Income"}
               </Typography>
 
-              {/* Source Field */}
               <TextField
                 label="Source"
                 fullWidth
@@ -461,7 +470,6 @@ const AddCashPage = () => {
                 onFocus={handleFocus}
                 onBlur={handleBlur}
                 sx={{
-                  mt: 2,
                   mb: 2,
                   borderRadius: "8px",
                   "& .MuiOutlinedInput-root": {
@@ -470,6 +478,7 @@ const AddCashPage = () => {
                   },
                 }}
               />
+
               <TextField
                 label="Amount"
                 type="number"
@@ -496,31 +505,28 @@ const AddCashPage = () => {
               />
 
               <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <Box sx={{ width: "100%", mb: 2 }}>
-                  <DatePicker
-                    label="Select Date"
-                    value={date}
-                    onChange={(newDate) => setDate(newDate)}
-                    slotProps={{
-                      textField: { fullWidth: true, variant: "outlined" },
-                    }}
-                    sx={{
-                      mb: 2,
+                <DatePicker
+                  label="Select Date"
+                  value={date}
+                  onChange={(newDate) => setDate(newDate)}
+                  slotProps={{
+                    textField: { fullWidth: true, variant: "outlined" },
+                  }}
+                  sx={{
+                    mb: 3,
+                    borderRadius: "8px",
+                    "& .MuiOutlinedInput-root": {
                       borderRadius: "8px",
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "8px",
-                        boxShadow: 2,
-                      },
-                    }}
-                  />
-                </Box>
+                      boxShadow: 2,
+                    },
+                  }}
+                />
               </LocalizationProvider>
 
               <Box
                 sx={{
                   display: "flex",
-                  gap: 2, // cleaner spacing instead of manual margin
-                  mt: 3,
+                  gap: 2,
                   flexDirection: { xs: "column", sm: "row" },
                 }}
               >
@@ -528,10 +534,10 @@ const AddCashPage = () => {
                   <>
                     <Button
                       variant="contained"
-                      color="primary"
+                      color="success"
                       onClick={handleUpdate}
                       fullWidth
-                      sx={{ mr: 1, minHeight: 44 }}
+                      sx={{ minHeight: 44 }}
                     >
                       Update
                     </Button>
@@ -552,7 +558,7 @@ const AddCashPage = () => {
                       color="success"
                       onClick={handleSubmit}
                       fullWidth
-                      sx={{ mr: 1, minHeight: 44 }}
+                      sx={{ minHeight: 44 }}
                     >
                       Submit
                     </Button>
@@ -568,486 +574,508 @@ const AddCashPage = () => {
                   </>
                 )}
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+            </Card>
+          </Grid>
 
-        <Grid item xs={12} sm={6} md={6}>
-          <Card
-            sx={{
-              ml: 1,
-              boxShadow: 4,
-              borderRadius: 3,
-              height: 180,
-              marginBottom: 2.5,
-              background: "linear-gradient(135deg, #16A085, #1ABC9C)",
-              color: "white",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              textAlign: "center",
-              padding: 2,
-              transition: "transform 0.3s ease, box-shadow 0.3s ease",
-            }}
-          >
-            <CreditCard sx={{ fontSize: 50, mb: 1 }} />
-            <Typography variant="h6" fontWeight={700}>
-              Income Tracker
-            </Typography>
-            {/* Amount Display */}
-            <Typography
-              variant="h4"
-              fontWeight={800}
+          {/* Right Top: Income Summary Card */}
+          <Grid item xs={12} sm={6} md={6}>
+            <Card
               sx={{
-                mt: 1,
-                color: totalAmount >= 0 ? "#ffffff" : "#ffccbc", // Change color if negative
-              }}
-            >
-              $
-              {filteredData
-                .reduce((sum, item) => sum + item.amount, 0)
-                .toFixed(2)}
-            </Typography>
-          </Card>
-
-          {/* chart */}
-
-          <Card
-            sx={{
-              ml: 1,
-              borderRadius: 4,
-              position: "relative",
-              height: 220,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              padding: 2,
-              background: "linear-gradient(135deg, #f0f4f8, #ffffff)",
-              boxShadow: "0 8px 24px rgba(0, 0, 0, 0.1)",
-              overflow: "hidden",
-            }}
-          >
-            {/* Header Section */}
-            <Box
-              sx={{
-                width: "100%",
+                ml: 1,
+                boxShadow: 4,
+                borderRadius: 3,
+                height: 180,
+                marginBottom: 2.5,
+                background: "linear-gradient(135deg, #16A085, #1ABC9C)",
+                color: "white",
                 display: "flex",
-                justifyContent: "space-between",
+                flexDirection: "column",
+                justifyContent: "center",
                 alignItems: "center",
-                mt: 1,
+                textAlign: "center",
+                padding: 2,
+                transition: "transform 0.3s ease, box-shadow 0.3s ease",
               }}
             >
-              {/* Total Amount */}
-              <Box>
-                <Typography
-                  variant="h5"
-                  fontWeight={600}
-                  sx={{ color: "#2e7d32" }}
-                >
-                  $
-                  {filteredData
-                    .reduce((sum, item) => sum + item.amount, 0)
-                    .toFixed(2)}
-                </Typography>
-                <Typography sx={{ fontSize: 12, color: "#888" }}>
-                  Last 30 days
-                </Typography>
-              </Box>
-
-              {/* Trend Chip */}
-              <Chip
-                label={formattedPercent}
-                size="small"
+              <CreditCard sx={{ fontSize: 50, mb: 1 }} />
+              <Typography variant="h6" fontWeight={700}>
+                Income Tracker
+              </Typography>
+              <Typography
+                variant="h4"
+                fontWeight={800}
                 sx={{
-                  fontSize: 12,
-                  borderRadius: "8px",
-                  px: 1.5,
-                  //
-                  backgroundColor: isPositive ? "#e8f5e9" : "#ffebee",
-                  color: isPositive ? "#2e7d32" : "#d32f2f",
-                  fontWeight: 600,
-                  boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.05)",
+                  mt: 1,
+                  color: totalAmount >= 0 ? "#ffffff" : "#ffccbc",
                 }}
-              />
-            </Box>
+              >
+                $
+                {filteredData
+                  .reduce((sum, item) => sum + item.amount, 0)
+                  .toFixed(2)}
+              </Typography>
+            </Card>
 
-            {/* Chart Section */}
-            <Box
+            {/* Line Chart Card */}
+            <Card
               sx={{
-                width: "100%",
-                flexGrow: 1,
+                ml: 1,
+                borderRadius: 4,
+                position: "relative",
+                height: 220,
                 display: "flex",
-                alignItems: "flex-end",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                padding: 2,
+                background: "linear-gradient(135deg, #f0f4f8, #ffffff)",
+                boxShadow: "0 8px 24px rgba(0, 0, 0, 0.1)",
+                overflow: "hidden",
               }}
             >
-              <LineChart width={500} height={90} data={filteredData}>
-                <XAxis dataKey="date" hide />
-                <YAxis hide />
-                <Tooltip
-                  content={({ payload, label }) => {
-                    if (!payload || payload.length === 0) return null;
+              {/* Header Section */}
+              <Box
+                sx={{
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mt: 1,
+                }}
+              >
+                <Box>
+                  <Typography
+                    variant="h5"
+                    fontWeight={600}
+                    sx={{ color: "#2e7d32" }}
+                  >
+                    $
+                    {filteredData
+                      .reduce((sum, item) => sum + item.amount, 0)
+                      .toFixed(2)}
+                  </Typography>
+                  <Typography sx={{ fontSize: 12, color: "#888" }}>
+                    Last 30 days
+                  </Typography>
+                </Box>
 
-                    const { amount, source } = payload[0].payload;
-
-                    const formattedLabel = new Date(label).toLocaleDateString(
-                      "en-US",
-                      {
-                        month: "long",
-                        day: "numeric",
-                      }
-                    );
-
-                    // Get the source group and color (use your existing functions & color map)
-                    const sourceGroup = getSourceGroup(source);
-                    const sourceColor = sourceColors[sourceGroup] || "#90CAF9"; // fallback color
-
-                    return (
-                      <div
-                        style={{
-                          padding: "10px",
-                          background: "#333",
-                          color: "#fff",
-                          borderRadius: "8px",
-                          minWidth: "120px",
-                          textAlign: "left",
-                          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
-                          fontSize: "12px",
-                        }}
-                      >
-                        <strong
-                          style={{
-                            display: "block",
-                            marginBottom: "5px",
-                            textAlign: "center",
-                          }}
-                        >
-                          {formattedLabel}
-                        </strong>
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                          }}
-                        >
-                          <span>Amount:</span>
-                          <span
-                            style={{ fontWeight: "bold", color: "#4CAF50" }}
-                          >
-                            ${amount}
-                          </span>
-                        </div>
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                          }}
-                        >
-                          <span>Source:</span>
-                          <span
-                            style={{ fontWeight: "bold", color: sourceColor }}
-                          >
-                            {source}
-                          </span>
-                        </div>
-                      </div>
-                    );
+                <Chip
+                  label={formattedPercent}
+                  size="small"
+                  sx={{
+                    fontSize: 12,
+                    borderRadius: "8px",
+                    px: 1.5,
+                    backgroundColor: isPositive ? "#e8f5e9" : "#ffebee",
+                    color: isPositive ? "#2e7d32" : "#d32f2f",
+                    fontWeight: 600,
+                    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.05)",
                   }}
                 />
-                <Line
-                  type="monotone"
-                  dataKey="amount"
-                  stroke="#4CAF50"
-                  strokeWidth={2}
-                  dot={false}
-                  strokeLinecap="round"
-                />
-              </LineChart>
-            </Box>
-          </Card>
-        </Grid>
+              </Box>
 
-        {/* Pie Chart Grid Item */}
-        <Grid item xs={12} sm={8} md={4}>
-          <Card
-            sx={{
-              borderRadius: 3,
-              boxShadow: 4,
-              mt: 2,
-              mb: 4,
+              {/* Chart */}
+              <Box
+                sx={{
+                  width: "100%",
+                  flexGrow: 1,
+                  display: "flex",
+                  alignItems: "flex-end",
+                }}
+              >
+                <LineChart width={500} height={90} data={filteredData}>
+                  <XAxis dataKey="date" hide />
+                  <YAxis hide />
+                  <Tooltip
+                    content={({ payload, label }) => {
+                      if (!payload || payload.length === 0) return null;
 
-              border: "1px solid rgba(0, 150, 136, 0.15)",
-            }}
-          >
-            <CardContent>
-              <Box width="100%" display="flex" justifyContent="center">
-                <div style={{ width: "250px", height: "403px" }}>
-                  <Pie
-                    style={{ marginTop: 1 }}
-                    data={{
-                      labels: chartLabels,
-                      datasets: [
-                        {
-                          data: chartValues,
-                          backgroundColor: backgroundColors,
-                          borderColor: borderColors,
-                          borderWidth: 1,
-                        },
-                      ],
+                      const { amount, source } = payload[0].payload;
+                      const formattedLabel = new Date(label).toLocaleDateString(
+                        "en-US",
+                        { month: "long", day: "numeric" }
+                      );
+                      const sourceGroup = getSourceGroup(source);
+                      const sourceColor =
+                        sourceColors[sourceGroup] || "#90CAF9";
+
+                      return (
+                        <div
+                          style={{
+                            padding: "10px",
+                            background: "#333",
+                            color: "#fff",
+                            borderRadius: "8px",
+                            minWidth: "120px",
+                            textAlign: "left",
+                            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+                            fontSize: "12px",
+                          }}
+                        >
+                          <strong
+                            style={{
+                              display: "block",
+                              marginBottom: "5px",
+                              textAlign: "center",
+                            }}
+                          >
+                            {formattedLabel}
+                          </strong>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                            }}
+                          >
+                            <span>Amount:</span>
+                            <span
+                              style={{ fontWeight: "bold", color: "#4CAF50" }}
+                            >
+                              ${amount}
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                            }}
+                          >
+                            <span>Source:</span>
+                            <span
+                              style={{ fontWeight: "bold", color: sourceColor }}
+                            >
+                              {source}
+                            </span>
+                          </div>
+                        </div>
+                      );
                     }}
-                    options={{
-                      maintainAspectRatio: false,
-                      responsive: true,
-                      plugins: {
-                        legend: { position: "bottom" },
-                        tooltip: {
-                          callbacks: {
-                            label: function (tooltipItem) {
-                              return `${tooltipItem.label}: $${tooltipItem.raw}`;
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="amount"
+                    stroke="#4CAF50"
+                    strokeWidth={2}
+                    dot={false}
+                    strokeLinecap="round"
+                  />
+                </LineChart>
+              </Box>
+            </Card>
+          </Grid>
+
+          {/* Pie Chart Grid Item */}
+          <Grid item xs={12} sm={8} md={4}>
+            <Card
+              sx={{
+                borderRadius: 3,
+                boxShadow: 4,
+                mt: 2,
+                mb: 4,
+                border: "1px solid rgba(0, 150, 136, 0.15)",
+              }}
+            >
+              <CardContent>
+                <Box display="flex" justifyContent="center" width="100%">
+                  <div style={{ width: 250, height: 403 }}>
+                    <Pie
+                      style={{ marginTop: 1 }}
+                      data={{
+                        labels: chartLabels,
+                        datasets: [
+                          {
+                            data: chartValues,
+                            backgroundColor: backgroundColors,
+                            borderColor: borderColors,
+                            borderWidth: 1,
+                          },
+                        ],
+                      }}
+                      options={{
+                        maintainAspectRatio: false,
+                        responsive: true,
+                        plugins: {
+                          legend: { position: "bottom" },
+                          tooltip: {
+                            callbacks: {
+                              label: function (tooltipItem) {
+                                return `${tooltipItem.label}: $${tooltipItem.raw}`;
+                              },
                             },
                           },
                         },
-                      },
-                    }}
-                  />
-                </div>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+                      }}
+                    />
+                  </div>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
 
-        {/* Table Card Grid Item */}
-        <Grid item xs={12} sm={8} md={8}>
-          <Card
-            sx={{
-              mt: 2,
-              borderRadius: 3,
-              boxShadow: 4,
-              background: "#ffffff",
-              overflow: "auto",
-              mb: 4,
-              // borderLeft: "5px solid #1abc9c", // subtle green theme accent
-              transition: "box-shadow 0.3s ease",
-            }}
-          >
-            <CardContent>
-              <Typography variant="h6" fontWeight={700} mb={2}>
-                Income Details
-              </Typography>
+          {/* Table Card Grid Item */}
+          <Grid item xs={12} sm={8} md={8}>
+            <Card
+              sx={{
+                mt: 2,
+                borderRadius: 3,
+                boxShadow: 4,
+                background: "#ffffff",
+                overflow: "auto",
+                mb: 4,
+                transition: "box-shadow 0.3s ease",
+              }}
+            >
+              <CardContent>
+                <Typography
+                  variant="h6"
+                  fontWeight={700}
+                  mb={2}
+                  sx={{ color: "#00695c" }}
+                >
+                  Income Details
+                </Typography>
 
-              <TableContainer component={Paper} sx={{ boxShadow: 0 }}>
-                <Table size="small" aria-label="income table">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell sx={{ borderBottom: "2px solid #1abc9c" }}>
-                        <strong>Sr.</strong>
-                      </TableCell>
-                      <TableCell
-                        sx={{ borderBottom: "2px solid #1abc9c" }}
-                        sortDirection={orderBy === "date" ? order : false}
+                <TableContainer component={Paper} sx={{ boxShadow: "none" }}>
+                  <Table size="small" aria-label="income table">
+                    <TableHead>
+                      <TableRow
+                        sx={{ backgroundColor: "rgba(22, 160, 133, 0.1)" }}
                       >
-                        <TableSortLabel
-                          active={orderBy === "date"}
-                          direction={orderBy === "date" ? order : "asc"}
-                          onClick={() => handleRequestSort("date")}
-                        >
-                          <strong>Date</strong>
-                        </TableSortLabel>
-                      </TableCell>
-
-                      <TableCell
-                        sx={{ borderBottom: "2px solid #1abc9c" }}
-                        sortDirection={orderBy === "source" ? order : false}
-                      >
-                        <TableSortLabel
-                          active={orderBy === "source"}
-                          direction={orderBy === "source" ? order : "asc"}
-                          onClick={() => handleRequestSort("source")}
-                        >
-                          <strong>Source</strong>
-                        </TableSortLabel>
-                      </TableCell>
-                      <TableCell
-                        sx={{ borderBottom: "2px solid #1abc9c" }}
-                        sortDirection={orderBy === "amount" ? order : false}
-                      >
-                        <TableSortLabel
-                          active={orderBy === "amount"}
-                          direction={orderBy === "amount" ? order : "asc"}
-                          onClick={() => handleRequestSort("amount")}
-                        >
-                          <strong>Amount ($)</strong>
-                        </TableSortLabel>
-                      </TableCell>
-                      {/* New Actions Column */}
-                      <TableCell
-                        align="center"
-                        sx={{ borderBottom: "2px solid #1abc9c" }}
-                      >
-                        <strong>Actions</strong>
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {data.map((item, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{page * rowsPerPage + index + 1}</TableCell>
-                        <TableCell>
-                          {dayjs(item.date).format("YYYY-MM-DD")}
+                        <TableCell sx={{ borderBottom: "2px solid #16A085" }}>
+                          <strong>Sr.</strong>
                         </TableCell>
-                        <TableCell>
-                          <Box
-                            title={item.source} // 👈 Tooltip shows full text on hover
-                            sx={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: 1,
-                              px: 1.5,
-                              py: 0.5,
-                              borderRadius: "12px",
-                              backgroundColor: alpha(
-                                sourceColors[getSourceGroup(item.source)],
-                                0.15
-                              ),
-                              color: sourceColors[getSourceGroup(item.source)],
-                              fontWeight: 600,
-                              fontSize: "0.875rem",
-                              textTransform: "capitalize",
-                              boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
-                              maxWidth: "200px",
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              cursor: "default",
-                            }}
+                        <TableCell
+                          sx={{
+                            borderBottom: "2px solid #16A085",
+                            cursor: "pointer",
+                          }}
+                          sortDirection={orderBy === "date" ? order : false}
+                        >
+                          <TableSortLabel
+                            active={orderBy === "date"}
+                            direction={orderBy === "date" ? order : "asc"}
+                            onClick={() => handleRequestSort("date")}
+                            sx={{ fontWeight: 600, color: "#004d40" }}
                           >
-                            {/* Color Dot */}
-                            <Box
-                              sx={{
-                                flexShrink: 0,
-                                width: 10,
-                                height: 10,
-                                borderRadius: "50%",
-                                backgroundColor:
-                                  sourceColors[getSourceGroup(item.source)],
-                              }}
-                            />
-                            {item.source}
-                          </Box>
+                            Date
+                          </TableSortLabel>
                         </TableCell>
-                        <TableCell>{item.amount.toFixed(2)}</TableCell>
-                        {/* Actions Column */}
-                        <TableCell align="center">
-                          <IconButton
-                            color="primary"
-                            onClick={() => handleEdit(item)}
+                        <TableCell
+                          sx={{
+                            borderBottom: "2px solid #16A085",
+                            cursor: "pointer",
+                          }}
+                          sortDirection={orderBy === "source" ? order : false}
+                        >
+                          <TableSortLabel
+                            active={orderBy === "source"}
+                            direction={orderBy === "source" ? order : "asc"}
+                            onClick={() => handleRequestSort("source")}
+                            sx={{ fontWeight: 600, color: "#004d40" }}
                           >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            color="secondary"
-                            onClick={() => handleDelete(item)}
+                            Source
+                          </TableSortLabel>
+                        </TableCell>
+                        <TableCell
+                          sx={{
+                            borderBottom: "2px solid #16A085",
+                            cursor: "pointer",
+                          }}
+                          sortDirection={orderBy === "amount" ? order : false}
+                        >
+                          <TableSortLabel
+                            active={orderBy === "amount"}
+                            direction={orderBy === "amount" ? order : "asc"}
+                            onClick={() => handleRequestSort("amount")}
+                            sx={{ fontWeight: 600, color: "#004d40" }}
                           >
-                            <DeleteIcon />
-                          </IconButton>
+                            Amount ($)
+                          </TableSortLabel>
+                        </TableCell>
+                        <TableCell
+                          align="center"
+                          sx={{ borderBottom: "2px solid #16A085" }}
+                        >
+                          <strong>Actions</strong>
                         </TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                <TablePagination
-                  component="div"
-                  count={totalCount}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  rowsPerPage={rowsPerPage}
-                  rowsPerPageOptions={[5]}
-                />
-              </TableContainer>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Snackbar
-          open={openSnackbar}
-          autoHideDuration={3000}
-          onClose={() => setOpenSnackbar(false)}
-          message="All fields are required"
-        />
+                    </TableHead>
+                    <TableBody>
+                      {data.map((item, index) => (
+                        <TableRow
+                          key={index}
+                          hover
+                          sx={{
+                            transition: "background-color 0.2s",
+                            "&:hover": { backgroundColor: "#f5f5f5" },
+                          }}
+                        >
+                          <TableCell>
+                            {page * rowsPerPage + index + 1}
+                          </TableCell>
+                          <TableCell>
+                            {dayjs(item.date).format("YYYY-MM-DD")}
+                          </TableCell>
+                          <TableCell>
+                            <Box
+                              title={item.source}
+                              sx={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 1,
+                                px: 1.5,
+                                py: 0.5,
+                                borderRadius: "12px",
+                                backgroundColor: alpha(
+                                  sourceColors[getSourceGroup(item.source)],
+                                  0.15
+                                ),
+                                color:
+                                  sourceColors[getSourceGroup(item.source)],
+                                fontWeight: 600,
+                                fontSize: "0.875rem",
+                                textTransform: "capitalize",
+                                boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+                                maxWidth: "200px",
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                cursor: "default",
+                              }}
+                            >
+                              <Box
+                                sx={{
+                                  flexShrink: 0,
+                                  width: 10,
+                                  height: 10,
+                                  borderRadius: "50%",
+                                  backgroundColor:
+                                    sourceColors[getSourceGroup(item.source)],
+                                }}
+                              />
+                              {item.source}
+                            </Box>
+                          </TableCell>
+                          <TableCell>{item.amount.toFixed(2)}</TableCell>
+                          <TableCell align="center">
+                            <IconButton
+                              color="primary"
+                              onClick={() => handleEdit(item)}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton
+                              color="secondary"
+                              onClick={() => handleDelete(item)}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                  <TablePagination
+                    component="div"
+                    count={totalCount}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    rowsPerPage={rowsPerPage}
+                    rowsPerPageOptions={[5]}
+                  />
+                </TableContainer>
 
-        <Dialog
-          open={openModal}
-          onClose={() => {
-            setOpenModal(false);
-            handleClear(); // Clear only after user sees the dialog
-          }}
-        >
-          <DialogTitle>
-            {editingId === null ? "Income Added" : "Income Updated"}
-          </DialogTitle>
-          <DialogContent>
-            <Typography>
-              {editingId === null
-                ? "Income has been successfully recorded."
-                : "Income has been successfully updated."}
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={async () => {
-                setOpenModal(false);
-                await handleIncomeAction();
-                handleClear(); // Safe to clear here
-              }}
-              autoFocus
-            >
-              OK
-            </Button>
-          </DialogActions>
-        </Dialog>
+                {!isLoading && data.length === 0 && (
+                  <Typography mt={2} color="text.secondary" textAlign="center">
+                    🚫 No income records found. Please select a different month.
+                  </Typography>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+          <Snackbar
+            open={openSnackbar}
+            autoHideDuration={3000}
+            onClose={() => setOpenSnackbar(false)}
+            message="All fields are required"
+          />
 
-        <Dialog
-          open={openDeleteModal}
-          onClose={() => setOpenDeleteModal(false)}
-        >
-          <DialogTitle>Delete Income</DialogTitle>
-          <DialogContent>
-            <Typography>Are you sure you want to delete this item?</Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={confirmDelete} color="error">
-              OK
-            </Button>
-            <Button
-              onClick={() => {
-                setOpenDeleteModal(false);
-                setItemToDelete(null);
-              }}
-              color="primary"
-            >
-              Cancel
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {isLoading && (
-          <Box
-            sx={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              width: "100vw",
-              height: "100vh",
-              backgroundColor: "rgba(255, 255, 255, 0.5)",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              zIndex: 1300,
+          <Dialog
+            open={openModal}
+            onClose={() => {
+              setOpenModal(false);
+              handleClear(); // Clear only after user sees the dialog
             }}
           >
-            <CircularProgress />
-          </Box>
-        )}
-      </Grid>
+            <DialogTitle>
+              {editingId === null ? "Income Added" : "Income Updated"}
+            </DialogTitle>
+            <DialogContent>
+              <Typography>
+                {editingId === null
+                  ? "Income has been successfully recorded."
+                  : "Income has been successfully updated."}
+              </Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={async () => {
+                  setOpenModal(false);
+                  await handleIncomeAction();
+                  handleClear(); // Safe to clear here
+                }}
+                autoFocus
+              >
+                OK
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <Dialog
+            open={openDeleteModal}
+            onClose={() => setOpenDeleteModal(false)}
+          >
+            <DialogTitle>Delete Income</DialogTitle>
+            <DialogContent>
+              <Typography>
+                Are you sure you want to delete this item?
+              </Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={confirmDelete} color="error">
+                OK
+              </Button>
+              <Button
+                onClick={() => {
+                  setOpenDeleteModal(false);
+                  setItemToDelete(null);
+                }}
+                color="primary"
+              >
+                Cancel
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {isLoading && (
+            <Box
+              sx={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                width: "100vw",
+                height: "100vh",
+                backgroundColor: "rgba(255, 255, 255, 0.5)",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                zIndex: 1300,
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          )}
+        </Grid>
+      </Box>
     </>
   );
 };

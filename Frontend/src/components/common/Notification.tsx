@@ -4,6 +4,7 @@ import { Snackbar, Alert } from '@mui/material';
 type NotificationProps = {
   message: string;
   severity: 'success' | 'error' | 'warning' | 'info';
+  timestamp: Date;
   onClose: () => void;
 };
 
@@ -18,6 +19,7 @@ const Notification: React.FC<NotificationProps> = ({ message, severity, onClose 
 
     return () => clearTimeout(timer);
   }, [onClose]);
+
 
   return (
     <Snackbar open={open} autoHideDuration={5000} onClose={() => setOpen(false)}>

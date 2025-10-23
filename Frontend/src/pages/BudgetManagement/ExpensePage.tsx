@@ -405,200 +405,202 @@ const ExpensePage = () => {
   }, []);
 
   return (
-    <Grid container spacing={1} p={3}>
-      <Grid item xs={12}>
-        <Card
-          sx={{
-            boxShadow: 4,
-            borderRadius: 3,
-            background: "linear-gradient(135deg, #fff4f4, #fff)", // soft red/white blend
-            borderLeft: "6px solid #e74c3c", // accent border
-            mb: 4,
-          }}
-        >
-          <CardContent>
-            <Grid container spacing={2} alignItems="center">
-              {/* Title */}
-              <Grid item xs={12} sm={4}>
-                <Typography variant="h6" fontWeight="bold">
-                  Expense Tracker
+    <>
+      <Box sx={{ maxWidth: "1600px", margin: "auto", p: 4 }}>
+        <Grid container spacing={1} p={3}>
+          {/* Page Title */}
+          <Typography
+            variant="h4"
+            fontWeight="bold"
+            mb={3}
+            sx={{ color: "#e74c3c", letterSpacing: 1.2 }}
+          >
+            Expense Tracker
+          </Typography>
+          <Grid item xs={12}>
+            {/* Top Filter Card */}
+            <Card
+              sx={{
+                p: 3,
+                mb: 4,
+                borderRadius: 3,
+                boxShadow: 4,
+                background: "linear-gradient(135deg, #fbe9e7, #ffffff)",
+                border: "1px solid rgba(239, 83, 80, 0.15)",
+              }}
+            >
+              <Grid
+                container
+                spacing={2}
+                alignItems="center"
+                justifyContent="space-between"
+              >
+                <Grid item xs={12} md={6}>
+                  <Box>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ color: "#bf360c", letterSpacing: 0.5 }}
+                    >
+                      Showing expense for
+                    </Typography>
+                    <Typography
+                      variant="h6"
+                      fontWeight={600}
+                      sx={{ color: "#d84315", mt: 0.5 }}
+                    >
+                      {selectedMonth?.format("MMMM YYYY")}
+                    </Typography>
+                  </Box>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      views={["month", "year"]}
+                      label="Select Month"
+                      value={selectedMonth}
+                      onChange={(newValue) =>
+                        setSelectedMonth(newValue ?? dayjs())
+                      }
+                      sx={{
+                        width: "100%",
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: "8px",
+                          backgroundColor: "#fff3e0",
+                          boxShadow: 1,
+                        },
+                        "& label": {
+                          color: "#e64a19",
+                        },
+                        "& .Mui-focused fieldset": {
+                          borderColor: "#ef5350",
+                        },
+                      }}
+                    />
+                  </LocalizationProvider>
+                </Grid>
+              </Grid>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={6}>
+            <Card
+              sx={{
+                boxShadow: 4,
+                borderRadius: 3,
+                height: 420,
+                background: "linear-gradient(135deg, #fff0f0, #ffffff)", // soft reddish blend
+                border: "1px solid rgba(0, 150, 136, 0.15)",
+                p: 3,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+            >
+              <CardContent sx={{ pb: 9 }}>
+                <Typography
+                  variant="h6"
+                  fontWeight={800}
+                  textAlign="center"
+                  sx={{ color: "#e64a19", mb: 3, letterSpacing: 1 }}
+                >
+                  {editingId ? "Edit Income" : "Add Income"}
                 </Typography>
-              </Grid>
 
-              {/* Selected Month Display */}
-              <Grid item xs={12} sm={4}>
-                <Box>
-                  <Typography variant="body2" sx={{ mb: 0.5 }}>
-                    Showing expenses for:
-                  </Typography>
-                  <Typography variant="subtitle1" color="primary">
-                    {selectedMonth?.format("MMMM YYYY")}
-                  </Typography>
-                </Box>
-              </Grid>
-
-              {/* Date Picker */}
-              <Grid item xs={12} sm={4}>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DatePicker
-                    views={["month", "year"]} // Allow both month and year views
-                    label="Select Month"
-                    value={selectedMonth}
-                    onChange={(newValue) =>
-                      setSelectedMonth(newValue ?? dayjs())
-                    } // Update selected month
+                <FormControl
+                  fullWidth
+                  variant="outlined"
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={() => setIsFocused(false)}
+                  sx={{
+                    mt: 2,
+                    mb: 2,
+                    borderRadius: 3,
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 3,
+                      boxShadow: 2,
+                    },
+                  }}
+                >
+                  <InputLabel>Category</InputLabel>
+                  <Select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    label="Category"
+                    required
                     sx={{
-                      width: "100%",
+                      borderRadius: 3,
                       "& .MuiOutlinedInput-root": {
                         borderRadius: 3,
-                        backgroundColor: "#f9fafb",
-                        boxShadow: 1,
+                        boxShadow: 2,
                       },
                     }}
-                  />
-                </LocalizationProvider>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-      </Grid>
+                    renderValue={(selected) => {
+                      const selectedCategory = categoryList.find(
+                        (cat) => cat.name === selected
+                      );
+                      if (selectedCategory) {
+                        const IconComponent =
+                          MuiIcons[
+                            selectedCategory.iconName as keyof typeof MuiIcons
+                          ] || MuiIcons.Brush;
+                        return (
+                          <div
+                            style={{ display: "flex", alignItems: "center" }}
+                          >
+                            <IconComponent
+                              sx={{
+                                marginRight: 2,
+                                color: selectedCategory.color,
+                              }}
+                            />
+                            <Typography sx={{ color: selectedCategory.color }}>
+                              {selectedCategory.name}
+                            </Typography>
+                          </div>
+                        );
+                      }
+                      return null; // Return nothing if no category is selected
+                    }}
+                  >
+                    {categoryList.length === 0 ? (
+                      <MenuItem disabled>No categories available</MenuItem>
+                    ) : (
+                      categoryList.map((cat) => {
+                        const IconComponent =
+                          MuiIcons[cat.iconName as keyof typeof MuiIcons] ||
+                          MuiIcons.Brush;
 
-      <Grid item xs={12} sm={6} md={6}>
-        <Card
-          sx={{
-            boxShadow: 4,
-            borderRadius: 3,
-            height: 420,
-            background: "linear-gradient(135deg, #fff0f0, #ffffff)", // soft reddish blend
-            borderTop: "1px solid rgba(0, 150, 136, 0.15)", // top red accent
-          }}
-        >
-          <CardContent sx={{ pb: 9 }}>
-            <Typography
-              variant="h6"
-              fontWeight={800}
-              gutterBottom
-              textAlign="center"
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-            >
-              <Box component="span" sx={{ mx: 1 }}>
-                {editingId ? "Edit Expense" : "Add Expense"}
-              </Box>
-            </Typography>
-
-            <FormControl
-              fullWidth
-              variant="outlined"
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              sx={{
-                mt: 2,
-                mb: 2,
-                borderRadius: 3,
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 3,
-                  boxShadow: 2,
-                },
-              }}
-            >
-              <InputLabel>Category</InputLabel>
-              <Select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                label="Category"
-                required
-                sx={{
-                  borderRadius: 3,
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 3,
-                    boxShadow: 2,
-                  },
-                }}
-                renderValue={(selected) => {
-                  const selectedCategory = categoryList.find(
-                    (cat) => cat.name === selected
-                  );
-                  if (selectedCategory) {
-                    const IconComponent =
-                      MuiIcons[
-                        selectedCategory.iconName as keyof typeof MuiIcons
-                      ] || MuiIcons.Brush;
-                    return (
-                      <div style={{ display: "flex", alignItems: "center" }}>
-                        <IconComponent
-                          sx={{
-                            marginRight: 2,
-                            color: selectedCategory.color,
-                          }}
-                        />
-                        <Typography sx={{ color: selectedCategory.color }}>
-                          {selectedCategory.name}
-                        </Typography>
-                      </div>
-                    );
-                  }
-                  return null; // Return nothing if no category is selected
-                }}
-              >
-                {categoryList.length === 0 ? (
-                  <MenuItem disabled>No categories available</MenuItem>
-                ) : (
-                  categoryList.map((cat) => {
-                    const IconComponent =
-                      MuiIcons[cat.iconName as keyof typeof MuiIcons] ||
-                      MuiIcons.Brush;
-
-                    return (
-                      <MenuItem key={cat.id} value={cat.name}>
-                        {/* Apply color to the icon and text */}
-                        <IconComponent
-                          sx={{ marginRight: 2, color: cat.color }}
-                        />
-                        <Typography sx={{ color: cat.color }}>
-                          {cat.name}
-                        </Typography>
-                      </MenuItem>
-                    );
-                  })
-                )}
-              </Select>
-            </FormControl>
-            <TextField
-              label="Amount"
-              type="number"
-              fullWidth
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              variant="outlined"
-              InputProps={{
-                startAdornment:
-                  isFocused || amount ? (
-                    <InputAdornment position="start">$</InputAdornment>
-                  ) : null,
-              }}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              sx={{
-                mb: 2,
-                borderRadius: 3,
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 3,
-                  boxShadow: 2,
-                },
-              }}
-            />
-
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <Box sx={{ width: "100%", mb: 2 }}>
-                <DatePicker
-                  label="Select Date"
-                  value={date}
-                  onChange={(newDate) => setDate(newDate)}
-                  slotProps={{
-                    textField: { fullWidth: true, variant: "outlined" },
+                        return (
+                          <MenuItem key={cat.id} value={cat.name}>
+                            {/* Apply color to the icon and text */}
+                            <IconComponent
+                              sx={{ marginRight: 2, color: cat.color }}
+                            />
+                            <Typography sx={{ color: cat.color }}>
+                              {cat.name}
+                            </Typography>
+                          </MenuItem>
+                        );
+                      })
+                    )}
+                  </Select>
+                </FormControl>
+                <TextField
+                  label="Amount"
+                  type="number"
+                  fullWidth
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  variant="outlined"
+                  InputProps={{
+                    startAdornment:
+                      isFocused || amount ? (
+                        <InputAdornment position="start">$</InputAdornment>
+                      ) : null,
                   }}
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={() => setIsFocused(false)}
                   sx={{
                     mb: 2,
                     borderRadius: 3,
@@ -608,507 +610,546 @@ const ExpensePage = () => {
                     },
                   }}
                 />
-              </Box>
-            </LocalizationProvider>
 
-            {/* Buttons */}
-            <Box
-              sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <Box sx={{ width: "100%", mb: 2 }}>
+                    <DatePicker
+                      label="Select Date"
+                      value={date}
+                      onChange={(newDate) => setDate(newDate)}
+                      slotProps={{
+                        textField: { fullWidth: true, variant: "outlined" },
+                      }}
+                      sx={{
+                        mb: 2,
+                        borderRadius: 3,
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: 3,
+                          boxShadow: 2,
+                        },
+                      }}
+                    />
+                  </Box>
+                </LocalizationProvider>
+
+                {/* Buttons */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mt: 2,
+                  }}
+                >
+                  {editingId ? (
+                    <>
+                      <Button
+                        variant="contained"
+                        color="error"
+                        onClick={handleUpdate}
+                        fullWidth
+                        sx={{ mr: 1 }}
+                      >
+                        Update
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="secondary"
+                        onClick={handleClear}
+                        fullWidth
+                      >
+                        Clear
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        variant="contained"
+                        color="error"
+                        onClick={handleSubmit}
+                        fullWidth
+                        sx={{ mr: 1 }}
+                      >
+                        Submit
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="secondary"
+                        onClick={handleClear}
+                        fullWidth
+                      >
+                        Clear
+                      </Button>
+                    </>
+                  )}
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={6}>
+            <Card
+              sx={{
+                ml: 1,
+                boxShadow: 4,
+                borderRadius: 3,
+                height: 180,
+                marginBottom: 2.5,
+                background:
+                  "linear-gradient(135deg,rgb(204, 145, 145),rgb(219, 111, 111))",
+                // background: "linear-gradient(rgb(219, 111, 111))",
+                color: "white",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                textAlign: "center",
+                padding: 2,
+              }}
             >
-              {editingId ? (
-                <>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleUpdate}
-                    fullWidth
-                    sx={{ mr: 1 }}
-                  >
-                    Update
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    color="secondary"
-                    onClick={handleClear}
-                    fullWidth
-                  >
-                    Clear
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    variant="contained"
-                    color="error"
-                    onClick={handleSubmit}
-                    fullWidth
-                    sx={{ mr: 1 }}
-                  >
-                    Submit
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    color="secondary"
-                    onClick={handleClear}
-                    fullWidth
-                  >
-                    Clear
-                  </Button>
-                </>
-              )}
-            </Box>
-          </CardContent>
-        </Card>
-      </Grid>
-
-      <Grid item xs={12} sm={6} md={6}>
-        <Card
-          sx={{
-            ml: 1,
-            boxShadow: 4,
-            borderRadius: 3,
-            height: 180,
-            marginBottom: 2.5,
-            background:
-              "linear-gradient(135deg,rgb(204, 145, 145),rgb(219, 111, 111))",
-            // background: "linear-gradient(rgb(219, 111, 111))",
-            color: "white",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            textAlign: "center",
-            padding: 2,
-          }}
-        >
-          <CreditCard sx={{ fontSize: 50, mb: 1 }} />
-          <Typography variant="h6" fontWeight={700}>
-            Expense Tracker
-          </Typography>
-          {/* Amount Display */}
-          <Typography
-            variant="h4"
-            fontWeight={800}
-            sx={{
-              mt: 1,
-              color: totalAmount >= 0 ? "#ffffff" : "#ffccbc", // Change color if negative
-            }}
-          >
-            $
-            {filteredData
-              .reduce((sum, item) => sum + item.amount, 0)
-              .toFixed(2)}
-            {/* ${totalAmount.toLocaleString()} */}
-          </Typography>
-        </Card>
-
-        {/* chart */}
-
-        <Card
-          sx={{
-            ml: 1,
-            borderRadius: 3,
-            position: "relative",
-            height: 220,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            padding: 2,
-            background: "linear-gradient(135deg, #f0f4f8, #ffffff)",
-            boxShadow: "0 8px 24px rgba(0, 0, 0, 0.1)",
-            overflow: "hidden",
-          }}
-        >
-          {/* Header Section */}
-          <Box
-            sx={{
-              width: "100%",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mt: 1,
-            }}
-          >
-            {/* Total Amount */}
-            <Box>
+              <CreditCard sx={{ fontSize: 50, mb: 1 }} />
+              <Typography variant="h6" fontWeight={700}>
+                Expense Tracker
+              </Typography>
+              {/* Amount Display */}
               <Typography
-                variant="h5"
-                fontWeight={600}
-                sx={{ color: "#D32F2F" }}
+                variant="h4"
+                fontWeight={800}
+                sx={{
+                  mt: 1,
+                  color: totalAmount >= 0 ? "#ffffff" : "#ffccbc", // Change color if negative
+                }}
               >
                 $
                 {filteredData
                   .reduce((sum, item) => sum + item.amount, 0)
                   .toFixed(2)}
+                {/* ${totalAmount.toLocaleString()} */}
               </Typography>
-              <Typography sx={{ fontSize: 12, color: "#888" }}>
-                Last 30 days
-              </Typography>
-            </Box>
+            </Card>
 
-            {/* Trend Chip */}
-            <Chip
-              label={formattedPercent}
-              size="small"
+            {/* chart */}
+
+            <Card
               sx={{
-                fontSize: 12,
+                ml: 1,
                 borderRadius: 3,
-                px: 1.5,
-                //
-                backgroundColor: isPositive ? "#ffebee" : "#e8f5e9",
-                color: isPositive ? "#d32f2f" : "#2e7d32",
-                fontWeight: 600,
-                boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.05)",
+                position: "relative",
+                height: 220,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                padding: 2,
+                background: "linear-gradient(135deg, #f0f4f8, #ffffff)",
+                boxShadow: "0 8px 24px rgba(0, 0, 0, 0.1)",
+                overflow: "hidden",
               }}
-            />
-          </Box>
-
-          {/* Chart Section */}
-          <Box
-            sx={{
-              width: "100%",
-              flexGrow: 1,
-              display: "flex",
-              alignItems: "flex-end",
-            }}
-          >
-            <LineChart width={500} height={90} data={filteredData}>
-              <XAxis dataKey="date" hide />
-              <YAxis hide />
-              <Tooltip
-                content={({ payload, label }) => {
-                  if (!payload || payload.length === 0) return null;
-
-                  const { amount, category } = payload[0].payload;
-
-                  const formattedLabel = new Date(label).toLocaleDateString(
-                    "en-US",
-                    {
-                      month: "long",
-                      day: "numeric",
-                    }
-                  );
-
-                  // Find the color from categoryList based on the category
-                  const categoryColor =
-                    categoryList.find(
-                      (item) =>
-                        item.name.toLowerCase() === category.toLowerCase()
-                    )?.color || "#90CAF9"; // fallback color if not found
-
-                  return (
-                    <div
-                      style={{
-                        padding: "10px",
-                        background: "#333",
-                        color: "#fff",
-                        borderRadius: 3,
-                        minWidth: "120px",
-                        textAlign: "left",
-                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
-                        fontSize: "12px",
-                      }}
-                    >
-                      <strong
-                        style={{
-                          display: "block",
-                          marginBottom: "5px",
-                          textAlign: "center",
-                        }}
-                      >
-                        {formattedLabel}
-                      </strong>
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <span>Amount:</span>
-                        <span style={{ fontWeight: "bold", color: "#EF5350" }}>
-                          ${amount}
-                        </span>
-                      </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <span>Category:</span>
-                        <span
-                          style={{ fontWeight: "bold", color: categoryColor }}
-                        >
-                          {category}
-                        </span>
-                      </div>
-                    </div>
-                  );
+            >
+              {/* Header Section */}
+              <Box
+                sx={{
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mt: 1,
                 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="amount"
-                stroke="#EF5350"
-                strokeWidth={2}
-                dot={false}
-                strokeLinecap="round"
-              />
-            </LineChart>
-          </Box>
-        </Card>
-      </Grid>
+              >
+                {/* Total Amount */}
+                <Box>
+                  <Typography
+                    variant="h5"
+                    fontWeight={600}
+                    sx={{ color: "#D32F2F" }}
+                  >
+                    $
+                    {filteredData
+                      .reduce((sum, item) => sum + item.amount, 0)
+                      .toFixed(2)}
+                  </Typography>
+                  <Typography sx={{ fontSize: 12, color: "#888" }}>
+                    Last 30 days
+                  </Typography>
+                </Box>
 
-      {/* Pie Chart Grid Item */}
-      <Grid item xs={12} sm={8} md={4}>
-        <Card sx={{ borderRadius: 3, boxShadow: 4, mt: 2, mb: 4 }}>
-          <CardContent>
-            <Box width="100%" display="flex" justifyContent="center">
-              <div style={{ width: "250px", height: "403px" }}>
-                <Pie
-                  style={{ marginTop: 1 }}
-                  data={{
-                    labels: chartLabels,
-                    datasets: [
-                      {
-                        data: chartValues,
-                        backgroundColor: backgroundColors,
-                        borderColor: borderColors,
-                        borderWidth: 1,
-                      },
-                    ],
-                  }}
-                  options={{
-                    maintainAspectRatio: false,
-                    responsive: true,
-                    plugins: {
-                      legend: { position: "bottom" },
-                      tooltip: {
-                        callbacks: {
-                          label: function (tooltipItem) {
-                            return `${tooltipItem.label}: $${tooltipItem.raw}`;
-                          },
-                        },
-                      },
-                    },
+                {/* Trend Chip */}
+                <Chip
+                  label={formattedPercent}
+                  size="small"
+                  sx={{
+                    fontSize: 12,
+                    borderRadius: 3,
+                    px: 1.5,
+                    //
+                    backgroundColor: isPositive ? "#ffebee" : "#e8f5e9",
+                    color: isPositive ? "#d32f2f" : "#2e7d32",
+                    fontWeight: 600,
+                    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.05)",
                   }}
                 />
-              </div>
-            </Box>
-          </CardContent>
-        </Card>
-      </Grid>
+              </Box>
 
-      {/* Table Card Grid Item */}
-      <Grid item xs={12} sm={8} md={8}>
-        <Card
-          sx={{
-            mt: 2,
-            borderRadius: 3,
-            boxShadow: 4,
-            background: "#ffffff",
-            overflow: "auto",
-            mb: 4,
-          }}
-        >
-          <CardContent>
-            <Typography variant="h6" fontWeight={700} mb={2}>
-              Expense Details
-            </Typography>
+              {/* Chart Section */}
+              <Box
+                sx={{
+                  width: "100%",
+                  flexGrow: 1,
+                  display: "flex",
+                  alignItems: "flex-end",
+                }}
+              >
+                <LineChart width={500} height={90} data={filteredData}>
+                  <XAxis dataKey="date" hide />
+                  <YAxis hide />
+                  <Tooltip
+                    content={({ payload, label }) => {
+                      if (!payload || payload.length === 0) return null;
 
-            <TableContainer component={Paper} sx={{ boxShadow: 0 }}>
-              <Table size="small" aria-label="expense table">
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ borderBottom: "2px solid  #F08080" }}>
-                      <strong>Sr.</strong>
-                    </TableCell>
-                    <TableCell
-                      sx={{ borderBottom: "2px solid  #F08080" }}
-                      sortDirection={orderBy === "date" ? order : false}
-                    >
-                      <TableSortLabel
-                        active={orderBy === "date"}
-                        direction={orderBy === "date" ? order : "asc"}
-                        onClick={() => handleRequestSort("date")}
-                      >
-                        <strong>Date</strong>
-                      </TableSortLabel>
-                    </TableCell>
+                      const { amount, category } = payload[0].payload;
 
-                    <TableCell
-                      sx={{ borderBottom: "2px solid  #F08080" }}
-                      sortDirection={orderBy === "category" ? order : false}
-                    >
-                      <TableSortLabel
-                        active={orderBy === "category"}
-                        direction={orderBy === "category" ? order : "asc"}
-                        onClick={() => handleRequestSort("category")}
-                      >
-                        <strong>Category</strong>
-                      </TableSortLabel>
-                    </TableCell>
-                    <TableCell
-                      sx={{ borderBottom: "2px solid  #F08080" }}
-                      sortDirection={orderBy === "amount" ? order : false}
-                    >
-                      <TableSortLabel
-                        active={orderBy === "amount"}
-                        direction={orderBy === "amount" ? order : "asc"}
-                        onClick={() => handleRequestSort("amount")}
-                      >
-                        <strong>Amount ($)</strong>
-                      </TableSortLabel>
-                    </TableCell>
-                    {/* New Actions Column */}
-                    <TableCell
-                      align="center"
-                      sx={{ borderBottom: "2px solid  #F08080" }}
-                    >
-                      <strong>Actions</strong>
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {data.map((item, index) => {
-                    const { color, icon } = getCategoryDetails(item.category); // Get category color and icon based on source
-                    const IconComponent = getMuiIcon(icon); // Get the MUI icon component
-                    return (
-                      <TableRow key={index}>
-                        <TableCell>{page * rowsPerPage + index + 1}</TableCell>
-                        <TableCell>
-                          {dayjs(item.date).format("YYYY-MM-DD")}
-                        </TableCell>
-                        <TableCell>
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              backgroundColor: color, // Background color of the category
-                              borderRadius: 3,
-                              padding: "4px 12px",
-                              color: "#fff",
-                              fontWeight: "600",
-                              boxShadow: 1,
+                      const formattedLabel = new Date(label).toLocaleDateString(
+                        "en-US",
+                        {
+                          month: "long",
+                          day: "numeric",
+                        }
+                      );
+
+                      // Find the color from categoryList based on the category
+                      const categoryColor =
+                        categoryList.find(
+                          (item) =>
+                            item.name.toLowerCase() === category.toLowerCase()
+                        )?.color || "#90CAF9"; // fallback color if not found
+
+                      return (
+                        <div
+                          style={{
+                            padding: "10px",
+                            background: "#333",
+                            color: "#fff",
+                            borderRadius: 3,
+                            minWidth: "120px",
+                            textAlign: "left",
+                            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+                            fontSize: "12px",
+                          }}
+                        >
+                          <strong
+                            style={{
+                              display: "block",
+                              marginBottom: "5px",
+                              textAlign: "center",
                             }}
                           >
-                            {IconComponent && (
-                              <IconComponent sx={{ marginRight: 1 }} />
-                            )}
-                            {item.category}
-                          </Box>
+                            {formattedLabel}
+                          </strong>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                            }}
+                          >
+                            <span>Amount:</span>
+                            <span
+                              style={{ fontWeight: "bold", color: "#EF5350" }}
+                            >
+                              ${amount}
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                            }}
+                          >
+                            <span>Category:</span>
+                            <span
+                              style={{
+                                fontWeight: "bold",
+                                color: categoryColor,
+                              }}
+                            >
+                              {category}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="amount"
+                    stroke="#EF5350"
+                    strokeWidth={2}
+                    dot={false}
+                    strokeLinecap="round"
+                  />
+                </LineChart>
+              </Box>
+            </Card>
+          </Grid>
+
+          {/* Pie Chart Grid Item */}
+          <Grid item xs={12} sm={8} md={4}>
+            <Card sx={{ borderRadius: 3, boxShadow: 4, mt: 2, mb: 4 }}>
+              <CardContent>
+                <Box width="100%" display="flex" justifyContent="center">
+                  <div style={{ width: "250px", height: "403px" }}>
+                    <Pie
+                      style={{ marginTop: 1 }}
+                      data={{
+                        labels: chartLabels,
+                        datasets: [
+                          {
+                            data: chartValues,
+                            backgroundColor: backgroundColors,
+                            borderColor: borderColors,
+                            borderWidth: 1,
+                          },
+                        ],
+                      }}
+                      options={{
+                        maintainAspectRatio: false,
+                        responsive: true,
+                        plugins: {
+                          legend: { position: "bottom" },
+                          tooltip: {
+                            callbacks: {
+                              label: function (tooltipItem) {
+                                return `${tooltipItem.label}: $${tooltipItem.raw}`;
+                              },
+                            },
+                          },
+                        },
+                      }}
+                    />
+                  </div>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Table Card Grid Item */}
+          <Grid item xs={12} sm={8} md={8}>
+            <Card
+              sx={{
+                mt: 2,
+                borderRadius: 3,
+                boxShadow: 4,
+                background: "#ffffff",
+                overflow: "auto",
+                mb: 4,
+              }}
+            >
+              <CardContent>
+                <Typography variant="h6" fontWeight={700} mb={2}>
+                  Expense Details
+                </Typography>
+
+                <TableContainer component={Paper} sx={{ boxShadow: 0 }}>
+                  <Table size="small" aria-label="expense table">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell sx={{ borderBottom: "2px solid  #F08080" }}>
+                          <strong>Sr.</strong>
                         </TableCell>
-                        <TableCell>{item.amount.toFixed(2)}</TableCell>
-                        {/* Actions Column */}
-                        <TableCell align="center">
-                          <IconButton
-                            color="primary"
-                            onClick={() => handleEdit(item)} // Add logic to handle edit
+                        <TableCell
+                          sx={{ borderBottom: "2px solid  #F08080" }}
+                          sortDirection={orderBy === "date" ? order : false}
+                        >
+                          <TableSortLabel
+                            active={orderBy === "date"}
+                            direction={orderBy === "date" ? order : "asc"}
+                            onClick={() => handleRequestSort("date")}
                           >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            color="secondary"
-                            onClick={() => handleDelete(item)} // Add logic to handle delete
+                            <strong>Date</strong>
+                          </TableSortLabel>
+                        </TableCell>
+
+                        <TableCell
+                          sx={{ borderBottom: "2px solid  #F08080" }}
+                          sortDirection={orderBy === "category" ? order : false}
+                        >
+                          <TableSortLabel
+                            active={orderBy === "category"}
+                            direction={orderBy === "category" ? order : "asc"}
+                            onClick={() => handleRequestSort("category")}
                           >
-                            <DeleteIcon />
-                          </IconButton>
+                            <strong>Category</strong>
+                          </TableSortLabel>
+                        </TableCell>
+                        <TableCell
+                          sx={{ borderBottom: "2px solid  #F08080" }}
+                          sortDirection={orderBy === "amount" ? order : false}
+                        >
+                          <TableSortLabel
+                            active={orderBy === "amount"}
+                            direction={orderBy === "amount" ? order : "asc"}
+                            onClick={() => handleRequestSort("amount")}
+                          >
+                            <strong>Amount ($)</strong>
+                          </TableSortLabel>
+                        </TableCell>
+                        {/* New Actions Column */}
+                        <TableCell
+                          align="center"
+                          sx={{ borderBottom: "2px solid  #F08080" }}
+                        >
+                          <strong>Actions</strong>
                         </TableCell>
                       </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-              <TablePagination
-                component="div"
-                count={totalCount}
-                page={page}
-                onPageChange={handleChangePage}
-                rowsPerPage={rowsPerPage}
-                rowsPerPageOptions={[5]}
-              />
-            </TableContainer>
-          </CardContent>
-        </Card>
-      </Grid>
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={3000}
-        onClose={() => setOpenSnackbar(false)}
-        message="All fields are required"
-      />
+                    </TableHead>
+                    <TableBody>
+                      {data.map((item, index) => {
+                        const { color, icon } = getCategoryDetails(
+                          item.category
+                        ); // Get category color and icon based on source
+                        const IconComponent = getMuiIcon(icon); // Get the MUI icon component
+                        return (
+                          <TableRow key={index}>
+                            <TableCell>
+                              {page * rowsPerPage + index + 1}
+                            </TableCell>
+                            <TableCell>
+                              {dayjs(item.date).format("YYYY-MM-DD")}
+                            </TableCell>
+                            <TableCell>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  backgroundColor: color, // Background color of the category
+                                  borderRadius: 3,
+                                  padding: "4px 12px",
+                                  color: "#fff",
+                                  fontWeight: "600",
+                                  boxShadow: 1,
+                                }}
+                              >
+                                {IconComponent && (
+                                  <IconComponent sx={{ marginRight: 1 }} />
+                                )}
+                                {item.category}
+                              </Box>
+                            </TableCell>
+                            <TableCell>{item.amount.toFixed(2)}</TableCell>
+                            {/* Actions Column */}
+                            <TableCell align="center">
+                              <IconButton
+                                color="primary"
+                                onClick={() => handleEdit(item)} // Add logic to handle edit
+                              >
+                                <EditIcon />
+                              </IconButton>
+                              <IconButton
+                                color="secondary"
+                                onClick={() => handleDelete(item)} // Add logic to handle delete
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                  <TablePagination
+                    component="div"
+                    count={totalCount}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    rowsPerPage={rowsPerPage}
+                    rowsPerPageOptions={[5]}
+                  />
+                </TableContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Snackbar
+            open={openSnackbar}
+            autoHideDuration={3000}
+            onClose={() => setOpenSnackbar(false)}
+            message="All fields are required"
+          />
 
-      <Dialog
-        open={openModal}
-        onClose={() => {
-          setOpenModal(false);
-          handleClear(); // Clear only after user sees the dialog
-        }}
-      >
-        <DialogTitle>
-          {editingId === null ? "Expense Added" : "Expense Updated"}
-        </DialogTitle>
-        <DialogContent>
-          <Typography>
-            {editingId === null
-              ? "Expense has been successfully recorded."
-              : "Expense has been successfully updated."}
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={async () => {
+          <Dialog
+            open={openModal}
+            onClose={() => {
               setOpenModal(false);
-              await handleExpenseAction();
-              handleClear(); // Safe to clear here
+              handleClear(); // Clear only after user sees the dialog
             }}
-            autoFocus
           >
-            OK
-          </Button>
-        </DialogActions>
-      </Dialog>
+            <DialogTitle>
+              {editingId === null ? "Expense Added" : "Expense Updated"}
+            </DialogTitle>
+            <DialogContent>
+              <Typography>
+                {editingId === null
+                  ? "Expense has been successfully recorded."
+                  : "Expense has been successfully updated."}
+              </Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={async () => {
+                  setOpenModal(false);
+                  await handleExpenseAction();
+                  handleClear(); // Safe to clear here
+                }}
+                autoFocus
+              >
+                OK
+              </Button>
+            </DialogActions>
+          </Dialog>
 
-      <Dialog open={openDeleteModal} onClose={() => setOpenDeleteModal(false)}>
-        <DialogTitle>Delete Expense</DialogTitle>
-        <DialogContent>
-          <Typography>Are you sure you want to delete this item?</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={confirmDelete} color="error">
-            OK
-          </Button>
-          <Button
-            onClick={() => {
-              setOpenDeleteModal(false);
-              setItemToDelete(null);
-            }}
-            color="primary"
+          <Dialog
+            open={openDeleteModal}
+            onClose={() => setOpenDeleteModal(false)}
           >
-            Cancel
-          </Button>
-        </DialogActions>
-      </Dialog>
+            <DialogTitle>Delete Expense</DialogTitle>
+            <DialogContent>
+              <Typography>
+                Are you sure you want to delete this item?
+              </Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={confirmDelete} color="error">
+                OK
+              </Button>
+              <Button
+                onClick={() => {
+                  setOpenDeleteModal(false);
+                  setItemToDelete(null);
+                }}
+                color="primary"
+              >
+                Cancel
+              </Button>
+            </DialogActions>
+          </Dialog>
 
-      {isLoading && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(255,255,255,0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1300,
-          }}
-        >
-          <CircularProgress />
-        </Box>
-      )}
-    </Grid>
+          {isLoading && (
+            <Box
+              sx={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                width: "100vw",
+                height: "100vh",
+                backgroundColor: "rgba(255,255,255,0.5)",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                zIndex: 1300,
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          )}
+        </Grid>
+      </Box>
+    </>
   );
 };
 

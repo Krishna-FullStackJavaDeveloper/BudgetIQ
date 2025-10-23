@@ -8,31 +8,32 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
+  Typography,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import DashboardIcon from "@mui/icons-material/Dashboard"; // Example icon
-import SettingsIcon from "@mui/icons-material/Settings"; // Example icon
-import PeopleIcon from "@mui/icons-material/People"; // Example icon
-import ReportIcon from "@mui/icons-material/Report"; // Example icon
+import SettingsIcon from "@mui/icons-material/Settings";
+import PeopleIcon from "@mui/icons-material/People";
+import ReportIcon from "@mui/icons-material/Report";
 import PersonIcon from "@mui/icons-material/Person";
-import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
-import LocalAtmIcon from "@mui/icons-material/LocalAtm";
 import AddCardIcon from "@mui/icons-material/AddCard";
-import cashWithdrawIcon from "../../assets/cash-withdrawal.png";
-import CategoryIcon from "@mui/icons-material/Category"; 
-import EmojiEventsTwoToneIcon from '@mui/icons-material/EmojiEventsTwoTone';
+import LocalAtmIcon from "@mui/icons-material/LocalAtm";
+import CategoryIcon from "@mui/icons-material/Category";
+import EmojiEventsTwoToneIcon from "@mui/icons-material/EmojiEventsTwoTone";
+
 interface SidebarProps {
   open: boolean;
   toggleSidebar: () => void;
   isAuthenticated: boolean;
   roles: string[] | null;
 }
+
 interface MenuItem {
   label: string;
   path: string;
   icon: React.ReactNode;
+  section?: string;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -41,111 +42,188 @@ const Sidebar: React.FC<SidebarProps> = ({
   isAuthenticated,
   roles,
 }) => {
-  if (!isAuthenticated) return null; // Hide sidebar if not authenticated
-  if (!roles) return null;
+  if (!isAuthenticated || !roles) return null;
+
   const userId = localStorage.getItem("user") || "";
-  // Define different menus based on roles
+
+  // Define menu items with optional sections for grouping
   const menuItems: Record<string, MenuItem[]> = {
     admin: [
-      //Category wise Tracking
-      { label: "Income", path: "/add_cash", icon: <AddCardIcon /> },
-      { label: "Expense", path: "/add_Expense", icon: <LocalAtmIcon /> },
-      { label: "Category", path: "/add_Category", icon: <CategoryIcon /> },
-       // Goal Tracker
+      {
+        label: "Income",
+        path: "/add_cash",
+        icon: <AddCardIcon />,
+        section: "Tracking",
+      },
+      {
+        label: "Expense",
+        path: "/add_Expense",
+        icon: <LocalAtmIcon />,
+        section: "Tracking",
+      },
+      {
+        label: "Category",
+        path: "/add_Category",
+        icon: <CategoryIcon />,
+        section: "Tracking",
+      },
       {
         label: "Goal Tracker",
         path: "/savingGoals",
         icon: <EmojiEventsTwoToneIcon />,
+        section: "Goals",
       },
-      // Admin Pages
-      { label: "Reports", path: "/manage-users-test", icon: <ReportIcon /> },
+      {
+        label: "Recurring Transaction",
+        path: "/recurring_transaction",
+        icon: <LocalAtmIcon />,
+        section: "Transactions",
+      },
+      {
+        label: "Manage Users",
+        path: "/manage-users",
+        icon: <PeopleIcon />,
+        section: "Administration",
+      },
+      {
+        label: "Reports",
+        path: "/report",
+        // manage-users-test",
+        icon: <ReportIcon />,
+        section: "Administration",
+      },
       {
         label: "My Profile",
         path: `/edit-user/${userId}`,
         icon: <PersonIcon />,
-      },
-      // Recurring Transaction
-      {
-        label: "Recurring Tansaction",
-        path: "/recurring_transaction",
-        icon: <LocalAtmIcon />,
+        section: "User",
       },
     ],
     moderator: [
-      //Category wise Tracking
-      { label: "Income", path: "/add_cash", icon: <AddCardIcon /> },
-      { label: "Expense", path: "/add_Expense", icon: <LocalAtmIcon /> },
-      { label: "Category", path: "/add_Category", icon: <CategoryIcon /> },
-      // Goal Tracker
+      {
+        label: "Income",
+        path: "/add_cash",
+        icon: <AddCardIcon />,
+        section: "Tracking",
+      },
+      {
+        label: "Expense",
+        path: "/add_Expense",
+        icon: <LocalAtmIcon />,
+        section: "Tracking",
+      },
+      {
+        label: "Category",
+        path: "/add_Category",
+        icon: <CategoryIcon />,
+        section: "Tracking",
+      },
       {
         label: "Goal Tracker",
         path: "/savingGoals",
         icon: <EmojiEventsTwoToneIcon />,
+        section: "Goals",
       },
-      // Admin Pages
-      { label: "Manage Users", path: "/manage-users", icon: <PeopleIcon /> },
-      // Report
-      { label: "Reports", path: "/report", icon: <ReportIcon /> },
+      {
+        label: "Manage Users",
+        path: "/manage-users",
+        icon: <PeopleIcon />,
+        section: "Administration",
+      },
+      {
+        label: "Reports",
+        path: "/report",
+        icon: <ReportIcon />,
+        section: "Administration",
+      },
+      {
+        label: "Recurring Transaction",
+        path: "/recurring_transaction",
+        icon: <LocalAtmIcon />,
+        section: "Transactions",
+      },
       {
         label: "My Profile",
         path: `/edit-user/${userId}`,
         icon: <PersonIcon />,
+        section: "User",
       },
-      // Recurring Transaction
-      {
-        label: "Recurring Tansaction",
-        path: "/recurring_transaction",
-        icon: <LocalAtmIcon />,
-      },
-       { label: "Reports", path: "/manage-users-test", icon: <ReportIcon /> },
     ],
     user: [
-      // { label: 'Dashboard', path: '/user-dashboard', icon: <DashboardIcon /> },
-      { label: "Income", path: "/add_cash", icon: <AddCardIcon /> },
-      // { label: 'Add Expense', path: '/add_Expense', icon: <img src={cashWithdrawIcon} alt="Withdraw Cash" style={{ width: 24, height: 24 }} /> },
-      { label: "Expense", path: "/add_Expense", icon: <LocalAtmIcon /> },
-      { label: "Category", path: "/add_Category", icon: <CategoryIcon /> },
-       // Goal Tracker
+      {
+        label: "Income",
+        path: "/add_cash",
+        icon: <AddCardIcon />,
+        section: "Tracking",
+      },
+      {
+        label: "Expense",
+        path: "/add_Expense",
+        icon: <LocalAtmIcon />,
+        section: "Tracking",
+      },
+      {
+        label: "Category",
+        path: "/add_Category",
+        icon: <CategoryIcon />,
+        section: "Tracking",
+      },
       {
         label: "Goal Tracker",
         path: "/savingGoals",
         icon: <EmojiEventsTwoToneIcon />,
+        section: "Goals",
       },
       {
-        label: "Test-Profile",
-        path: `/edit-user/${userId}`,
-        icon: <PersonIcon />,
-      },
-      {
-        label: "Dashboard-Test",
-        path: "/manage-users-test",
-        icon: <ReportIcon />,
-      },
-      { label: "Settings", path: "/settings", icon: <SettingsIcon /> },
-      { label: "Profile", path: `/edit-user/${userId}`, icon: <PersonIcon /> },
-      // Recurring Transaction
-      {
-        label: "Recurring Tansaction",
+        label: "Recurring Transaction",
         path: "/recurring_transaction",
         icon: <LocalAtmIcon />,
+        section: "Transactions",
       },
-      // Report
-      { label: "Reports", path: "/report", icon: <ReportIcon /> },
+      {
+        label: "Reports",
+        path: "/report",
+        icon: <ReportIcon />,
+        section: "Reports",
+      },
+      {
+        label: "Settings",
+        path: "/settings",
+        icon: <SettingsIcon />,
+        section: "User",
+      },
+      {
+        label: "Profile",
+        path: `/edit-user/${userId}`,
+        icon: <PersonIcon />,
+        section: "User",
+      },
     ],
   };
 
-  const selectedMenu: MenuItem[] = roles.reduce((acc, role) => {
-    // Remove the 'ROLE_' prefix and map the role to its menu
+  // Combine and deduplicate menu items if user has multiple roles
+  const combinedMenu: MenuItem[] = [];
+
+  roles.forEach((role) => {
     const cleanRole = role.replace("ROLE_", "").toLowerCase();
-    const roleMenuItems = menuItems[cleanRole as keyof typeof menuItems];
-    if (roleMenuItems) {
-      acc = [...acc, ...roleMenuItems];
+    const items = menuItems[cleanRole];
+    if (items) {
+      items.forEach((item) => {
+        if (!combinedMenu.some((mi) => mi.label === item.label)) {
+          combinedMenu.push(item);
+        }
+      });
     }
+  });
+
+  // Group items by their section for rendering
+  const groupedMenu = combinedMenu.reduce((acc, item) => {
+    if (!acc[item.section || ""]) acc[item.section || ""] = [];
+    acc[item.section || ""].push(item);
     return acc;
-  }, [] as MenuItem[]);
+  }, {} as Record<string, MenuItem[]>);
 
   const handleMenuItemClick = () => {
-    // Close the sidebar after a link is clicked
     toggleSidebar();
   };
 
@@ -175,49 +253,49 @@ const Sidebar: React.FC<SidebarProps> = ({
         open={open}
         onClose={toggleSidebar}
         sx={{
-          width: 240,
+          width: 260,
           flexShrink: 0,
-          "& .MuiDrawer-paper": { width: 240, boxSizing: "border-box" },
+          "& .MuiDrawer-paper": {
+            width: 260,
+            boxSizing: "border-box",
+            backgroundColor: "#fff",
+            borderRight: "1px solid #e0e0e0",
+          },
         }}
       >
-        {/* Close Button */}
+        {/* Header */}
         <Box
           sx={{
-            position: "absolute",
-            mt: 2,
-            top: 10,
-            left: 16,
-            zIndex: 1201,
             display: "flex",
             alignItems: "center",
-            gap: 1,
+            padding: "16px 24px",
+            borderBottom: "1px solid #e0e0e0",
+            position: "relative",
+            minHeight: 64,
           }}
         >
-          {/* Sidebar Close Button */}
           <IconButton
             onClick={toggleSidebar}
             sx={{
-              color: "#333",
-              fontSize: "32px",
-              "&:hover": {
-                backgroundColor: "rgba(255, 255, 255, 0.1)",
-              },
+              color: "#555",
+              mr: 2,
+              transition: "background-color 0.2s",
+              "&:hover": { backgroundColor: "rgba(0,0,0,0.04)" },
             }}
-          >
-            <ChevronLeftIcon sx={{ fontSize: "32px" }} />
-          </IconButton>
-
-          {/* BudgetIQ Text Link */}
+            aria-label="close sidebar"
+          ></IconButton>
           <Box
             component={RouterLink}
             to={getDashboardPath()}
             onClick={toggleSidebar}
             sx={{
               textDecoration: "none",
-              color: "#333",
-              fontWeight: "bold",
-              fontSize: "26px",
-              lineHeight: 1,
+              color: "#0077b6",
+              fontWeight: "700",
+              fontSize: "24px",
+              flexGrow: 1,
+              ml: 3,
+              userSelect: "none",
               "&:hover": {
                 textDecoration: "underline",
               },
@@ -226,59 +304,94 @@ const Sidebar: React.FC<SidebarProps> = ({
             BudgetIQ
           </Box>
         </Box>
-        {/* </IconButton> */}
 
-        {/* Divider between icon and menu list */}
-        <Box sx={{ marginTop: "90px" }}>
-          {" "}
-          {/* Adjust spacing */}
-          <Divider />
-        </Box>
+        {/* Menu sections */}
+        <Box sx={{ mt: 2, overflowY: "auto", flexGrow: 1 }}>
+          {Object.entries(groupedMenu).map(([section, items], idx) => (
+            <Box key={section || idx} sx={{ mb: 3 }}>
+              {/* Section heading, skip if no section name */}
+              {section && section.trim() !== "" && (
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    px: 3,
+                    mb: 1,
+                    color: "#666",
+                    fontWeight: 600,
+                    textTransform: "uppercase",
+                    fontSize: 12,
+                  }}
+                >
+                  {section}
+                </Typography>
+              )}
 
-        {/* Sidebar List */}
-        <List sx={{ marginTop: "10px" }}>
-          {selectedMenu.map((item, index) => (
-            <React.Fragment key={index}>
-              <ListItem
-                component={RouterLink}
-                to={item.path}
-                sx={{
-                  cursor: "pointer",
-                  color: "#333", // Set the text color
-                  "&:hover": {
-                    backgroundColor: "#f5f5f5", // Hover color for the list item
-                    color: "#0077b6", // Hover text color
-                  },
-                  padding: "12px 16px", // Adjust padding for better spacing
-                }}
-                onClick={handleMenuItemClick} // Close sidebar when a menu item is clicked
-              >
-                <ListItemIcon sx={{ color: "#333" }}>
-                  {item.icon} {/* Display icon */}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.label}
-                  sx={{ textAlign: "left", fontWeight: 500 }}
-                />
-              </ListItem>
-              {/* Add a Divider after certain items */}
-              {index === 2 && <Divider />}{" "}
-              {/* For example, add a divider after the third item */}
-            </React.Fragment>
+              <List disablePadding>
+                {items.map((item, i) => (
+                  <ListItem
+                    component={RouterLink}
+                    to={item.path}
+                    key={item.label}
+                    onClick={handleMenuItemClick}
+                    sx={{
+                      cursor: "pointer",
+                      px: 3,
+                      py: 1.25,
+                      color: "#333",
+                      borderRadius: 1,
+                      transition: "background-color 0.2s, color 0.2s",
+                      textDecoration: "none",
+                      display: "flex",
+                      alignItems: "center",
+                      "&:hover": {
+                        backgroundColor: "#e1f5fe",
+                        color: "#0277bd",
+                        "& .MuiListItemIcon-root": {
+                          color: "#0277bd",
+                        },
+                      },
+                    }}
+                  >
+                    <ListItemIcon
+                      sx={{ color: "#666", minWidth: 36 }}
+                      children={item.icon}
+                    />
+                    <ListItemText
+                      primary={item.label}
+                      primaryTypographyProps={{
+                        fontWeight: 500,
+                        fontSize: 14,
+                      }}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+
+              {/* Divider between sections */}
+              {idx < Object.entries(groupedMenu).length - 1 && (
+                <Divider sx={{ mx: 3, mt: 1, mb: 2 }} />
+              )}
+            </Box>
           ))}
-        </List>
+        </Box>
       </Drawer>
 
-      {/* Sidebar Toggle burger Button */}
+      {/* Sidebar toggle button */}
       <IconButton
-        sx={{
-          position: "fixed", // Make it fixed relative to the viewport
-          top: "10px", // Adjust the top distance from the viewport
-          left: "10px", // Adjust the left distance from the viewport (to prevent any gap)
-          zIndex: 1200, // Ensure it's above other content
-          color: "white", // Keep the icon color white or adjust accordingly
-        }}
         onClick={toggleSidebar}
+        sx={{
+          position: "fixed",
+          top: 12,
+          left: 12,
+          zIndex: 1300,
+          backgroundColor: "transparent",
+          color: "#ffffff", // bright white stands out over your header gradient
+          "&:hover": {
+            backgroundColor: "rgba(255, 255, 255, 0.15)", // soft white hover background
+          },
+          boxShadow: "none",
+        }}
+        aria-label="open sidebar"
       >
         <MenuIcon />
       </IconButton>

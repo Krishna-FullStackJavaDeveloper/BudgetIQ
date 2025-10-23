@@ -59,27 +59,44 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
+        http
+                // CSRF is disabled because this is a stateless REST API using JWT tokens.
+                // Disabling CSRF is safe since we do not rely on session cookies.
+                .csrf(csrf -> csrf.disable())
+
+                // Exception handling for unauthorized access
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
+
+                // Stateless session management (JWT-based)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                // Endpoint authorization
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/api/auth/**", "/api/users/**").permitAll()
-                                .requestMatchers("/api/test/**", "/api/timezones/**", "/api/categories/**" , "/api/expenses/**",
-                                        "/api/incomes/**", "/api/summary/**", "/api/families/**", "/api/recurring/**", "/api/goals/**",
-                                        "/api/report/**"
-                                )
-                                .permitAll()
-//                                .requestMatchers("/api/users/**").permitAll()
-                                .requestMatchers("/api/files/**").permitAll()
+                                .requestMatchers(
+                                        "/api/test/**",
+                                        "/api/timezones/**",
+                                        "/api/categories/**",
+                                        "/api/expenses/**",
+                                        "/api/incomes/**",
+                                        "/api/summary/**",
+                                        "/api/families/**",
+                                        "/api/recurring/**",
+                                        "/api/goals/**",
+                                        "/api/report/**",
+                                        "/api/files/**"
+                                ).permitAll()
                                 .anyRequest().authenticated()
                 );
 
+        // Set custom authentication provider
         http.authenticationProvider(authenticationProvider());
 
-        // Add the JWT auth filter before the UsernamePasswordAuthenticationFilter
+        // Add JWT auth filter before the default username/password filter
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-}
+
+    }
